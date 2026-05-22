@@ -22,8 +22,9 @@
         <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
             <!-- Image -->
             <div class="bg-gradient-to-br from-gray-100 to-gray-200 h-48 flex items-center justify-center">
-                {% if car.image_url %}
-                <img src="{{ car.image_url }}" alt="{{ car.brand }} {{ car.model }}" class="w-full h-full object-cover">
+                {% set first_photo = car.images[0].url if car.images else car.image_url %}
+                {% if first_photo %}
+                <img src="{{ first_photo }}" alt="{{ car.brand }} {{ car.model }}" class="w-full h-full object-cover">
                 {% else %}
                 <span class="text-6xl">🚗</span>
                 {% endif %}
