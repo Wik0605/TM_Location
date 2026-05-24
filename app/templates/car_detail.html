@@ -19,23 +19,21 @@
         <!-- Colonne Gauche : Carousel -->
         <div class="space-y-4">
 
-            {# On construit la liste des photos à afficher.
-            Priorité : car.images (table CarImage) → sinon car.image_url → sinon aucune photo #}
-            {% set photos = car.images | map(attribute='url') | list %}
-            {% if not photos and car.image_url %}
-            {% set photos = [car.image_url] %}
-            {% endif %}
+            {% set photos = (car.images | map(attribute='url') | list) or ([car.image_url] if car.image_url else []) %}
 
             {% if photos %}
             <!-- Carousel principal -->
-            <div class="relative rounded-2xl overflow-hidden bg-gray-100" id="carousel">
+            <div class="relative rounded-2xl overflow-hidden bg-gray-100" id="carousel" style="-webkit-mask-image: -webkit-radial-gradient(white, black);">
 
                 <!-- Conteneur des slides -->
-                <div id="carousel-track" class="flex transition-transform duration-300 ease-in-out">
+                <div id="carousel-track">
                     {% for photo in photos %}
-                    <div class="min-w-full h-80 md:h-96 flex-shrink-0 cursor-zoom-in" onclick="openLightbox({{ loop.index0 }})">
+                    <div class="w-full cursor-zoom-in"
+                         id="slide-{{ loop.index0 }}"
+                         style="height:320px;{% if not loop.first %}display:none{% endif %}"
+                         onclick="openLightbox({{ loop.index0 }})">
                         <img src="{{ photo }}" alt="{{ car.brand }} {{ car.model }} — photo {{ loop.index }}"
-                            class="w-full h-full object-cover">
+                            style="width:100%;height:100%;object-fit:cover;display:block;">
                     </div>
                     {% endfor %}
                 </div>
@@ -82,7 +80,7 @@
                 <button onclick="carouselGoTo({{ loop.index0 }})"
                     class="flex-shrink-0 w-20 h-14 rounded-xl overflow-hidden border-2 transition-all
                            {% if loop.first %}border-[#ff6600]{% else %}border-transparent opacity-60 hover:opacity-100{% endif %}" id="thumb-{{ loop.index0 }}">
-                    <img src="{{ photo }}" alt="miniature {{ loop.index }}" class="w-full h-full object-cover">
+                    <img src="{{ photo }}" alt="miniature {{ loop.index }}" style="width:100%;height:100%;object-fit:cover;display:block;">
                 </button>
                 {% endfor %}
             </div>
@@ -190,7 +188,7 @@
 {% endif %}
 
 <!-- Données photos transmises au JS externe -->
-{% if photos is defined %}
+{% if photos %}
 <script>
     const photos = [{% for p in photos %}"{{ p }}"{% if not loop.last %},{% endif %}{% endfor %}];
     const total  = photos.length;

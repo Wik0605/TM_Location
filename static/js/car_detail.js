@@ -4,10 +4,15 @@
 let current = 0;
 
 function carouselGoTo(index) {
+    const prev = document.getElementById('slide-' + current);
+    if (prev) prev.style.display = 'none';
     current = index;
-    document.getElementById('carousel-track').style.transform = `translateX(-${current * 100}%)`;
+    const next = document.getElementById('slide-' + current);
+    if (next) next.style.display = 'block';
+
     const counter = document.getElementById('carousel-counter');
     if (counter) counter.textContent = current + 1;
+
     for (let i = 0; i < total; i++) {
         const dot   = document.getElementById('dot-'   + i);
         const thumb = document.getElementById('thumb-' + i);
