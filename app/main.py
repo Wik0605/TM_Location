@@ -13,15 +13,15 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 from pathlib import Path
 
+from app.config import settings
 from app.database import init_db, engine
 from app.routers.web import router as web_router
 from app.routers.admin import router as admin_router
 
 STATIC_DIR = Path(__file__).parent.parent / "static"
-ASSETS_DIR = Path(__file__).parent / "assets"
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -83,6 +83,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.add_middleware(SessionMiddleware, secret_key=settings.secret_key)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -94,8 +95,6 @@ app.add_middleware(
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
-if ASSETS_DIR.exists():
-    app.mount("/assets", StaticFiles(directory=str(ASSETS_DIR)), name="assets")
 
 app.include_router(web_router)
 app.include_router(admin_router)
