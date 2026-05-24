@@ -1,40 +1,5 @@
-/*
- * Styles personnalisés pour Spass Gasy
- *
- * Ce fichier contient les styles qui ne sont pas couverts par Tailwind CSS.
- * Tailwind gère la plupart des styles utilitaires, mais nous avons besoin
- * de styles personnalisés pour :
- * - Les animations
- * - Les styles spécifiques aux composants
- * - Les overrides de Tailwind
- */
-
-/* =============================================================================
-   VARIABLES CSS
-   ============================================================================= */
-
-:root {
-    /* Couleurs principales */
-    --color-primary: #4f46e5;      /* Indigo 600 */
-    --color-primary-dark: #4338ca; /* Indigo 700 */
-    --color-secondary: #7c3aed;    /* Purple 600 */
-
-    /* Couleurs de fond */
-    --bg-light: #f9fafb;          /* Gray 50 */
-    --bg-white: #ffffff;
-
-    /* Espacements */
-    --spacing-xs: 0.25rem;
-    --spacing-sm: 0.5rem;
-    --spacing-md: 1rem;
-    --spacing-lg: 1.5rem;
-    --spacing-xl: 2rem;
-
-    /* Ombres */
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-}
+/* Styles personnalisés TM_Location — animations, composants, utilitaires.
+   Les couleurs et polices sont dans /static/css/theme.css */
 
 /* =============================================================================
    ANIMATIONS
@@ -139,8 +104,8 @@
 }
 
 .badge-primary {
-    background-color: #e0e7ff; /* Indigo 100 */
-    color: #3730a3; /* Indigo 800 */
+    background-color: var(--color-primary-light);
+    color: var(--color-primary-dark);
 }
 
 .badge-success {
@@ -182,7 +147,7 @@ select:focus,
 textarea:focus {
     outline: none;
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    box-shadow: 0 0 0 3px rgb(from var(--color-primary) r g b / 0.15);
 }
 
 /* Label */
@@ -212,7 +177,7 @@ label {
 /* Élément de navigation actif */
 .nav-item-active {
     color: var(--color-primary);
-    background-color: #eef2ff; /* Indigo 50 */
+    background-color: var(--color-primary-light);
 }
 
 /* =============================================================================

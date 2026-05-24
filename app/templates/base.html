@@ -13,8 +13,29 @@
     - Pour la production, on préférera héberger localement
     -->
 
+    <!-- Thème centralisé : polices et couleurs -->
+    <link rel="stylesheet" href="/static/css/theme.css">
+
     <!-- Tailwind CSS pour le style -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary:        'var(--color-primary)',
+              'primary-dark': 'var(--color-primary-dark)',
+              'primary-light':'var(--color-primary-light)',
+              secondary:      'var(--color-secondary)',
+              accent:         'var(--color-accent)',
+            },
+            fontFamily: {
+              sans: ['var(--font-main)'],
+            },
+          }
+        }
+      }
+    </script>
 
     <!-- HTMX pour les interactions dynamiques -->
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>

@@ -1,0 +1,65 @@
+/* ================================================
+   THÈME TM_LOCATION
+   Modifier ce fichier pour changer polices et couleurs
+   sur toutes les pages de l'application.
+   ================================================ */
+
+/* --- Police --- */
+/* Changer "Inter" ici pour changer la police partout */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+  /* POLICE PRINCIPALE */
+  --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* COULEURS PRIMAIRES */
+  --color-primary: #ff6600;
+  /* Orange principal — boutons, liens actifs */
+  --color-primary-dark: #e05500;
+  /* Orange foncé — hover */
+  --color-primary-light: #fff3eb;
+  /* Orange très clair — fonds légers */
+
+  /* COULEURS SECONDAIRES */
+  --color-secondary: #1a1a1a;
+  /* Noir titres */
+  --color-accent: #4f46e5;
+  /* Indigo accent */
+
+  /* FONDS */
+  --color-bg: #f9fafb;
+  /* Fond général de la page */
+  --color-surface: #ffffff;
+  /* Fond des cartes / panneaux */
+
+  /* TEXTE */
+  --color-text: #111827;
+  /* Texte principal */
+  --color-text-muted: #6b7280;
+  /* Texte secondaire / gris */
+
+  /* BORDURES */
+  --color-border: #e5e7eb;
+
+  /* ÉTATS */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #3b82f6;
+
+  /* OMBRES */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.15);
+}
+
+/* Application de la police sur tout le site */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-main);
+}
