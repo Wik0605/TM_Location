@@ -1,0 +1,103 @@
+#map {
+    height: 100%;
+    width: 100%;
+    border-radius: 0.75rem;
+    z-index: 1;
+}
+.map-wrapper {
+    height: 55vh;
+    border-radius: 1rem;
+}
+@media (min-width: 1024px) {
+    .map-wrapper {
+        position: sticky;
+        top: 88px;
+        height: calc(100vh - 108px);
+    }
+}
+
+/* Bannière flottante fixée en bas d'écran (hors de la carte) */
+#pick-banner {
+    position: fixed;
+    bottom: 90px; /* au-dessus de la bottom nav mobile */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    background: white;
+    border-radius: 2rem;
+    padding: 14px 24px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.22);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-width: 240px;
+    text-align: center;
+    animation: slideUp 0.25s ease;
+}
+@keyframes slideUp {
+    from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+    to   { transform: translateX(-50%) translateY(0);    opacity: 1; }
+}
+#pick-banner .pick-pulse {
+    font-size: 2rem;
+    animation: pulse 1s infinite;
+}
+@keyframes pulse {
+    0%,100% { transform: scale(1); }
+    50%      { transform: scale(1.2); }
+}
+
+/* Badge lieu sélectionné */
+.location-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-top: 6px;
+}
+.location-badge.start { background:#f0fdf4; color:#15803d; border:1.5px solid #86efac; }
+.location-badge.end   { background:#fef2f2; color:#b91c1c; border:1.5px solid #fca5a5; }
+.location-badge .badge-name { flex:1; font-size:0.8rem; font-weight:500; }
+.location-badge .badge-clear {
+    background:none; border:none; cursor:pointer;
+    font-size:1rem; color:inherit; opacity:0.6; padding:2px 4px; border-radius:50%;
+}
+
+/* Bouton CTA pointer carte */
+.pick-cta {
+    width:100%; border:2px dashed #c7d2fe; border-radius:12px; padding:12px;
+    background:#eef2ff; color:#4f46e5; font-weight:700; font-size:0.9rem;
+    cursor:pointer; transition:all 0.2s; display:flex; align-items:center;
+    justify-content:center; gap:8px;
+}
+.pick-cta:active { transform: scale(0.97); }
+.pick-cta.end-cta { border-color:#fca5a5; background:#fef2f2; color:#b91c1c; }
+.pick-cta.is-active { border-style:solid; opacity:0.6; }
+
+/* Curseur croix quand mode pointage actif */
+#map.picking-mode { cursor: crosshair !important; }
+
+
+/* Bouton localiser */
+.locate-btn {
+    width: 34px !important;
+    height: 34px !important;
+    background: white !important;
+    border: none !important;
+    border-radius: 4px !important;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.4) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    margin-bottom: 8px !important;
+}
+.locate-btn svg {
+    width: 18px;
+    height: 18px;
+    fill: #4f46e5;
+}

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion Admin — TM_Location</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 min-h-screen flex items-center justify-center px-4">
+
+    <div class="w-full max-w-sm">
+        <div class="text-center mb-8">
+            <p class="text-xs text-gray-400 uppercase tracking-widest mb-1">TM_Location</p>
+            <h1 class="text-2xl font-bold text-white">Espace Admin</h1>
+        </div>
+
+        <div class="bg-gray-800 rounded-2xl p-8 shadow-xl">
+
+            {% if error %}
+            <div class="mb-5 bg-red-500/20 border border-red-500/40 text-red-300 text-sm rounded-lg px-4 py-3">
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <form method="POST" action="/admin/login" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-1.5">Identifiant</label>
+                    <input type="text" name="username" required autofocus
+                        class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-500"
+                        placeholder="admin">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-1.5">Mot de passe</label>
+                    <input type="password" name="password" required
+                        class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-500"
+                        placeholder="••••••••">
+                </div>
+                <button type="submit"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg px-4 py-3 text-sm transition-colors">
+                    Se connecter
+                </button>
+            </form>
+        </div>
+
+        <p class="text-center mt-6">
+            <a href="/" class="text-xs text-gray-500 hover:text-gray-300 transition-colors">← Retour au site</a>
+        </p>
+    </div>
+
+</body>
+</html>

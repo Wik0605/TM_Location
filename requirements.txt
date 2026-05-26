@@ -24,3 +24,7 @@ python-multipart>=0.0.6
 
 # Migrations
 alembic
+
+# Sessions et sécurité
+itsdangerous>=2.1.0
+python-dotenv>=1.0.0

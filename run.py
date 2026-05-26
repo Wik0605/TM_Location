@@ -19,13 +19,12 @@ Ou directement :
 """
 
 import uvicorn
+from app.main import app
 
-uvicorn.run(
-        "app.main:app",  # Module:application
-        host="127.0.0.1",  # Accessible depuis le réseau local (téléphone, etc.)
-        port=5500
-        ,  # Port standard pour le développement
-        reload=False,
-
-        log_level="info",  # Niveau de logging
+if __name__ == "__main__":
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=8000,
+        log_level="info",
     )

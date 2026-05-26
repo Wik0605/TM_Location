@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Request, Depends, Form, UploadFile, File
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List
 from pathlib import Path
 import uuid
 
+from app.config import settings
 from app.database import get_db
 from app.services import admin_service
 
@@ -16,8 +17,49 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 templates = Jinja2Templates(directory="app/templates")
 
 
+def require_admin(request: Request):
+    if not request.session.get("admin_logged_in"):
+        return RedirectResponse("/admin/login", status_code=302)
+    return None
+
+
+# ── Auth ──
+
+@router.get("/login", response_class=HTMLResponse)
+async def admin_login_page(request: Request):
+    if request.session.get("admin_logged_in"):
+        return RedirectResponse("/admin", status_code=302)
+    return templates.TemplateResponse("admin/login.html", {"request": request})
+
+
+@router.post("/login")
+async def admin_login(
+    request: Request,
+    username: str = Form(...),
+    password: str = Form(...),
+):
+    if username == settings.admin_username and password == settings.admin_password:
+        request.session["admin_logged_in"] = True
+        return RedirectResponse("/admin", status_code=302)
+    return templates.TemplateResponse("admin/login.html", {
+        "request": request,
+        "error": "Identifiant ou mot de passe incorrect.",
+    })
+
+
+@router.get("/logout")
+async def admin_logout(request: Request):
+    request.session.clear()
+    return RedirectResponse("/admin/login", status_code=302)
+
+
+# ── Dashboard ──
+
 @router.get("", response_class=HTMLResponse)
 async def admin_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
+    redirect = require_admin(request)
+    if redirect:
+        return redirect
     stats = await admin_service.get_dashboard_stats(db)
     recent_rentals = await admin_service.get_all_rentals(db)
     return templates.TemplateResponse("admin/dashboard.html", {
@@ -31,6 +73,9 @@ async def admin_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
 
 @router.get("/reservations", response_class=HTMLResponse)
 async def admin_reservations(request: Request, db: AsyncSession = Depends(get_db)):
+    redirect = require_admin(request)
+    if redirect:
+        return redirect
     rentals = await admin_service.get_all_rentals(db)
     return templates.TemplateResponse("admin/reservations.html", {
         "request": request,
@@ -45,6 +90,9 @@ async def update_rental_status(
     status: str = Form(...),
     db: AsyncSession = Depends(get_db),
 ):
+    redirect = require_admin(request)
+    if redirect:
+        return redirect
     rental = await admin_service.update_rental_status(db, rental_id, status)
     return templates.TemplateResponse("admin/partials/_rental_row.html", {
         "request": request,
@@ -56,6 +104,9 @@ async def update_rental_status(
 
 @router.get("/cars", response_class=HTMLResponse)
 async def admin_cars(request: Request, db: AsyncSession = Depends(get_db)):
+    redirect = require_admin(request)
+    if redirect:
+        return redirect
     cars = await admin_service.get_all_cars(db)
     return templates.TemplateResponse("admin/cars.html", {
         "request": request,
@@ -76,6 +127,9 @@ async def create_car(
     description: Optional[str] = Form(None),
     db: AsyncSession = Depends(get_db),
 ):
+    redirect = require_admin(request)
+    if redirect:
+        return redirect
     data = {
         "brand": brand,
         "model": model,
@@ -101,6 +155,9 @@ async def delete_car(
     car_id: int,
     db: AsyncSession = Depends(get_db),
 ):
+    redirect = require_admin(request)
+    if redirect:
+        return redirect
     await admin_service.delete_car(db, car_id)
     cars = await admin_service.get_all_cars(db)
     return templates.TemplateResponse("admin/partials/_cars_grid.html", {
@@ -120,6 +177,9 @@ async def edit_car(
     is_available: Optional[str] = Form(None),
     db: AsyncSession = Depends(get_db),
 ):
+    redirect = require_admin(request)
+    if redirect:
+        return redirect
     data = {
         "seats": seats,
         "fuel_consumption": fuel_consumption,
@@ -143,6 +203,9 @@ async def add_car_images(
     files: List[UploadFile] = File(...),
     db: AsyncSession = Depends(get_db),
 ):
+    redirect = require_admin(request)
+    if redirect:
+        return redirect
     car_upload_dir = UPLOAD_DIR / str(car_id)
     car_upload_dir.mkdir(exist_ok=True)
 
@@ -170,6 +233,9 @@ async def delete_car_image(
     image_id: int,
     db: AsyncSession = Depends(get_db),
 ):
+    redirect = require_admin(request)
+    if redirect:
+        return redirect
     await admin_service.delete_car_image(db, image_id)
     car = await admin_service.get_car_by_id(db, car_id)
     return templates.TemplateResponse("admin/partials/_car_images.html", {
@@ -182,6 +248,9 @@ async def delete_car_image(
 
 @router.get("/rental-types", response_class=HTMLResponse)
 async def admin_rental_types(request: Request, db: AsyncSession = Depends(get_db)):
+    redirect = require_admin(request)
+    if redirect:
+        return redirect
     rental_types = await admin_service.get_all_rental_types(db)
     return templates.TemplateResponse("admin/rental_types.html", {
         "request": request,
@@ -199,6 +268,9 @@ async def create_rental_type(
     description: Optional[str] = Form(None),
     db: AsyncSession = Depends(get_db),
 ):
+    redirect = require_admin(request)
+    if redirect:
+        return redirect
     data = {
         "name": name,
         "duration_days": duration_days,
@@ -225,6 +297,9 @@ async def edit_rental_type(
     description: Optional[str] = Form(None),
     db: AsyncSession = Depends(get_db),
 ):
+    redirect = require_admin(request)
+    if redirect:
+        return redirect
     data = {
         "name": name,
         "duration_days": duration_days,
@@ -246,6 +321,9 @@ async def delete_rental_type(
     rental_type_id: int,
     db: AsyncSession = Depends(get_db),
 ):
+    redirect = require_admin(request)
+    if redirect:
+        return redirect
     await admin_service.delete_rental_type(db, rental_type_id)
     rental_types = await admin_service.get_all_rental_types(db)
     return templates.TemplateResponse("admin/partials/_rental_types_list.html", {
