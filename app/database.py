@@ -22,7 +22,7 @@ from pathlib import Path
 
 # Chemin vers la base de données SQLite
 # Utilise Path pour être compatible Windows/Mac/Linux
-DATABASE_PATH = Path(__file__).parent.parent / "data" / "spass_gasy.db"
+DATABASE_PATH = Path(__file__).parent.parent / "data" / "tm_location.db"
 
 # Créer le dossier data s'il n'existe pas
 DATABASE_PATH.parent.mkdir(parents=True, exist_ok=True)

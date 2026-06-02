@@ -143,6 +143,21 @@ class Rental(Base):
         return f"<Rental(id={self.id}, customer='{self.customer_name}', status='{self.status}')>"
 
 
+class User(Base):
+    """Client connecté via Google OAuth."""
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    google_id: Mapped[str] = mapped_column(String(100), nullable=False, unique=True, index=True)
+    email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
+    name: Mapped[str] = mapped_column(String(150), nullable=False)
+    picture: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<User(id={self.id}, email='{self.email}')>"
+
+
 # =============================================================================
 # DONNÉES INITIALES
 # =============================================================================

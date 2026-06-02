@@ -99,34 +99,34 @@
                 <div class="flex items-center">
                     <a href="/" class="flex items-center space-x-2">
                         <span class="text-3xl font-black tracking-tighter text-black">TM</span>
-                        <span class="text-3xl font-black tracking-tighter text-[#ff6600]">Location</span>
+                        <span class="text-3xl font-black tracking-tighter text-primary">Location</span>
                     </a>
                 </div>
 
                 <!-- Navigation pour desktop -->
                 <div class="hidden md:flex items-center space-x-8">
                     <a href="/cars"
-                        class="text-gray-600 hover:text-[#ff6600] px-3 py-2 text-sm font-semibold transition-all">
+                        class="text-gray-600 hover:text-primary px-3 py-2 text-sm font-semibold transition-all">
                         Nos véhicules
                     </a>
                     <a href="/rental-types"
-                        class="text-gray-600 hover:text-[#ff6600] px-3 py-2 text-sm font-semibold transition-all">
+                        class="text-gray-600 hover:text-primary px-3 py-2 text-sm font-semibold transition-all">
                         Tarifs
                     </a>
                     <a href="/contact"
-                        class="text-gray-600 hover:text-[#ff6600] px-3 py-2 text-sm font-semibold transition-all">
+                        class="text-gray-600 hover:text-primary px-3 py-2 text-sm font-semibold transition-all">
                         Contact
                     </a>
                     <!-- Bouton Réserver (action principale) -->
                     <a href="/booking"
-                        class="bg-black text-white px-6 py-3 rounded-full text-sm font-bold hover:bg-[#ff6600] hover:scale-105 transition-all shadow-lg">
+                        class="bg-black text-white px-6 py-3 rounded-full text-sm font-bold hover:bg-primary hover:scale-105 transition-all shadow-lg">
                         RÉSERVER
                     </a>
                 </div>
 
                 <!-- Menu hamburger mobile -->
                 <div class="md:hidden flex items-center">
-                    <button x-data="{ open: false }" @click="open = !open" class="text-black hover:text-[#ff6600] p-2">
+                    <button x-data="{ open: false }" @click="open = !open" class="text-black hover:text-primary p-2">
                         <!-- Icône hamburger -->
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -151,7 +151,7 @@
         <div class="grid grid-cols-5 items-center justify-items-center h-20 px-2 pb-safe w-full">
             <!-- Accueil -->
             <a href="/"
-                class="flex flex-col items-center justify-center {{ 'text-[#ff6600]' if request.url.path == '/' else 'text-gray-400 hover:text-[#ff6600]' }} transition-all">
+                class="flex flex-col items-center justify-center {{ 'text-primary' if request.url.path == '/' else 'text-gray-400 hover:text-primary' }} transition-all">
                 <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -161,7 +161,7 @@
 
             <!-- Véhicules -->
             <a href="/rental-types"
-                class="flex flex-col items-center justify-center {{ 'text-[#ff6600]' if request.url.path == '/rental-types' else 'text-gray-400 hover:text-[#ff6600]' }} transition-all">
+                class="flex flex-col items-center justify-center {{ 'text-primary' if request.url.path == '/rental-types' else 'text-gray-400 hover:text-primary' }} transition-all">
                 <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -171,7 +171,7 @@
 
             <!-- Réserver (action centrale) -->
             <a href="/booking"
-                class="flex flex-col items-center justify-center bg-black text-white rounded-2xl w-14 h-14 -mt-10 shadow-[0_10px_20px_rgba(0,0,0,0.2)] hover:bg-[#ff6600] transition-all border-4 border-white">
+                class="flex flex-col items-center justify-center bg-black text-white rounded-2xl w-14 h-14 -mt-10 shadow-[0_10px_20px_rgba(0,0,0,0.2)] hover:bg-primary transition-all border-4 border-white">
                 <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
                 </svg>
@@ -179,7 +179,7 @@
 
             <!-- Devis -->
             <a href="/cars"
-                class="flex flex-col items-center justify-center {{ 'text-[#ff6600]' if request.url.path == '/cars' else 'text-gray-400 hover:text-[#ff6600]' }} transition-all">
+                class="flex flex-col items-center justify-center {{ 'text-primary' if request.url.path == '/cars' else 'text-gray-400 hover:text-primary' }} transition-all">
                 <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -189,7 +189,7 @@
 
             <!-- Plus/Contact -->
             <a href="/contact"
-                class="flex flex-col items-center justify-center {{ 'text-[#ff6600]' if request.url.path == '/contact' else 'text-gray-400 hover:text-[#ff6600]' }} transition-all">
+                class="flex flex-col items-center justify-center {{ 'text-primary' if request.url.path == '/contact' else 'text-gray-400 hover:text-primary' }} transition-all">
                 <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -207,7 +207,7 @@
                 <div class="space-y-4">
                     <div class="flex items-center space-x-2">
                         <span class="text-2xl font-black text-white">TM</span>
-                        <span class="text-2xl font-black text-[#ff6600]">LOCATION</span>
+                        <span class="text-2xl font-black text-primary">LOCATION</span>
                     </div>
                     <p class="text-gray-400 text-sm leading-relaxed">
                         Le leader de la location de voitures à Madagascar. Profitez d'une expérience premium avec notre
@@ -219,9 +219,9 @@
                 <div>
                     <h3 class="text-white font-bold mb-6 uppercase tracking-wider text-xs">Navigation</h3>
                     <ul class="space-y-3 text-gray-400 text-sm">
-                        <li><a href="/cars" class="hover:text-[#ff6600] transition-colors">Notre Flotte</a></li>
-                        <li><a href="/rental-types" class="hover:text-[#ff6600] transition-colors">Nos Tarifs</a></li>
-                        <li><a href="/booking" class="hover:text-[#ff6600] transition-colors">Réservation</a></li>
+                        <li><a href="/cars" class="hover:text-primary transition-colors">Notre Flotte</a></li>
+                        <li><a href="/rental-types" class="hover:text-primary transition-colors">Nos Tarifs</a></li>
+                        <li><a href="/booking" class="hover:text-primary transition-colors">Réservation</a></li>
                     </ul>
                 </div>
 
@@ -229,8 +229,8 @@
                 <div>
                     <h3 class="text-white font-bold mb-6 uppercase tracking-wider text-xs">Services</h3>
                     <ul class="space-y-3 text-gray-400 text-sm">
-                        <li><a href="/cars" class="hover:text-[#ff6600] transition-colors">Devis</a></li>
-                        <li><a href="/contact" class="hover:text-[#ff6600] transition-colors">Assistance 24/7</a></li>
+                        <li><a href="/cars" class="hover:text-primary transition-colors">Devis</a></li>
+                        <li><a href="/contact" class="hover:text-primary transition-colors">Assistance 24/7</a></li>
                     </ul>
                 </div>
 
@@ -239,9 +239,9 @@
                     <h3 class="text-white font-bold mb-6 uppercase tracking-wider text-xs">Newsletter</h3>
                     <div class="flex">
                         <input type="email" placeholder="Votre email"
-                            class="bg-gray-900 border-none rounded-l-lg px-4 py-2 text-sm w-full focus:ring-1 focus:ring-[#ff6600]">
+                            class="bg-gray-900 border-none rounded-l-lg px-4 py-2 text-sm w-full focus:ring-1 focus:ring-primary">
                         <button
-                            class="bg-[#ff6600] px-4 py-2 rounded-r-lg font-bold text-sm hover:bg-orange-600 transition-all">OK</button>
+                            class="bg-primary px-4 py-2 rounded-r-lg font-bold text-sm hover:bg-primary-dark transition-all">OK</button>
                     </div>
                 </div>
             </div>

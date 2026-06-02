@@ -7,7 +7,7 @@
     <!-- Background Decor -->
     <div class="absolute inset-0 z-0">
         <div
-            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-orange-50 rounded-full blur-3xl opacity-50">
+            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary-light rounded-full blur-3xl opacity-50">
         </div>
         <div class="absolute top-0 right-0 w-64 h-64 bg-gray-50 rounded-full blur-3xl opacity-30"></div>
     </div>
@@ -18,18 +18,18 @@
             <!-- Left: Copywriting -->
             <div class="space-y-8 text-center lg:text-left">
                 <div
-                    class="inline-flex items-center space-x-2 bg-orange-50 text-[#ff6600] px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest animate-fade-in">
+                    class="inline-flex items-center space-x-2 bg-primary-light text-primary px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest animate-fade-in">
                     <span class="relative flex h-2 w-2">
                         <span
-                            class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ff6600] opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2 w-2 bg-[#ff6600]"></span>
+                            class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
                     </span>
                     <span>Service de location à Madagascar</span>
                 </div>
 
                 <h1 class="text-6xl md:text-8xl font-black text-black leading-[0.9] tracking-tighter">
                     Roulez avec <br>
-                    <span class="text-[#ff6600]">assurance.</span>
+                    <span class="text-primary">assurance.</span>
                 </h1>
 
                 <p class="text-xl text-gray-400 max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium">
@@ -39,7 +39,7 @@
 
                 <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
                     <a href="/cars"
-                        class="group bg-black text-white px-10 py-5 rounded-2xl font-bold flex items-center space-x-3 hover:bg-[#ff6600] transition-all hover:scale-105 shadow-2xl">
+                        class="group bg-black text-white px-10 py-5 rounded-2xl font-bold flex items-center space-x-3 hover:bg-primary transition-all hover:scale-105 shadow-2xl">
                         <span>Explorer la flotte</span>
                         <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none"
                             stroke="currentColor" viewBox="0 0 24 24">
@@ -53,7 +53,7 @@
             <!-- Right: Search Form -->
             <div class="relative group animate-slide-up">
                 <div
-                    class="absolute -inset-1 bg-gradient-to-r from-[#ff6600] to-orange-400 rounded-[2rem] blur opacity-20 group-hover:opacity-40 transition-opacity">
+                    class="absolute -inset-1 bg-gradient-to-r from-primary to-primary-light rounded-[2rem] blur opacity-20 group-hover:opacity-40 transition-opacity">
                 </div>
                 <div
                     class="relative bg-white border border-gray-100 p-8 md:p-12 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.08)] space-y-8">
@@ -71,7 +71,7 @@
                                     de Départ</label>
                                 <div class="relative">
                                     <select name="departure"
-                                        class="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-[#ff6600] transition-all text-gray-700 cursor-pointer appearance-none">
+                                        class="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-primary transition-all text-gray-700 cursor-pointer appearance-none">
                                         <option value="" disabled selected>Lieu de départ...</option>
                                         {% for city in cities %}
                                         <option value="{{ city.name }}">{{ city.name }}</option>
@@ -89,7 +89,7 @@
                                     class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-2">Destination</label>
                                 <div class="relative">
                                     <select name="destination"
-                                        class="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-[#ff6600] transition-all text-gray-700 cursor-pointer appearance-none">
+                                        class="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-primary transition-all text-gray-700 cursor-pointer appearance-none">
                                         <option value="" disabled selected>Lieu d'arrivée...</option>
                                         {% for city in cities %}
                                         <option value="{{ city.name }}">{{ city.name }}</option>
@@ -110,13 +110,13 @@
                                 Location</label>
                             <div class="relative">
                                 <input type="date" name="date"
-                                    class="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-[#ff6600] transition-all text-gray-700 icon-calendar">
+                                    class="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-primary transition-all text-gray-700 icon-calendar">
 
                             </div>
                         </div>
 
                         <button type="submit"
-                            class="w-full bg-[#ff6600] text-white py-5 rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-xl hover:bg-black transition-all hover:scale-[1.02] active:scale-95">
+                            class="w-full bg-primary text-white py-5 rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-xl hover:bg-black transition-all hover:scale-[1.02] active:scale-95">
                             Lancer la recherche
                         </button>
                     </form>

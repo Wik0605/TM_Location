@@ -18,10 +18,10 @@ function carouselGoTo(index) {
         const thumb = document.getElementById('thumb-' + i);
         if (i === current) {
             if (dot)   { dot.classList.add('bg-white', 'scale-125'); dot.classList.remove('bg-white/50'); }
-            if (thumb) { thumb.classList.add('border-[#ff6600]'); thumb.classList.remove('border-transparent', 'opacity-60'); }
+            if (thumb) { thumb.classList.add('border-primary'); thumb.classList.remove('border-transparent', 'opacity-60'); }
         } else {
             if (dot)   { dot.classList.remove('bg-white', 'scale-125'); dot.classList.add('bg-white/50'); }
-            if (thumb) { thumb.classList.remove('border-[#ff6600]'); thumb.classList.add('border-transparent', 'opacity-60'); }
+            if (thumb) { thumb.classList.remove('border-primary'); thumb.classList.add('border-transparent', 'opacity-60'); }
         }
     }
 }
