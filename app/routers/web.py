@@ -29,15 +29,11 @@ templates.env.filters["current_year"] = lambda: datetime.datetime.now().year
 
 @router.get("/", response_class=HTMLResponse)
 async def home(request: Request, db: AsyncSession = Depends(get_db)):
-    rental_types = await rental_service.get_rental_types(db)
-    available_cars = await car_service.get_available_cars(db, limit=6)
-    cities = await city_service.get_active_cities(db)
+    cars = await car_service.get_available_cars(db, limit=6)
 
     return templates.TemplateResponse("index.html", {
         "request": request,
-        "rental_types": rental_types,
-        "available_cars": available_cars,
-        "cities": cities,
+        "cars": cars,
     })
 
 

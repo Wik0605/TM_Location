@@ -28,13 +28,12 @@
                 </div>
 
                 <h1 class="text-6xl md:text-8xl font-black text-black leading-[0.9] tracking-tighter">
-                    Roulez avec <br>
-                    <span class="text-primary">assurance.</span>
+                    Ne vous faites  <br>
+                    <span class="text-primary"> Plus Arnaquer.</span>
                 </h1>
 
                 <p class="text-xl text-gray-400 max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium">
-                    Découvrez une nouvelle dimension de liberté avec TM Location. Notre flotte exclusive vous attend
-                    pour explorer l'île Rouge.
+                    Découvrez une nouvelle dimension de liberté avec TM Location. Notre flotte exclusive vous attend.
                 </p>
 
                 <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
@@ -50,77 +49,82 @@
                 </div>
             </div>
 
-            <!-- Right: Search Form -->
-            <div class="relative group animate-slide-up">
-                <div
-                    class="absolute -inset-1 bg-gradient-to-r from-primary to-primary-light rounded-[2rem] blur opacity-20 group-hover:opacity-40 transition-opacity">
-                </div>
-                <div
-                    class="relative bg-white border border-gray-100 p-8 md:p-12 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.08)] space-y-8">
-                    <div class="space-y-2">
-                        <h2 class="text-3xl font-bold tracking-tight text-black">Prêt à partir ?</h2>
-                        <p class="text-gray-400 font-medium">Configurez votre voyage en quelques secondes.</p>
+            <!-- Right: Grille des voitures -->
+            <div>
+                {% if cars %}
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {% for car in cars %}
+                    <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+                        <!-- Image -->
+                        <div class="bg-gradient-to-br from-gray-100 to-gray-200 h-40 flex items-center justify-center">
+                            {% set first_photo = car.images[0].url if car.images else car.image_url %}
+                            {% if first_photo %}
+                            <img src="{{ first_photo }}" alt="{{ car.brand }} {{ car.model }}" class="w-full h-full object-cover">
+                            {% else %}
+                            <span class="text-5xl">🚗</span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Contenu -->
+                        <div class="p-4">
+                            <h3 class="text-base font-semibold text-gray-800 mb-1">
+                                {{ car.brand }} {{ car.model }}
+                            </h3>
+                            <p class="text-xs text-gray-500 mb-2">{{ car.year }} - {{ car.seats }} places</p>
+
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <span class="text-lg font-bold text-indigo-600">
+                                        {{ "{:,.0f}".format(car.daily_price) }}
+                                    </span>
+                                    <span class="text-xs text-gray-500">Ar/jour</span>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <a href="/car/{{ car.id }}/itineraire"
+                                        class="bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-emerald-700 transition-colors">
+                                        Devis
+                                    </a>
+                                    <a href="/cars/{{ car.id }}"
+                                        class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-indigo-700 transition-colors">
+                                        Détails
+                                    </a>
+                                </div>
+                            </div>
+
+                            {% if car.is_available %}
+                            <div class="mt-2 text-xs text-green-600 flex items-center">
+                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                Disponible
+                            </div>
+                            {% else %}
+                            <div class="mt-2 text-xs text-red-600 flex items-center">
+                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                Non disponible
+                            </div>
+                            {% endif %}
+                        </div>
                     </div>
-                    <!-- Creation de Bouton Location en ville et Location hors de la ville -->
-                    <!--A faire -->
-                    <form action="/cars" method="GET" class="space-y-6">
-                        <!-- Location Grid -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="space-y-2">
-                                <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-2">Lieu
-                                    de Départ</label>
-                                <div class="relative">
-                                    <select name="departure"
-                                        class="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-primary transition-all text-gray-700 cursor-pointer appearance-none">
-                                        <option value="" disabled selected>Lieu de départ...</option>
-                                        {% for city in cities %}
-                                        <option value="{{ city.name }}">{{ city.name }}</option>
-                                        {% endfor %}
-                                    </select>
-                                    <svg class="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 pointer-events-none"
-                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M19 9l-7 7-7-7"></path>
-                                    </svg>
-                                </div>
-                            </div>
-                            <div class="space-y-2">
-                                <label
-                                    class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-2">Destination</label>
-                                <div class="relative">
-                                    <select name="destination"
-                                        class="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-primary transition-all text-gray-700 cursor-pointer appearance-none">
-                                        <option value="" disabled selected>Lieu d'arrivée...</option>
-                                        {% for city in cities %}
-                                        <option value="{{ city.name }}">{{ city.name }}</option>
-                                        {% endfor %}
-                                    </select>
-                                    <svg class="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 pointer-events-none"
-                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M19 9l-7 7-7-7"></path>
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Date -->
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-2">Date du
-                                Location</label>
-                            <div class="relative">
-                                <input type="date" name="date"
-                                    class="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-primary transition-all text-gray-700 icon-calendar">
-
-                            </div>
-                        </div>
-
-                        <button type="submit"
-                            class="w-full bg-primary text-white py-5 rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-xl hover:bg-black transition-all hover:scale-[1.02] active:scale-95">
-                            Lancer la recherche
-                        </button>
-                    </form>
+                    {% endfor %}
                 </div>
+                {% else %}
+                <div class="text-center py-16 bg-gray-50 rounded-xl">
+                    <span class="text-6xl mb-4 block">🚗</span>
+                    <h2 class="text-xl font-semibold text-gray-800 mb-2">Aucun véhicule disponible</h2>
+                    <p class="text-gray-500 mb-6">Il n'y a pas de véhicules correspondant à vos critères.</p>
+                    <a href="/cars"
+                        class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-indigo-700 transition-colors">
+                        Voir tous les véhicules
+                    </a>
+                </div>
+                {% endif %}
             </div>
 
         </div>
@@ -129,33 +133,14 @@
 
 <style>
     @keyframes slide-up {
-        from {
-            opacity: 0;
-            transform: translateY(40px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        from { opacity: 0; transform: translateY(40px); }
+        to { opacity: 1; transform: translateY(0); }
     }
-
     @keyframes fade-in {
-        from {
-            opacity: 0;
-        }
-
-        to {
-            opacity: 1;
-        }
+        from { opacity: 0; }
+        to { opacity: 1; }
     }
-
-    .animate-slide-up {
-        animation: slide-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-
-    .animate-fade-in {
-        animation: fade-in 1s ease-out forwards;
-    }
+    .animate-slide-up { animation: slide-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .animate-fade-in { animation: fade-in 1s ease-out forwards; }
 </style>
 {% endblock %}
