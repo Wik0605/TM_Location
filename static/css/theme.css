@@ -5,31 +5,30 @@
    ================================================ */
 
 /* --- Police --- */
-/* Changer "Inter" ici pour changer la police partout */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+/* Utilise la police système d'Apple (San Francisco) */
 
 :root {
   /* POLICE PRINCIPALE */
-  --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-main: -apple-system, BlinkMacSystemFont, "SF Pro", "SF Pro Text", "SF Pro Display", "SF Compact", system-ui, sans-serif;
 
   /* COULEURS PRIMAIRES */
-  --color-primary: #ff6600;
-  /* Orange principal — boutons, liens actifs */
-  --color-primary-dark: #ff7700;
-  /* Orange foncé — hover */
-  --color-primary-light: #fff3eb;
-  /* Orange très clair — fonds légers */
+  --color-primary: #ff4d6d;
+  /* Rouge pastèque principal — boutons, liens actifs */
+  --color-primary-dark: #e03a5c;
+  /* Rouge pastèque foncé — hover */
+  --color-primary-light: #fff0f3;
+  /* Rouge pastèque très clair — fonds légers */
 
   /* COULEURS SECONDAIRES */
-  --color-secondary: #1a1a1a;
-  /* Noir titres */
-  --color-accent: #4f46e5;
-  /* Indigo accent */
+  --color-secondary: #4b5563;
+  /* Gris moyen pour les éléments secondaires */
+  --color-accent: #ff758f;
+  /* Rose pastèque vif pour l'accentuation */
 
   /* FONDS */
-  --color-bg: #f9fafbce;
+  --color-bg: #f9fafb;
   /* Fond général de la page */
-  --color-surface: #ffffffff;
+  --color-surface: #ffffff;
   /* Fond des cartes / panneaux */
 
   /* TEXTE */

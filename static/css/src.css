@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: var(--color-primary);
+  --color-primary-dark: var(--color-primary-dark);
+  --color-primary-light: var(--color-primary-light);
+  --color-secondary: var(--color-secondary);
+  --color-accent: var(--color-accent);
+  --font-sans: var(--font-main);
+}

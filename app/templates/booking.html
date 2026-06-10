@@ -23,6 +23,12 @@
             </div>
         </div>
 
+        {% if error %}
+        <div class="bg-red-50 border-l-4 border-red-500 text-red-700 px-4 py-4 text-sm font-medium">
+            ⚠️ {{ error }}
+        </div>
+        {% endif %}
+
         <form class="p-8 space-y-8" method="POST" action="/booking">
             <input type="hidden" name="itinerary_distance_km" value="{{ itinerary_distance or '' }}">
             <input type="hidden" name="itinerary_start_name" value="{{ itinerary_start or '' }}">

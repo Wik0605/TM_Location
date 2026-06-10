@@ -7,26 +7,8 @@
     <!-- Thème centralisé : polices et couleurs -->
     <link rel="stylesheet" href="/static/css/theme.css">
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              primary:        'var(--color-primary)',
-              'primary-dark': 'var(--color-primary-dark)',
-              'primary-light':'var(--color-primary-light)',
-              secondary:      'var(--color-secondary)',
-              accent:         'var(--color-accent)',
-            },
-            fontFamily: {
-              sans: ['var(--font-main)'],
-            },
-          }
-        }
-      }
-    </script>
-    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <link rel="stylesheet" href="/static/css/dist.css">
+    <script src="/static/js/vendor/htmx.min.js"></script>
     <style>
         .htmx-indicator { display: none; }
         .htmx-request .htmx-indicator { display: inline-block; }

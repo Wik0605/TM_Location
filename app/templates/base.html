@@ -16,35 +16,14 @@
     <!-- Thème centralisé : polices et couleurs -->
     <link rel="stylesheet" href="/static/css/theme.css">
 
-    <!-- Tailwind CSS pour le style -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              primary:        'var(--color-primary)',
-              'primary-dark': 'var(--color-primary-dark)',
-              'primary-light':'var(--color-primary-light)',
-              secondary:      'var(--color-secondary)',
-              accent:         'var(--color-accent)',
-            },
-            fontFamily: {
-              sans: ['var(--font-main)'],
-            },
-          }
-        }
-      }
-    </script>
+    <!-- Tailwind CSS pour le style (Compilé localement) -->
+    <link rel="stylesheet" href="/static/css/dist.css">
 
-    <!-- HTMX pour les interactions dynamiques -->
-    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <!-- HTMX pour les interactions dynamiques (Local) -->
+    <script src="/static/js/vendor/htmx.min.js"></script>
 
-    <!-- Alpine.js pour les interactions JavaScript légères -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
-    <!-- Icônes Heroicons (via CDN) -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/heroicons@2.0.18/css/heroicons.min.css">
+    <!-- Alpine.js pour les interactions JavaScript légères (Local) -->
+    <script defer src="/static/js/vendor/alpine.min.js"></script>
 
     <style>
         /* Styles personnalisés */

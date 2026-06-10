@@ -17,6 +17,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 import datetime
+from datetime import date
 
 from app.database import get_db
 from app.services import car_service, rental_service, city_service
@@ -126,6 +127,25 @@ async def booking_submit(
 
     start = datetime.datetime.strptime(start_date, "%Y-%m-%d")
     end = start + datetime.timedelta(days=rental_type.duration_days)
+
+    cars = await car_service.get_available_cars(db)
+    rental_types = await rental_service.get_rental_types(db)
+
+    def error_response(message: str):
+        return templates.TemplateResponse("booking.html", {
+            "request": request,
+            "cars": cars,
+            "rental_types": rental_types,
+            "car": car,
+            "error": message,
+        })
+
+    if start.date() < date.today():
+        return error_response("La date de départ ne peut pas être dans le passé.")
+
+    if await rental_service.has_conflict(db, car_id, start, end):
+        return error_response("Cette voiture est déjà réservée sur ces dates. Choisissez d'autres dates.")
+
     total_price = car.daily_price * rental_type.price_multiplier * (1 - rental_type.discount_percent / 100)
 
     rental = Rental(
