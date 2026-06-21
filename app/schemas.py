@@ -43,6 +43,9 @@ class RentalTypeBase(BaseModel):
     name: str = Field(..., min_length=2, max_length=50)
     duration_days: int = Field(..., gt=0)
     price_multiplier: float = Field(default=1.0, ge=0)
+    prix_fixe: Optional[float] = Field(default=None, ge=0)
+    fuel_consumption: Optional[float] = Field(default=None, ge=0)
+    fuel_price: Optional[float] = Field(default=None, ge=0)
     discount_percent: float = Field(default=0.0, ge=0, le=100)
     description: Optional[str] = None
 
@@ -53,6 +56,65 @@ class RentalTypeCreate(RentalTypeBase):
 
 class RentalTypeResponse(RentalTypeBase):
     id: int
+
+    model_config = {"from_attributes": True}
+
+
+class TypeLocationCreate(BaseModel):
+    nom: str = Field(..., min_length=1, max_length=100)
+    prix: int = Field(..., gt=0)
+
+
+class TypeLocationResponse(TypeLocationCreate):
+    id: int
+    voiture_id: int
+
+    model_config = {"from_attributes": True}
+
+
+class VoitureCreate(BaseModel):
+    nom: str = Field(..., min_length=1, max_length=100)
+    consommation_carburant: float = Field(default=8.0, ge=0)
+    places: int = Field(default=5, ge=1, le=20)
+
+
+class VoitureUpdate(BaseModel):
+    nom: Optional[str] = Field(None, min_length=1, max_length=100)
+    consommation_carburant: Optional[float] = Field(None, ge=0)
+    places: Optional[int] = Field(None, ge=1, le=20)
+    is_available: Optional[bool] = None
+
+
+class VoitureResponse(BaseModel):
+    id: int
+    nom: str
+    consommation_carburant: float
+    places: int
+    is_available: bool
+    types_location: list[TypeLocationResponse] = []
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class LocationCreate(BaseModel):
+    voiture_id: int
+    type_location_id: Optional[int] = None
+    client_nom: str = Field(..., min_length=2, max_length=100)
+    client_telephone: str = Field(..., min_length=8, max_length=20)
+    client_email: Optional[str] = None
+    date_debut: datetime
+    date_fin: Optional[datetime] = None
+    notes: Optional[str] = None
+
+
+class LocationResponse(LocationCreate):
+    id: int
+    prix_total: float
+    statut: str
+    created_at: datetime
+    updated_at: datetime
 
     model_config = {"from_attributes": True}
 

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Calculateur d'itinéraire - {{ car.brand }} {{ car.model }}{% endblock %}
+{% block title %}Calculateur d'itinéraire - {{ car.nom }}{% endblock %}
 
 {% block content %}
 <link rel="stylesheet" href="/static/css/vendor/leaflet.css" />
@@ -18,7 +18,7 @@
         <div>
             <h1 class="text-2xl font-bold text-gray-900">📍 Calculateur d'itinéraire</h1>
         </div>
-        <a href="/cars/{{ car.id }}" class="text-indigo-600 hover:text-indigo-800 font-medium text-sm">&larr; Retour</a>
+        <a href="/voitures/{{ car.id }}" class="text-indigo-600 hover:text-indigo-800 font-medium text-sm">&larr; Retour</a>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
@@ -95,16 +95,10 @@
                         class="w-full text-sm border border-gray-300 rounded-xl px-3 py-3 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-white">
                         <option value="" disabled selected>-- Choisir un type --</option>
                         {% for rt in rental_types %}
-                        {% if rt.prix_fixe is not none %}
-                            {% set prix_calcule = (rt.prix_fixe * (1 - rt.discount_percent / 100)) | int %}
-                        {% else %}
-                            {% set prix_calcule = (car.daily_price * rt.price_multiplier * (1 - rt.discount_percent / 100)) | int %}
-                        {% endif %}
                         <option value="{{ rt.id }}"
-                            data-prix="{{ prix_calcule }}"
-                            data-conso="{{ rt.fuel_consumption if rt.fuel_consumption else '' }}"
-                            data-fuel-price="{{ rt.fuel_price if rt.fuel_price else '' }}">
-                            {{ rt.name }} — {{ "{:,.0f}".format(prix_calcule) }} Ar
+                            data-prix="{{ rt.prix }}"
+                            data-conso="{{ car.consommation_carburant }}">
+                            {{ rt.nom }} — {{ "{:,.0f}".format(rt.prix) }} Ar
                         </option>
                         {% else %}
                         <option disabled>Aucun type configuré dans l'admin</option>
@@ -141,7 +135,7 @@
                 </div>
                 <p class="text-xs text-gray-400 mt-3 text-center">* Estimation indicative. Distance routière réelle peut varier.</p>
                 <p class="fallback-note text-xs text-orange-500 mt-1 text-center" style="display:none;">⚠️ Distance calculée à vol d'oiseau (serveurs de routage indisponibles).</p>
-                <a href="/booking?car_id={{ car.id }}"
+                <a href="/voitures/{{ car.id }}"
                     class="block w-full text-center bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700 transition-all shadow-md mt-4 text-sm">
                     Réserver ce véhicule
                 </a>

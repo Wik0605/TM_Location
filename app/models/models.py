@@ -1,12 +1,13 @@
 """
 Modèles de données SQLAlchemy
 
-Tables :
+Tables actives :
 - City : Quartiers de départ/arrivée (Antananarivo)
-- Car : Véhicules disponibles à la location
-- CarImage : Photos d'un véhicule (plusieurs photos par voiture)
-- RentalType : Types de location (journalière, hebdomadaire, mensuelle)
-- Rental : Réservations effectuées par les clients
+- Voiture : Véhicules disponibles à la location
+- VoitureImage : Photos d'un véhicule
+- TypeLocation : Tarifs propres à chaque voiture (ex: "Mariage — 500 000 Ar")
+- Location : Réservations effectuées par les clients
+- User : Clients connectés via Google OAuth
 """
 
 from datetime import datetime
@@ -30,117 +31,134 @@ class City(Base):
         return f"<City(id={self.id}, name='{self.name}')>"
 
 
-class Car(Base):
-    """
-    Voitures disponibles à la location.
-
-    Attributs importants :
-    - brand / model / year : Identité du véhicule
-    - daily_price : Prix par jour en Ariary
-    - is_available : Disponibilité actuelle
-    - seats : Nombre de places
-    """
-    __tablename__ = "cars"
+class Voiture(Base):
+    """Nouveau modèle unifié de véhicule avec types de location propres."""
+    __tablename__ = "voitures"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    brand: Mapped[str] = mapped_column(String(50), nullable=False)
-    model: Mapped[str] = mapped_column(String(50), nullable=False)
-    year: Mapped[int] = mapped_column(Integer, nullable=False)
-    plate_number: Mapped[str] = mapped_column(String(20), nullable=False, unique=True)
-    daily_price: Mapped[float] = mapped_column(Float, nullable=False)
+    nom: Mapped[str] = mapped_column(String(100), nullable=False)
+    consommation_carburant: Mapped[float] = mapped_column(Float, default=8.0)
+    places: Mapped[int] = mapped_column(Integer, default=5)
     is_available: Mapped[bool] = mapped_column(Boolean, default=True)
-    image_url: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    seats: Mapped[int] = mapped_column(Integer, default=5)
-    fuel_consumption: Mapped[float] = mapped_column(Float, default=8.0)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    rentals: Mapped[list["Rental"]] = relationship(back_populates="car")
-    images: Mapped[list["CarImage"]] = relationship(back_populates="car", order_by="CarImage.position")
+    images: Mapped[list["VoitureImage"]] = relationship(
+        back_populates="voiture", order_by="VoitureImage.position", cascade="all, delete-orphan"
+    )
+    types_location: Mapped[list["TypeLocation"]] = relationship(
+        back_populates="voiture", cascade="all, delete-orphan"
+    )
+    locations: Mapped[list["Location"]] = relationship(back_populates="voiture")
 
-    def __repr__(self):
-        return f"<Car(id={self.id}, brand='{self.brand}', model='{self.model}')>"
+    # Compatibilité itineraire.html
+    @property
+    def brand(self) -> str:
+        return self.nom
 
     @property
-    def full_name(self) -> str:
-        return f"{self.brand} {self.model}"
+    def model(self) -> str:
+        return ""
+
+    @property
+    def seats(self) -> int:
+        return self.places
+
+    @property
+    def fuel_consumption(self) -> float:
+        return self.consommation_carburant
+
+    @property
+    def daily_price(self) -> float:
+        return 0.0
+
+    def __repr__(self):
+        return f"<Voiture(id={self.id}, nom='{self.nom}')>"
 
 
-class CarImage(Base):
-    """
-    Photos d'une voiture.
-
-    Une voiture peut avoir plusieurs photos (relation one-to-many).
-    position : ordre d'affichage dans le carousel (0 = photo principale)
-    """
-    __tablename__ = "car_images"
+class VoitureImage(Base):
+    """Photos d'une voiture (nouvelle architecture)."""
+    __tablename__ = "voiture_images"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    car_id: Mapped[int] = mapped_column(ForeignKey("cars.id"), nullable=False)
+    voiture_id: Mapped[int] = mapped_column(ForeignKey("voitures.id"), nullable=False)
     url: Mapped[str] = mapped_column(String(255), nullable=False)
     position: Mapped[int] = mapped_column(Integer, default=0)
 
-    car: Mapped["Car"] = relationship(back_populates="images")
+    voiture: Mapped["Voiture"] = relationship(back_populates="images")
 
     def __repr__(self):
-        return f"<CarImage(id={self.id}, car_id={self.car_id}, position={self.position})>"
+        return f"<VoitureImage(id={self.id}, voiture_id={self.voiture_id})>"
 
 
-class RentalType(Base):
-    """
-    Types de location (Journalière, Hebdomadaire, Mensuelle, Week-end).
-
-    price_multiplier : nombre de jours facturés (ex: 6.0 pour une semaine = payer 6 jours sur 7)
-    discount_percent : remise en % (ex: 5 = 5% de réduction)
-    """
-    __tablename__ = "rental_types"
+class TypeLocation(Base):
+    """Type de location propre à une voiture (ex: 'Location Mariage — 500 000 Ar')."""
+    __tablename__ = "types_location"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
-    duration_days: Mapped[int] = mapped_column(Integer, nullable=False)
-    price_multiplier: Mapped[float] = mapped_column(Float, default=1.0)
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    discount_percent: Mapped[float] = mapped_column(Float, default=0.0)
+    voiture_id: Mapped[int] = mapped_column(ForeignKey("voitures.id"), nullable=False)
+    nom: Mapped[str] = mapped_column(String(100), nullable=False)
+    prix: Mapped[int] = mapped_column(Integer, nullable=False)
 
-    rentals: Mapped[list["Rental"]] = relationship(back_populates="rental_type")
+    voiture: Mapped["Voiture"] = relationship(back_populates="types_location")
+    locations: Mapped[list["Location"]] = relationship(back_populates="type_location")
+
+    # Compatibilité avec itineraire.html (ancienne interface RentalType)
+    @property
+    def name(self) -> str:
+        return self.nom
+
+    @property
+    def prix_fixe(self) -> int:
+        return self.prix
+
+    @property
+    def price_multiplier(self) -> float:
+        return 1.0
+
+    @property
+    def discount_percent(self) -> float:
+        return 0.0
+
+    @property
+    def fuel_consumption(self):
+        return None
+
+    @property
+    def fuel_price(self):
+        return None
 
     def __repr__(self):
-        return f"<RentalType(id={self.id}, name='{self.name}')>"
+        return f"<TypeLocation(id={self.id}, nom='{self.nom}', prix={self.prix})>"
 
 
-class Rental(Base):
-    """
-    Réservations effectuées par les clients.
-
-    Un Rental lie un client (nom + téléphone) à une voiture et un type de location.
-    status : "confirmée" | "en_cours" | "terminée" | "annulée"
-    """
-    __tablename__ = "rentals"
+class Location(Base):
+    """Réservation (nouvelle architecture) liée à une Voiture et un TypeLocation."""
+    __tablename__ = "locations"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    customer_name: Mapped[str] = mapped_column(String(100), nullable=False)
-    customer_phone: Mapped[str] = mapped_column(String(20), nullable=False)
-    customer_email: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
-    car_id: Mapped[int] = mapped_column(ForeignKey("cars.id"), nullable=False)
-    rental_type_id: Mapped[int] = mapped_column(ForeignKey("rental_types.id"), nullable=False)
-    start_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
-    end_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
-    total_price: Mapped[float] = mapped_column(Float, nullable=False)
-    status: Mapped[str] = mapped_column(String(20), default="confirmée")
+    voiture_id: Mapped[int] = mapped_column(ForeignKey("voitures.id"), nullable=False)
+    type_location_id: Mapped[Optional[int]] = mapped_column(ForeignKey("types_location.id"), nullable=True)
+    client_nom: Mapped[str] = mapped_column(String(100), nullable=False)
+    client_telephone: Mapped[str] = mapped_column(String(20), nullable=False)
+    client_email: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    date_debut: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    date_fin: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    prix_total: Mapped[float] = mapped_column(Float, nullable=False)
+    statut: Mapped[str] = mapped_column(String(20), default="confirmée")
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    itinerary_distance_km: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    itinerary_start_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    itinerary_end_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    itinerary_waypoints: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    itineraire_distance_km: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    itineraire_depart: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    itineraire_arrivee: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    itineraire_etapes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    car: Mapped["Car"] = relationship(back_populates="rentals")
-    rental_type: Mapped["RentalType"] = relationship(back_populates="rentals")
+    voiture: Mapped["Voiture"] = relationship(back_populates="locations")
+    type_location: Mapped[Optional["TypeLocation"]] = relationship(back_populates="locations")
 
     def __repr__(self):
-        return f"<Rental(id={self.id}, customer='{self.customer_name}', status='{self.status}')>"
+        return f"<Location(id={self.id}, client='{self.client_nom}', statut='{self.statut}')>"
 
 
 class User(Base):
@@ -173,30 +191,3 @@ def get_initial_cities() -> list[dict]:
     ]
 
 
-def get_initial_rental_types() -> list[dict]:
-    return [
-        {"name": "Journalière", "duration_days": 1, "price_multiplier": 1.0, "discount_percent": 0},
-        {"name": "Hebdomadaire", "duration_days": 7, "price_multiplier": 6.0, "discount_percent": 5},
-        {"name": "Mensuelle", "duration_days": 30, "price_multiplier": 25.0, "discount_percent": 10},
-        {"name": "Week-end", "duration_days": 3, "price_multiplier": 2.5, "discount_percent": 0},
-    ]
-
-
-def get_initial_cars() -> list[dict]:
-    return [
-        {
-            "brand": "Toyota", "model": "Yaris", "year": 2023,
-            "plate_number": "1234 TANA", "daily_price": 25000.0, "seats": 5,
-            "image_url": "/assets/Gemini.png", "description": "Parfaite pour la ville, économique et fiable."
-        },
-        {
-            "brand": "Renault", "model": "Duster", "year": 2022,
-            "plate_number": "5678 TANA", "daily_price": 45000.0, "seats": 5,
-            "image_url": "/assets/Gemini.png", "description": "SUV compact idéal pour les routes malgaches."
-        },
-        {
-            "brand": "Mercedes", "model": "Classe E", "year": 2023,
-            "plate_number": "9999 TANA", "daily_price": 120000.0, "seats": 5,
-            "image_url": "/assets/Gemini.png", "description": "Confort et élégance pour vos occasions spéciales."
-        },
-    ]

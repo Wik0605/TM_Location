@@ -1,0 +1,64 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Voitures{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- En-tête -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Gestion des voitures</h1>
+            <p class="text-sm text-gray-500 mt-1">Créez une voiture et définissez ses tarifs personnalisés.</p>
+        </div>
+        <button onclick="document.getElementById('form-ajouter').classList.toggle('hidden')"
+            class="bg-gray-900 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-gray-700 transition-colors">
+            + Ajouter une voiture
+        </button>
+    </div>
+
+    <!-- Formulaire ajout -->
+    <div id="form-ajouter" class="hidden bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Nouvelle voiture</h2>
+        <form hx-post="/admin/voitures/create"
+              hx-target="#voitures-grid"
+              hx-swap="innerHTML"
+              hx-on:htmx:after-request="this.reset(); document.getElementById('form-ajouter').classList.add('hidden')"
+              class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+            <div class="sm:col-span-3">
+                <label class="block text-xs font-medium text-gray-600 mb-1">Nom du véhicule</label>
+                <input type="text" name="nom" required placeholder="Ex: Toyota Yaris, Mercedes Classe E..."
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Places</label>
+                <input type="number" name="places" value="5" min="1" max="20"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Consommation (L/100km)</label>
+                <input type="number" name="consommation_carburant" value="8.0" step="0.1" min="0"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+            </div>
+
+            <div class="sm:col-span-3 flex gap-3">
+                <button type="submit"
+                    class="bg-gray-900 text-white px-6 py-2 rounded-xl text-sm font-semibold hover:bg-gray-700 transition-colors">
+                    Créer la voiture
+                </button>
+                <button type="button"
+                    onclick="document.getElementById('form-ajouter').classList.add('hidden')"
+                    class="border border-gray-300 text-gray-600 px-6 py-2 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors">
+                    Annuler
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Grille voitures -->
+    <div id="voitures-grid">
+        {% include "admin/partials/_voitures_grid.html" %}
+    </div>
+
+</div>
+{% endblock %}

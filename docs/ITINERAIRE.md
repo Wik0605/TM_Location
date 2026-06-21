@@ -219,14 +219,51 @@ document.getElementById('add-waypoint-btn').addEventListener('click', function (
 
 ## Estimation du coût
 
-```javascript
-var fuelCost = (distanceKm / 100) * conso * prixLitre;
-var total = DAILY_PRICE + fuelCost;
+Toutes les valeurs de calcul viennent **de la base de données admin** — rien n'est codé en dur côté client.
+
+### Flux de données
+
+```
+Admin (formulaire /admin/rental-types)
+        ↓
+POST FastAPI → validation Pydantic
+        ↓
+SQLAlchemy → table rental_types (DB)
+        ↓
+Client ouvre /car/{id}/itineraire
+        ↓
+FastAPI lit la DB → passe rental_types au template Jinja2
+        ↓
+Template génère <option data-prix=... data-conso=... data-fuel-price=...>
+        ↓
+JavaScript lit les data-attributes et calcule
 ```
 
-- `DAILY_PRICE` : prix/jour du véhicule (injecté depuis Jinja2 au chargement)
-- `conso` : consommation en L/100km (défaut : 8)
-- `prixLitre` : prix du gasoil en Ar/L (défaut : 4900)
+### Formule
+
+```javascript
+// locationCost : calculé depuis la DB (daily_price × price_multiplier × (1 - discount%))
+// conso        : fuel_consumption du type de location (L/100km), lu depuis data-conso
+// PRIX_LITRE   : fuel_price du type de location (Ar/L), lu depuis data-fuel-price
+
+var fuelCost = (distanceKm / 100) * conso * PRIX_LITRE;
+var total = locationCost + fuelCost;
+```
+
+### Data-attributes injectés par Jinja2
+
+```html
+<option
+  data-prix="{{ (car.daily_price * rt.price_multiplier * (1 - rt.discount_percent / 100)) | int }}"
+  data-conso="{{ rt.fuel_consumption }}"
+  data-fuel-price="{{ rt.fuel_price }}">
+```
+
+- `data-prix` : même formule que le backend de réservation → cohérence garantie
+- `data-conso` : consommation configurée dans l'admin (L/100km)
+- `data-fuel-price` : prix du carburant configuré dans l'admin (Ar/L), fallback 4900 si non renseigné
+
+Si l'admin modifie le prix du carburant, tous les calculs clients se mettent à jour immédiatement sans toucher au code.
 
 ---
 

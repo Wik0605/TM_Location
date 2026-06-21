@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Nos véhicules{% endblock %}
+
+{% block content %}
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">Nos véhicules</h1>
+        <p class="text-gray-600">Découvrez notre sélection de voitures disponibles à la location</p>
+    </div>
+
+    {% if voitures %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for voiture in voitures %}
+        <a href="/voitures/{{ voiture.id }}"
+            class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group block">
+
+            <!-- Photo principale -->
+            <div class="bg-gradient-to-br from-gray-100 to-gray-200 h-48 overflow-hidden">
+                {% set first_photo = voiture.images[0].url if voiture.images else None %}
+                {% if first_photo %}
+                <img src="{{ first_photo }}" alt="{{ voiture.nom }}"
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                {% else %}
+                <div class="w-full h-full flex items-center justify-center text-6xl">🚗</div>
+                {% endif %}
+            </div>
+
+            <!-- Infos -->
+            <div class="p-4">
+                <div class="flex items-start justify-between mb-2">
+                    <div>
+                        <h3 class="font-bold text-gray-900">{{ voiture.nom }}</h3>
+                        <p class="text-xs text-gray-400">{{ voiture.places }} places</p>
+                    </div>
+                    <span class="text-xs bg-emerald-100 text-emerald-700 font-medium px-2 py-0.5 rounded-full shrink-0">Disponible</span>
+                </div>
+
+                <!-- Tarifs disponibles -->
+                {% if voiture.types_location %}
+                <div class="flex flex-wrap gap-1.5">
+                    {% for tl in voiture.types_location[:3] %}
+                    <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
+                        {{ tl.nom }} — {{ "{:,}".format(tl.prix) }} Ar
+                    </span>
+                    {% endfor %}
+                    {% if voiture.types_location | length > 3 %}
+                    <span class="text-xs text-gray-400 px-2 py-1">+{{ voiture.types_location | length - 3 }} tarifs</span>
+                    {% endif %}
+                </div>
+                {% else %}
+                <p class="text-xs text-gray-400 italic">Tarifs sur demande</p>
+                {% endif %}
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="text-center py-20 text-gray-400">
+        <span class="text-6xl block mb-4">🚗</span>
+        <p>Aucun véhicule disponible pour le moment.</p>
+    </div>
+    {% endif %}
+
+</section>
+{% endblock %}

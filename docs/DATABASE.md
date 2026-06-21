@@ -56,24 +56,24 @@ car = result.scalar_one_or_none()
 
 ### RentalType (Types de location)
 
-Les durées de location proposées.
+Les durées de location proposées. Ces données alimentent **à la fois** le backend de réservation et le calculateur d'itinéraire frontend — une seule source de vérité.
 
 ```python
 class RentalType:
-    id: int                # Clé primaire
-    name: str              # Nom (Journalière, Hebdomadaire...)
-    duration_days: int     # Durée en jours
-    price_multiplier: float # Multiplicateur de prix
-    discount_percent: float # Remise en %
-    description: str       # Description
+    id: int                   # Clé primaire
+    name: str                 # Nom (Journalière, Hebdomadaire...)
+    duration_days: int        # Durée en jours
+    price_multiplier: float   # Multiplicateur de prix (ex: 6.0 = payer 6 jours sur 7)
+    prix_fixe: float | None   # Prix fixe optionnel (non utilisé dans le calcul principal)
+    discount_percent: float   # Remise en %
+    fuel_consumption: float | None  # Consommation du véhicule type (L/100km)
+    fuel_price: float | None  # Prix du carburant (Ar/L) configuré par l'admin
+    description: str          # Description
 ```
 
-**Calcul du prix** :
+**Calcul du prix** (même formule frontend et backend) :
 ```python
-def calculate_total_price(daily_price: float, rental_type: RentalType):
-    base_price = daily_price * rental_type.price_multiplier
-    discount = base_price * (rental_type.discount_percent / 100)
-    return base_price - discount
+total_price = daily_price * rental_type.price_multiplier * (1 - rental_type.discount_percent / 100)
 
 # Exemple : 7 jours avec 5% de remise
 # daily_price = 25000 Ar
@@ -81,6 +81,14 @@ def calculate_total_price(daily_price: float, rental_type: RentalType):
 # discount = 5%
 # total = 25000 * 6 * 0.95 = 142500 Ar
 ```
+
+**Calcul du coût carburant** (itinéraire) :
+```python
+fuel_cost = (distance_km / 100) * rental_type.fuel_consumption * rental_type.fuel_price
+# Si fuel_price non renseigné → fallback 4900 Ar/L côté JS
+```
+
+**Où configurer** : `/admin/rental-types` — les champs *Conso.* et *Prix carburant* sont modifiables par l'admin sans toucher au code.
 
 ### Rental (Locations)
 

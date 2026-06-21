@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Réservation confirmée{% endblock %}
+
+{% block content %}
+<section class="max-w-2xl mx-auto px-4 sm:px-6 py-16 text-center">
+
+    <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 space-y-6">
+
+        <div class="text-6xl">✅</div>
+        <h1 class="text-3xl font-bold text-gray-900">Demande envoyée !</h1>
+        <p class="text-gray-500">Nous avons bien reçu votre demande de location. Notre équipe vous contactera rapidement pour confirmer les détails.</p>
+
+        <div class="bg-gray-50 rounded-xl p-5 text-left space-y-3 text-sm">
+            <div class="flex justify-between">
+                <span class="text-gray-500">Véhicule</span>
+                <span class="font-semibold text-gray-900">{{ voiture.marque }} {{ voiture.modele }} ({{ voiture.annee }})</span>
+            </div>
+            {% if type_location %}
+            <div class="flex justify-between">
+                <span class="text-gray-500">Formule</span>
+                <span class="font-semibold text-gray-900">{{ type_location.nom }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-500">Prix</span>
+                <span class="font-bold text-primary">{{ "{:,}".format(type_location.prix) }} Ar</span>
+            </div>
+            {% endif %}
+            <div class="flex justify-between">
+                <span class="text-gray-500">Client</span>
+                <span class="font-semibold text-gray-900">{{ location.client_nom }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-500">Téléphone</span>
+                <span class="font-semibold text-gray-900">{{ location.client_telephone }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-500">Date souhaitée</span>
+                <span class="font-semibold text-gray-900">{{ location.date_debut.strftime('%d/%m/%Y') }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-500">Statut</span>
+                <span class="font-semibold text-emerald-600">{{ location.statut }}</span>
+            </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3 pt-2">
+            <a href="/voitures" class="flex-1 bg-gray-900 text-white py-3 rounded-xl font-semibold hover:bg-gray-700 transition-colors">
+                Voir d'autres voitures
+            </a>
+            <a href="/" class="flex-1 border border-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
+                Retour à l'accueil
+            </a>
+        </div>
+    </div>
+
+</section>
+{% endblock %}

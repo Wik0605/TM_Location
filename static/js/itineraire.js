@@ -223,14 +223,32 @@
     }
 
     // ── Résultats ──
-    function showResults(distanceKm) {
-        var conso = parseFloat(document.getElementById('fuel-consumption').value) || 8;
-        var prixL = parseFloat(document.getElementById('fuel-price').value) || 4900;
-        var fuelCost = (distanceKm / 100) * conso * prixL;
-        var total = DAILY_PRICE + fuelCost;
+    function showResults(distanceKm, isFallback) {
+        var rentalSel = document.getElementById('rental-type');
+        var selectedOption = rentalSel && rentalSel.selectedOptions[0];
+
+        var prixType = selectedOption ? parseFloat(selectedOption.getAttribute('data-prix')) : NaN;
+        var locationCost = isNaN(prixType) || prixType === 0 ? DAILY_PRICE : prixType;
+
+        var consoType = selectedOption ? parseFloat(selectedOption.getAttribute('data-conso')) : NaN;
+        var conso = isNaN(consoType) || consoType === 0 ? 8 : consoType;
+
+        var fuelPriceAttr = selectedOption ? parseFloat(selectedOption.getAttribute('data-fuel-price')) : NaN;
+        var PRIX_LITRE = isNaN(fuelPriceAttr) || fuelPriceAttr === 0 ? 4900 : fuelPriceAttr;
+        var fuelCost = (distanceKm / 100) * conso * PRIX_LITRE;
+        var total = locationCost + fuelCost;
+
+        var labelEl = document.getElementById('res-rental-label');
+        var costEl = document.getElementById('res-rental-cost');
+        if (labelEl) labelEl.textContent = (selectedOption && selectedOption.value) ? selectedOption.text.split('—')[0].trim() : 'Location';
+        if (costEl) costEl.textContent = Math.round(locationCost).toLocaleString('fr-FR') + ' Ar';
+
         document.getElementById('res-distance').textContent = distanceKm.toFixed(1);
         document.getElementById('res-fuel-cost').textContent = Math.round(fuelCost).toLocaleString('fr-FR');
         document.getElementById('res-total-cost').textContent = Math.round(total).toLocaleString('fr-FR');
+        var fallbackNote = document.querySelector('#results-card .fallback-note');
+        if (fallbackNote) fallbackNote.style.display = isFallback ? 'block' : 'none';
+
         var card = document.getElementById('results-card');
         card.style.display = 'block';
         if (window.innerWidth < 1024) {
@@ -285,17 +303,37 @@
         }
     }
 
+    // ── Haversine (fallback local, sans appel réseau) ──
+    function haversineKm(coord1, coord2) {
+        var p1 = coord1.split(','), p2 = coord2.split(',');
+        var lon1 = parseFloat(p1[0]), lat1 = parseFloat(p1[1]);
+        var lon2 = parseFloat(p2[0]), lat2 = parseFloat(p2[1]);
+        var R = 6371;
+        var dLat = (lat2 - lat1) * Math.PI / 180;
+        var dLon = (lon2 - lon1) * Math.PI / 180;
+        var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    function calcFallback(coords) {
+        var total = 0;
+        for (var i = 0; i < coords.length - 1; i++) {
+            total += haversineKm(coords[i], coords[i + 1]);
+        }
+        return Promise.resolve(total * 1.3);
+    }
+
     // ── OSRM (fallback si BRouter échoue) ──
     async function calcOSRM(coords) {
         try {
-            // OSRM attend lon,lat;lon,lat (séparateur point-virgule)
             var waypoints = coords.join(';');
             var url = 'https://router.project-osrm.org/route/v1/driving/' + waypoints + '?overview=full&geometries=geojson';
             var resp = await fetch(url);
             if (!resp.ok) return null;
             var data = await resp.json();
             if (data.code !== 'Ok' || !data.routes || !data.routes[0]) return null;
-            // Convertir la réponse OSRM en GeoJSON compatible Leaflet
             var geojson = {
                 type: 'FeatureCollection',
                 features: [{ type: 'Feature', geometry: data.routes[0].geometry, properties: {} }]
@@ -321,8 +359,12 @@
 
         try {
             var distanceKm = await firstValid(calcBRouter(coords), calcOSRM(coords));
-            if (distanceKm === null) throw new Error('Aucune route trouvée');
-            showResults(distanceKm);
+            var isFallback = false;
+            if (distanceKm === null) {
+                distanceKm = await calcFallback(coords);
+                isFallback = true;
+            }
+            showResults(distanceKm, isFallback);
         } catch (e) {
             console.error(e);
             alert('Impossible de calculer l\'itinéraire. Vérifiez votre connexion ou réessayez.');

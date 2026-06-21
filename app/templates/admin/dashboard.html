@@ -39,7 +39,7 @@
         {% for rental in recent_rentals %}
         <div class="px-4 py-4 space-y-1">
             <div class="flex items-center justify-between">
-                <span class="font-semibold text-gray-900 text-sm">{{ rental.customer_name }}</span>
+                <span class="font-semibold text-gray-900 text-sm">{{ rental.client_nom }}</span>
                 <span class="px-2 py-0.5 rounded-full text-xs font-semibold
                     {% if rental.status == 'confirmée' %}bg-blue-100 text-blue-700
                     {% elif rental.status == 'en_cours' %}bg-emerald-100 text-emerald-700
@@ -48,8 +48,8 @@
                     {{ rental.status }}
                 </span>
             </div>
-            <p class="text-xs text-gray-500">{{ rental.car.brand }} {{ rental.car.model }}</p>
-            <p class="text-xs font-bold text-gray-800">{{ "{:,.0f}".format(rental.total_price) }} Ar</p>
+            <p class="text-xs text-gray-500">{% if rental.voiture %}{{ rental.voiture.marque }} {{ rental.voiture.modele }}{% endif %}</p>
+            <p class="text-xs font-bold text-gray-800">{{ "{:,.0f}".format(rental.prix_total) }} Ar</p>
         </div>
         {% else %}
         <p class="px-4 py-8 text-center text-gray-400 text-sm">Aucune réservation</p>
@@ -71,18 +71,18 @@
             {% for rental in recent_rentals %}
             <tr class="hover:bg-gray-50 transition-colors">
                 <td class="px-6 py-4 text-gray-400">#{{ rental.id }}</td>
-                <td class="px-6 py-4 font-medium text-gray-900">{{ rental.customer_name }}</td>
-                <td class="px-6 py-4 text-gray-600">{{ rental.car.brand }} {{ rental.car.model }}</td>
+                <td class="px-6 py-4 font-medium text-gray-900">{{ rental.client_nom }}</td>
+                <td class="px-6 py-4 text-gray-600">{% if rental.voiture %}{{ rental.voiture.marque }} {{ rental.voiture.modele }}{% endif %}</td>
                 <td class="px-6 py-4">
                     <span class="px-2 py-1 rounded-full text-xs font-semibold
-                        {% if rental.status == 'confirmée' %}bg-blue-100 text-blue-700
-                        {% elif rental.status == 'en_cours' %}bg-emerald-100 text-emerald-700
-                        {% elif rental.status == 'terminée' %}bg-gray-100 text-gray-600
+                        {% if rental.statut == 'confirmée' %}bg-blue-100 text-blue-700
+                        {% elif rental.statut == 'en_cours' %}bg-emerald-100 text-emerald-700
+                        {% elif rental.statut == 'terminée' %}bg-gray-100 text-gray-600
                         {% else %}bg-red-100 text-red-600{% endif %}">
-                        {{ rental.status }}
+                        {{ rental.statut }}
                     </span>
                 </td>
-                <td class="px-6 py-4 text-right font-semibold text-gray-800">{{ "{:,.0f}".format(rental.total_price) }} Ar</td>
+                <td class="px-6 py-4 text-right font-semibold text-gray-800">{{ "{:,.0f}".format(rental.prix_total) }} Ar</td>
             </tr>
             {% else %}
             <tr><td colspan="5" class="px-6 py-8 text-center text-gray-400">Aucune réservation</td></tr>

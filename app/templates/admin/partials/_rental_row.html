@@ -1,20 +1,24 @@
 <tr id="rental-{{ rental.id }}" class="hover:bg-gray-50 transition-colors">
     <td class="px-4 py-4 text-gray-400 text-sm">#{{ rental.id }}</td>
     <td class="px-4 py-4">
-        <p class="font-semibold text-gray-900 text-sm">{{ rental.customer_name }}</p>
-        <p class="text-xs text-gray-400">{{ rental.customer_phone }}</p>
+        <p class="font-semibold text-gray-900 text-sm">{{ rental.client_nom }}</p>
+        <p class="text-xs text-gray-400">{{ rental.client_telephone }}</p>
     </td>
-    <td class="px-4 py-4 text-sm text-gray-700">{{ rental.car.brand }} {{ rental.car.model }}</td>
-    <td class="px-4 py-4 text-sm text-gray-600">{{ rental.rental_type.name }}</td>
+    <td class="px-4 py-4 text-sm text-gray-700">
+        {% if rental.voiture %}{{ rental.voiture.marque }} {{ rental.voiture.modele }}{% else %}—{% endif %}
+    </td>
     <td class="px-4 py-4 text-sm text-gray-600">
-        {{ rental.start_date.strftime("%d/%m/%Y") }} → {{ rental.end_date.strftime("%d/%m/%Y") }}
+        {% if rental.type_location %}{{ rental.type_location.nom }}{% else %}—{% endif %}
+    </td>
+    <td class="px-4 py-4 text-sm text-gray-600">
+        {{ rental.date_debut.strftime("%d/%m/%Y") }}
     </td>
     <td class="px-4 py-4 text-sm">
-        {% if rental.itinerary_distance_km %}
+        {% if rental.itineraire_distance_km %}
         <div class="text-xs space-y-0.5">
-            <p class="font-semibold text-indigo-700">📍 {{ "%.1f"|format(rental.itinerary_distance_km) }} km</p>
-            {% if rental.itinerary_start_name %}<p class="text-gray-500">🟢 {{ rental.itinerary_start_name }}</p>{% endif %}
-            {% if rental.itinerary_end_name %}<p class="text-gray-500">🔴 {{ rental.itinerary_end_name }}</p>{% endif %}
+            <p class="font-semibold text-indigo-700">📍 {{ "%.1f"|format(rental.itineraire_distance_km) }} km</p>
+            {% if rental.itineraire_depart %}<p class="text-gray-500">🟢 {{ rental.itineraire_depart }}</p>{% endif %}
+            {% if rental.itineraire_arrivee %}<p class="text-gray-500">🔴 {{ rental.itineraire_arrivee }}</p>{% endif %}
         </div>
         {% else %}
         <span class="text-gray-300 text-xs">—</span>
@@ -26,16 +30,16 @@
               hx-swap="outerHTML">
             <select name="status" onchange="this.form.requestSubmit()"
                 class="text-xs border border-gray-200 rounded-lg px-2 py-1.5 font-medium cursor-pointer
-                    {% if rental.status == 'confirmée' %}bg-blue-50 text-blue-700
-                    {% elif rental.status == 'en_cours' %}bg-emerald-50 text-emerald-700
-                    {% elif rental.status == 'terminée' %}bg-gray-50 text-gray-600
+                    {% if rental.statut == 'confirmée' %}bg-blue-50 text-blue-700
+                    {% elif rental.statut == 'en_cours' %}bg-emerald-50 text-emerald-700
+                    {% elif rental.statut == 'terminée' %}bg-gray-50 text-gray-600
                     {% else %}bg-red-50 text-red-600{% endif %}">
-                <option value="confirmée" {% if rental.status == 'confirmée' %}selected{% endif %}>Confirmée</option>
-                <option value="en_cours" {% if rental.status == 'en_cours' %}selected{% endif %}>En cours</option>
-                <option value="terminée" {% if rental.status == 'terminée' %}selected{% endif %}>Terminée</option>
-                <option value="annulée" {% if rental.status == 'annulée' %}selected{% endif %}>Annulée</option>
+                <option value="confirmée" {% if rental.statut == 'confirmée' %}selected{% endif %}>Confirmée</option>
+                <option value="en_cours" {% if rental.statut == 'en_cours' %}selected{% endif %}>En cours</option>
+                <option value="terminée" {% if rental.statut == 'terminée' %}selected{% endif %}>Terminée</option>
+                <option value="annulée" {% if rental.statut == 'annulée' %}selected{% endif %}>Annulée</option>
             </select>
         </form>
     </td>
-    <td class="px-4 py-4 text-right text-sm font-bold text-gray-800">{{ "{:,.0f}".format(rental.total_price) }} Ar</td>
+    <td class="px-4 py-4 text-right text-sm font-bold text-gray-800">{{ "{:,.0f}".format(rental.prix_total) }} Ar</td>
 </tr>

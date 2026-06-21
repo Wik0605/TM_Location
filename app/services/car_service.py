@@ -3,34 +3,33 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from typing import List, Optional
 
-from app.models import Car, CarImage
+from app.models import Voiture, TypeLocation
 
 
-async def get_available_cars(
+async def get_available_voitures(
     db: AsyncSession,
     limit: Optional[int] = None,
-    order_by_price: bool = False
-) -> List[Car]:
-    """Récupère les voitures disponibles avec leurs images."""
-    query = select(Car).where(Car.is_available == True).options(selectinload(Car.images))
-
-    if order_by_price:
-        query = query.order_by(Car.daily_price)
+    order_by_marque: bool = False
+) -> List[Voiture]:
+    query = (
+        select(Voiture)
+        .where(Voiture.is_available == True)
+        .options(selectinload(Voiture.images), selectinload(Voiture.types_location))
+    )
+    if order_by_marque:
+        query = query.order_by(Voiture.nom)
     else:
-        query = query.order_by(Car.created_at.desc())
-
+        query = query.order_by(Voiture.created_at.desc())
     if limit is not None:
         query = query.limit(limit)
-
     result = await db.execute(query)
     return result.scalars().all()
 
 
-async def get_car_by_id(db: AsyncSession, car_id: int) -> Optional[Car]:
-    """Récupère une voiture avec toutes ses photos (pour le carousel)."""
+async def get_voiture_by_id(db: AsyncSession, voiture_id: int) -> Optional[Voiture]:
     result = await db.execute(
-        select(Car)
-        .where(Car.id == car_id)
-        .options(selectinload(Car.images))
+        select(Voiture)
+        .where(Voiture.id == voiture_id)
+        .options(selectinload(Voiture.images), selectinload(Voiture.types_location))
     )
     return result.scalar_one_or_none()

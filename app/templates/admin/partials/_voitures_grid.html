@@ -1,0 +1,12 @@
+{% if voitures %}
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+    {% for voiture in voitures %}
+        {% include "admin/partials/_voiture_card.html" %}
+    {% endfor %}
+</div>
+{% else %}
+<div class="bg-white rounded-2xl border border-dashed border-gray-300 p-12 text-center text-gray-400">
+    <span class="text-5xl block mb-3">🚗</span>
+    <p class="text-sm">Aucune voiture. Cliquez sur « Ajouter une voiture » pour commencer.</p>
+</div>
+{% endif %}

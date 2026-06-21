@@ -1,0 +1,21 @@
+{% if voiture.images %}
+<div class="flex gap-2 flex-wrap">
+    {% for image in voiture.images %}
+    <div class="relative group w-20 h-20 rounded-lg overflow-hidden bg-gray-100 shrink-0">
+        <img src="{{ image.url }}" alt="Photo {{ loop.index }}" class="w-full h-full object-cover">
+        {% if loop.first %}
+        <span class="absolute top-1 left-1 bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">Principale</span>
+        {% endif %}
+        <button
+            hx-post="/admin/voitures/{{ voiture.id }}/images/{{ image.id }}/delete"
+            hx-target="#voiture-images-{{ voiture.id }}"
+            hx-swap="innerHTML"
+            class="absolute inset-0 bg-black/50 text-white text-sm opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+            ✕
+        </button>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="text-xs text-gray-400 italic">Aucune photo.</p>
+{% endif %}

@@ -44,39 +44,19 @@ async def lifespan(app: FastAPI):
 
 
 async def seed_initial_data():
-    """
-    Insère les données initiales si la DB est vide.
-    Guard : on vérifie RentalType — s'il en existe déjà, on ne réinsère rien.
-    """
+    """Insère les villes initiales si la DB est vide."""
     from sqlalchemy import select
     from app.database import AsyncSessionLocal
-    from app.models import RentalType, Car, City, get_initial_rental_types, get_initial_cars, get_initial_cities
+    from app.models import City, get_initial_cities
 
     async with AsyncSessionLocal() as session:
-        # Insérer les villes si absentes
-        existing_cities = await session.execute(select(City))
-        if not existing_cities.scalars().first():
+        existing = await session.execute(select(City))
+        if not existing.scalars().first():
             print("Insertion des villes initiales...")
             for city_data in get_initial_cities():
                 session.add(City(**city_data))
             await session.commit()
-
-        # Si des RentalTypes existent déjà, les données sont déjà là
-        existing_rental_types = await session.execute(select(RentalType))
-        if existing_rental_types.scalars().first():
-            return
-
-        print("Insertion des types de location et voitures...")
-
-        for rental_type_data in get_initial_rental_types():
-            session.add(RentalType(**rental_type_data))
-        await session.commit()
-
-        for car_data in get_initial_cars():
-            session.add(Car(**car_data))
-        await session.commit()
-
-        print("Données initiales insérées !")
+            print("Villes insérées !")
 
 
 app = FastAPI(
