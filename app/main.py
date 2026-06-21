@@ -19,7 +19,9 @@ from pathlib import Path
 from app.config import settings
 from app.database import init_db, engine
 from app.routers.web import router as web_router
-from app.routers.admin import router as admin_router
+from app.routers.admin_auth import router as admin_auth_router
+from app.routers.admin_cars import router as admin_cars_router
+from app.routers.admin_rentals import router as admin_rentals_router
 from app.routers.auth import router as auth_router
 
 STATIC_DIR = Path(__file__).parent.parent / "static"
@@ -98,7 +100,9 @@ if STATIC_DIR.exists():
 
 
 app.include_router(web_router)
-app.include_router(admin_router)
+app.include_router(admin_auth_router)
+app.include_router(admin_cars_router)
+app.include_router(admin_rentals_router)
 app.include_router(auth_router)
 
 
