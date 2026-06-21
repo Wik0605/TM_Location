@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select, func, delete as sql_delete
 from sqlalchemy.orm import selectinload
 from typing import Optional
 
@@ -101,8 +101,9 @@ async def update_rental_type(db: AsyncSession, rental_type_id: int, data: dict) 
     rental_type = result.scalar_one_or_none()
     if not rental_type:
         return None
+    nullable_fields = {"prix_fixe", "fuel_consumption"}
     for key, value in data.items():
-        if hasattr(rental_type, key) and value is not None:
+        if hasattr(rental_type, key) and (value is not None or key in nullable_fields):
             setattr(rental_type, key, value)
     await db.commit()
     await db.refresh(rental_type)
@@ -110,13 +111,11 @@ async def update_rental_type(db: AsyncSession, rental_type_id: int, data: dict) 
 
 
 async def delete_rental_type(db: AsyncSession, rental_type_id: int) -> bool:
-    result = await db.execute(select(RentalType).where(RentalType.id == rental_type_id))
-    rental_type = result.scalar_one_or_none()
-    if not rental_type:
-        return False
-    await db.delete(rental_type)
+    result = await db.execute(
+        sql_delete(RentalType).where(RentalType.id == rental_type_id)
+    )
     await db.commit()
-    return True
+    return result.rowcount > 0
 
 
 async def get_dashboard_stats(db: AsyncSession) -> dict:
@@ -125,7 +124,9 @@ async def get_dashboard_stats(db: AsyncSession) -> dict:
     available_cars = (await db.execute(
         select(func.count(Car.id)).where(Car.is_available == True)
     )).scalar() or 0
-    total_revenue = (await db.execute(select(func.sum(Rental.total_price)))).scalar() or 0
+    total_revenue = (await db.execute(
+        select(func.sum(Rental.total_price)).where(Rental.status != "annulée")
+    )).scalar() or 0
     return {
         "total_rentals": total_rentals,
         "total_cars": total_cars,

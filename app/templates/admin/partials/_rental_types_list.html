@@ -3,12 +3,14 @@
     <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
         <div class="flex items-center justify-between mb-3">
             <h3 class="font-bold text-gray-900">{{ rt.name }}</h3>
-            <form hx-post="/admin/rental-types/{{ rt.id }}/delete"
-                  hx-target="#rental-types-list"
-                  hx-swap="outerHTML"
-                  hx-confirm="Supprimer ce type de location ?">
-                <button type="submit" class="text-xs text-red-400 hover:text-red-600 font-medium">Supprimer</button>
-            </form>
+            <button
+                hx-post="/admin/rental-types/{{ rt.id }}/delete"
+                hx-target="#rental-types-list"
+                hx-swap="outerHTML"
+                hx-confirm="Supprimer ce type de location ?"
+                class="text-xs text-red-400 hover:text-red-600 font-medium">
+                Supprimer
+            </button>
         </div>
         <form hx-post="/admin/rental-types/{{ rt.id }}/edit"
               hx-target="#rental-types-list"
@@ -25,13 +27,26 @@
                     class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2">
             </div>
             <div>
-                <label class="block text-xs text-gray-500 mb-1">Multiplicateur prix</label>
-                <input type="number" name="price_multiplier" value="{{ rt.price_multiplier }}" step="0.1" min="0" required
+                <label class="block text-xs text-gray-500 mb-1">Prix fixe (Ar)</label>
+                <input type="number" name="prix_fixe" value="{{ rt.prix_fixe or '' }}" step="500" min="0"
+                    placeholder="Ex: 75000"
                     class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2">
             </div>
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Remise (%)</label>
                 <input type="number" name="discount_percent" value="{{ rt.discount_percent }}" step="0.5" min="0" max="100"
+                    class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2">
+            </div>
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Conso. (L/100km)</label>
+                <input type="number" name="fuel_consumption" value="{{ rt.fuel_consumption or '' }}" step="0.1" min="0"
+                    placeholder="Ex: 8"
+                    class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2">
+            </div>
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Prix carburant (Ar/L)</label>
+                <input type="number" name="fuel_price" value="{{ rt.fuel_price or '' }}" step="100" min="0"
+                    placeholder="Ex: 4900"
                     class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2">
             </div>
             <div class="col-span-2">

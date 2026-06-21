@@ -14,3 +14,6 @@ static/uploads/
 
 # Base de données locale
 *.db
+
+# Node.js
+node_modules/

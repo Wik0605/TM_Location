@@ -17,7 +17,6 @@
     <div class="mb-5 flex items-center justify-between flex-wrap gap-3">
         <div>
             <h1 class="text-2xl font-bold text-gray-900">📍 Calculateur d'itinéraire</h1>
-            <p class="text-gray-500 mt-1 text-sm">{{ car.brand }} {{ car.model }} &mdash; {{ "{:,.0f}".format(car.daily_price) }} Ar/jour</p>
         </div>
         <a href="/cars/{{ car.id }}" class="text-indigo-600 hover:text-indigo-800 font-medium text-sm">&larr; Retour</a>
     </div>
@@ -62,21 +61,55 @@
                     </button>
                 </div>
 
-                <!-- Carburant -->
+                <!-- Date de réservation -->
                 <div class="bg-gray-50 p-3 rounded-xl border border-gray-200 mb-4">
-                    <h4 class="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wider">Carburant</h4>
+                    <h4 class="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wider">📅 Date de réservation</h4>
                     <div class="grid grid-cols-2 gap-2">
                         <div>
-                            <label class="block text-xs text-gray-500 mb-1">Conso (L/100km)</label>
-                            <input type="number" id="fuel-consumption" value="8" step="0.5" min="1"
+                            <label class="block text-xs text-gray-500 mb-1">Date début</label>
+                            <input type="date" id="date-start"
                                 class="w-full text-sm border border-gray-300 rounded-md px-2 py-2">
                         </div>
                         <div>
-                            <label class="block text-xs text-gray-500 mb-1">Prix Gasoil (Ar/L)</label>
-                            <input type="number" id="fuel-price" value="4900" step="100" min="0"
+                            <label class="block text-xs text-gray-500 mb-1">Date fin</label>
+                            <input type="date" id="date-end"
+                                class="w-full text-sm border border-gray-300 rounded-md px-2 py-2">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Heure départ</label>
+                            <input type="time" id="time-start"
+                                class="w-full text-sm border border-gray-300 rounded-md px-2 py-2">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Heure arrivée</label>
+                            <input type="time" id="time-end"
                                 class="w-full text-sm border border-gray-300 rounded-md px-2 py-2">
                         </div>
                     </div>
+                </div>
+
+                <!-- Type de réservation -->
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">🏷️ Type de location</label>
+                    <select id="rental-type" name="rental-type"
+                        class="w-full text-sm border border-gray-300 rounded-xl px-3 py-3 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-white">
+                        <option value="" disabled selected>-- Choisir un type --</option>
+                        {% for rt in rental_types %}
+                        {% if rt.prix_fixe is not none %}
+                            {% set prix_calcule = (rt.prix_fixe * (1 - rt.discount_percent / 100)) | int %}
+                        {% else %}
+                            {% set prix_calcule = (car.daily_price * rt.price_multiplier * (1 - rt.discount_percent / 100)) | int %}
+                        {% endif %}
+                        <option value="{{ rt.id }}"
+                            data-prix="{{ prix_calcule }}"
+                            data-conso="{{ rt.fuel_consumption if rt.fuel_consumption else '' }}"
+                            data-fuel-price="{{ rt.fuel_price if rt.fuel_price else '' }}">
+                            {{ rt.name }} — {{ "{:,.0f}".format(prix_calcule) }} Ar
+                        </option>
+                        {% else %}
+                        <option disabled>Aucun type configuré dans l'admin</option>
+                        {% endfor %}
+                    </select>
                 </div>
 
                 <button type="button" id="calculate-btn"
@@ -94,8 +127,8 @@
                         <span class="font-bold text-gray-900"><span id="res-distance">0</span> km</span>
                     </div>
                     <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                        <span class="text-sm text-gray-500">Location (1 jour)</span>
-                        <span class="text-sm font-medium text-gray-700">{{ "{:,.0f}".format(car.daily_price) }} Ar</span>
+                        <span class="text-sm text-gray-500" id="res-rental-label">Location</span>
+                        <span class="text-sm font-medium text-gray-700" id="res-rental-cost">—</span>
                     </div>
                     <div class="flex justify-between items-center py-2 border-b border-gray-100">
                         <span class="text-sm text-gray-500">Carburant estimé</span>
@@ -106,7 +139,8 @@
                         <span class="font-bold text-emerald-600 text-lg"><span id="res-total-cost">0</span> Ar</span>
                     </div>
                 </div>
-                <p class="text-xs text-gray-400 mt-3 text-center">* Estimation indicative. Prix carburant variable.</p>
+                <p class="text-xs text-gray-400 mt-3 text-center">* Estimation indicative. Distance routière réelle peut varier.</p>
+                <p class="fallback-note text-xs text-orange-500 mt-1 text-center" style="display:none;">⚠️ Distance calculée à vol d'oiseau (serveurs de routage indisponibles).</p>
                 <a href="/booking?car_id={{ car.id }}"
                     class="block w-full text-center bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700 transition-all shadow-md mt-4 text-sm">
                     Réserver ce véhicule
@@ -125,7 +159,6 @@
                     <p class="text-sm text-gray-500 font-medium">Calcul de l'itinéraire...</p>
                 </div>
             </div>
-            <p class="text-xs text-gray-400 text-center mt-2">Carte propulsée par OpenStreetMap &amp; BRouter</p>
         </div>
     </div>
 </section>

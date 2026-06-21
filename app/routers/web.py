@@ -71,9 +71,12 @@ async def car_itineraire(request: Request, car_id: int, db: AsyncSession = Depen
     if not car:
         return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
 
+    rental_types = await rental_service.get_rental_types(db)
+
     return templates.TemplateResponse("itineraire.html", {
         "request": request,
         "car": car,
+        "rental_types": rental_types,
     })
 
 
@@ -146,7 +149,10 @@ async def booking_submit(
     if await rental_service.has_conflict(db, car_id, start, end):
         return error_response("Cette voiture est déjà réservée sur ces dates. Choisissez d'autres dates.")
 
-    total_price = car.daily_price * rental_type.price_multiplier * (1 - rental_type.discount_percent / 100)
+    if rental_type.prix_fixe is not None:
+        total_price = float(rental_type.prix_fixe) * (1 - rental_type.discount_percent / 100)
+    else:
+        total_price = car.daily_price * rental_type.price_multiplier * (1 - rental_type.discount_percent / 100)
 
     rental = Rental(
         customer_name=customer_name,
@@ -185,9 +191,9 @@ async def rental_types_page(request: Request, db: AsyncSession = Depends(get_db)
     })
 
 
-@router.get("/contact", response_class=HTMLResponse)
-async def contact_page(request: Request):
-    return templates.TemplateResponse("contact.html", {"request": request})
+@router.get("/profile", response_class=HTMLResponse)
+async def profile_page(request: Request):
+    return templates.TemplateResponse("profile.html", {"request": request})
 
 
 # =============================================================================
