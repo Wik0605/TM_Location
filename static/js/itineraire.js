@@ -345,6 +345,11 @@
         }
     }
 
+    // ── Modal quota ──
+    var quotaModal = document.getElementById('quota-modal');
+    document.getElementById('quota-backdrop').addEventListener('click', function () { quotaModal.style.display = 'none'; });
+    document.getElementById('quota-close').addEventListener('click', function () { quotaModal.style.display = 'none'; });
+
     // ── Calculer ──
     document.getElementById('calculate-btn').addEventListener('click', async function () {
         var start = getCoord('start');
@@ -353,6 +358,18 @@
             alert('Pointez ou sélectionnez un départ et une arrivée.');
             return;
         }
+
+        try {
+            var quotaRes = await fetch(window.location.pathname + '/quota', { method: 'POST' });
+            var quota = await quotaRes.json();
+            if (!quota.allowed) {
+                quotaModal.style.display = 'flex';
+                return;
+            }
+        } catch (e) {
+            // Si l'endpoint échoue, on laisse passer
+        }
+
         var coords = [start].concat(getWaypointCoords()).concat([end]);
 
         document.getElementById('map-loader').style.display = 'flex';

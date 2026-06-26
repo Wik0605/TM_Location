@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request, Depends, Form
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
@@ -54,6 +54,22 @@ async def voiture_itineraire(request: Request, voiture_id: int, db: AsyncSession
         "car": voiture,
         "rental_types": voiture.types_location,
     })
+
+
+@router.post("/voitures/{voiture_id}/itineraire/quota")
+async def itineraire_quota(request: Request, voiture_id: int):
+    from fastapi.responses import JSONResponse
+    if request.session.get("user_id"):
+        return JSONResponse({"allowed": True})
+    today = str(date.today())
+    if request.session.get("itinerary_date") != today:
+        request.session["itinerary_date"] = today
+        request.session["itinerary_count"] = 0
+    count = request.session.get("itinerary_count", 0)
+    if count >= 7:
+        return JSONResponse({"allowed": False})
+    request.session["itinerary_count"] = count + 1
+    return JSONResponse({"allowed": True})
 
 
 @router.post("/voitures/{voiture_id}/reserver", response_class=HTMLResponse)

@@ -13,6 +13,21 @@
     <button id="pick-cancel-btn" class="text-xs text-gray-400 underline mt-1">Annuler</button>
 </div>
 
+<!-- Modal quota itinéraire -->
+<div id="quota-modal" style="display:none;" class="fixed inset-0 z-50 flex items-center justify-center px-4">
+    <div class="absolute inset-0 bg-black/50" id="quota-backdrop"></div>
+    <div class="relative bg-white rounded-2xl shadow-xl p-7 max-w-sm w-full text-center">
+        <div class="text-4xl mb-3">🗺️</div>
+        <h2 class="text-lg font-bold text-gray-900 mb-2">Limite atteinte</h2>
+        <p class="text-sm text-gray-600 mb-5">Vous avez utilisé vos 7 calculs gratuits du jour.<br>Connectez-vous pour continuer sans limite.</p>
+        <a href="/auth/google?next={{ request.url }}"
+           class="block w-full bg-indigo-600 text-white py-3 rounded-xl font-bold text-sm hover:bg-indigo-700 transition-all mb-3">
+            Se connecter avec Google
+        </a>
+        <button id="quota-close" class="text-sm text-gray-400 hover:text-gray-600 underline">Fermer</button>
+    </div>
+</div>
+
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
     <div class="mb-5 flex items-center justify-between flex-wrap gap-3">
         <div>
@@ -66,22 +81,22 @@
                     <h4 class="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wider">📅 Date de réservation</h4>
                     <div class="grid grid-cols-2 gap-2">
                         <div>
-                            <label class="block text-xs text-gray-500 mb-1">Date début</label>
+                            <label class="block text-xs text-gray-500 mb-1">Date début du Location</label>
                             <input type="date" id="date-start"
                                 class="w-full text-sm border border-gray-300 rounded-md px-2 py-2">
                         </div>
                         <div>
-                            <label class="block text-xs text-gray-500 mb-1">Date fin</label>
+                            <label class="block text-xs text-gray-500 mb-1">Date fin du Location</label>
                             <input type="date" id="date-end"
                                 class="w-full text-sm border border-gray-300 rounded-md px-2 py-2">
                         </div>
                         <div>
-                            <label class="block text-xs text-gray-500 mb-1">Heure départ</label>
+                            <label class="block text-xs text-gray-500 mb-1">Heure de début du Location</label>
                             <input type="time" id="time-start"
                                 class="w-full text-sm border border-gray-300 rounded-md px-2 py-2">
                         </div>
                         <div>
-                            <label class="block text-xs text-gray-500 mb-1">Heure arrivée</label>
+                            <label class="block text-xs text-gray-500 mb-1">Heure de fin du Location</label>
                             <input type="time" id="time-end"
                                 class="w-full text-sm border border-gray-300 rounded-md px-2 py-2">
                         </div>

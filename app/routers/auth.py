@@ -16,7 +16,9 @@ SCOPES = "openid email profile"
 
 
 @router.get("/google")
-async def google_login():
+async def google_login(request: Request):
+    if next_url := request.query_params.get("next"):
+        request.session["next_url"] = next_url
     params = (
         f"client_id={settings.google_client_id}"
         f"&redirect_uri={REDIRECT_URI}"
@@ -65,7 +67,8 @@ async def google_callback(request: Request, code: str):
     request.session["user_name"] = user.name
     request.session["user_picture"] = user.picture or ""
 
-    return RedirectResponse(url="/")
+    next_url = request.session.pop("next_url", "/")
+    return RedirectResponse(url=next_url)
 
 
 @router.get("/logout")
