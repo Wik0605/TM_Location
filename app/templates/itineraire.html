@@ -20,9 +20,10 @@
         <div class="text-4xl mb-3">🗺️</div>
         <h2 class="text-lg font-bold text-gray-900 mb-2">Limite atteinte</h2>
         <p class="text-sm text-gray-600 mb-5">Vous avez utilisé vos 7 calculs gratuits du jour.<br>Connectez-vous pour continuer sans limite.</p>
-        <a href="/auth/google?next={{ request.url }}"
-           class="block w-full bg-indigo-600 text-white py-3 rounded-xl font-bold text-sm hover:bg-indigo-700 transition-all mb-3">
-            Se connecter avec Google
+        <a href="/auth/google?next={{ request.url }}" class="inline-block w-full text-center mb-3">
+            <img src="/static/image/Auth/Web%20(mobile%20%2B%20desktop)/svg/light/web_light_rd_SI.svg"
+                 alt="Se connecter avec Google"
+                 class="h-12 w-auto mx-auto">
         </a>
         <button id="quota-close" class="text-sm text-gray-400 hover:text-gray-600 underline">Fermer</button>
     </div>
