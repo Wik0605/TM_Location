@@ -3,178 +3,186 @@
 {% block title %}{{ voiture.nom }}{% endblock %}
 
 {% block content %}
-<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+{% set photos = (voiture.images | map(attribute='url') | list) %}
 
-    <!-- Fil d'ariane -->
-    <nav class="flex mb-8 text-sm text-gray-500">
-        <a href="/" class="hover:text-primary">Accueil</a>
-        <span class="mx-2">/</span>
-        <a href="/voitures" class="hover:text-primary">Nos véhicules</a>
-        <span class="mx-2">/</span>
-        <span class="text-gray-900 font-medium">{{ voiture.nom }}</span>
-    </nav>
+<section class="max-w-md mx-auto px-5 pt-6 pb-8">
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-
-        <!-- Colonne Gauche : Carousel photos -->
-        <div class="space-y-4">
-
-            {% set photos = (voiture.images | map(attribute='url') | list) %}
-
-            {% if photos %}
-            <div class="relative rounded-2xl overflow-hidden bg-gray-100" id="carousel"
-                 style="-webkit-mask-image: -webkit-radial-gradient(white, black);">
-
-                <div id="carousel-track">
-                    {% for photo in photos %}
-                    <div class="w-full cursor-zoom-in"
-                         id="slide-{{ loop.index0 }}"
-                         style="height:320px;{% if not loop.first %}display:none{% endif %}"
-                         onclick="openLightbox({{ loop.index0 }})">
-                        <img src="{{ photo }}" alt="{{ voiture.nom }} — photo {{ loop.index }}"
-                            style="width:100%;height:100%;object-fit:cover;display:block;">
-                    </div>
-                    {% endfor %}
-                </div>
-
-                {% if photos | length > 1 %}
-                <button onclick="carouselPrev()"
-                    class="absolute left-3 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md transition-all">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                    </svg>
-                </button>
-                <button onclick="carouselNext()"
-                    class="absolute right-3 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md transition-all">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-                    </svg>
-                </button>
-                <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2" id="carousel-dots">
-                    {% for photo in photos %}
-                    <button onclick="carouselGoTo({{ loop.index0 }})"
-                        class="w-2 h-2 rounded-full transition-all {% if loop.first %}bg-white scale-125{% else %}bg-white/50{% endif %}"
-                        id="dot-{{ loop.index0 }}"></button>
-                    {% endfor %}
-                </div>
-                <div class="absolute top-3 right-3 bg-black/50 text-white text-xs font-bold px-3 py-1 rounded-full">
-                    <span id="carousel-counter">1</span> / {{ photos | length }}
-                </div>
-                {% endif %}
-
-            </div>
-            {% else %}
-            <div class="h-80 rounded-2xl bg-gray-100 flex flex-col items-center justify-center text-gray-400">
-                <span class="text-6xl mb-3">🚗</span>
-                <p class="text-sm">Aucune photo disponible</p>
-            </div>
-            {% endif %}
-
-            <!-- Caractéristiques -->
-            <div class="grid grid-cols-2 gap-4">
-                <div class="bg-white p-4 rounded-xl shadow-sm text-center border border-gray-100">
-                    <span class="block text-2xl mb-1">💺</span>
-                    <span class="text-sm font-medium text-gray-700">{{ voiture.places }} places</span>
-                </div>
-                {% if voiture.consommation_carburant %}
-                <div class="bg-white p-4 rounded-xl shadow-sm text-center border border-gray-100 col-span-2">
-                    <span class="block text-2xl mb-1">⛽</span>
-                    <span class="text-sm font-medium text-gray-700">{{ voiture.consommation_carburant }} L/100km</span>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- Colonne Droite : Infos + Réservation -->
-        <div class="space-y-8">
-
-            <div>
-                <h1 class="text-4xl font-bold text-gray-900 mb-2">{{ voiture.nom }}</h1>
-                
-            </div>
-
-            <!-- Tarifs disponibles -->
-            <div>
-                <h3 class="text-lg font-semibold text-gray-900 mb-3">Tarifs disponibles</h3>
-                {% if voiture.types_location %}
-                <div class="space-y-2" id="tarifs-list">
-                    {% for tl in voiture.types_location %}
-                    <label class="flex items-center justify-between bg-white border-2 border-gray-200 rounded-xl px-4 py-3 cursor-pointer hover:border-primary transition-colors has-[:checked]:border-primary has-[:checked]:bg-red-50">
-                        <div class="flex items-center gap-3">
-                            <input type="radio" name="type_location_selected" value="{{ tl.id }}"
-                                class="accent-primary" {% if loop.first %}checked{% endif %}>
-                            <p class="font-semibold text-gray-900 text-sm">{{ tl.nom }}</p>
-                        </div>
-                        <span class="font-bold text-primary text-sm whitespace-nowrap">{{ "{:,}".format(tl.prix) }} Ar</span>
-                    </label>
-                    {% endfor %}
-                </div>
-                {% else %}
-                <p class="text-gray-500 italic text-sm">Tarifs sur demande. Contactez-nous.</p>
-                {% endif %}
-            </div>
-
-            <!-- Formulaire de réservation -->
-            <div class="bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
-                <h3 class="text-xl font-bold text-gray-900 mb-6">Réserver ce véhicule</h3>
-
-                {% if error %}
-                <div class="bg-red-50 border-l-4 border-red-500 text-red-700 px-4 py-3 text-sm rounded-lg mb-4">
-                    ⚠️ {{ error }}
-                </div>
-                {% endif %}
-
-                <form action="/voitures/{{ voiture.id }}/reserver" method="POST" class="space-y-4" id="form-reserver">
-                    <input type="hidden" name="type_location_id" id="hidden-type-location-id"
-                        value="{{ voiture.types_location[0].id if voiture.types_location else '' }}">
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Nom complet</label>
-                        <input type="text" name="client_nom" required placeholder="Ex: Jean Rakoto"
-                            class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Téléphone</label>
-                        <input type="tel" name="client_telephone" required placeholder="+261 34 00 000 00"
-                            class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Email (optionnel)</label>
-                        <input type="email" name="client_email" placeholder="jean@email.mg"
-                            class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Date souhaitée</label>
-                        <input type="date" name="date_debut" required
-                            class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
-                    </div>
-
-                    <button type="submit"
-                        class="w-full bg-primary text-white py-4 rounded-xl font-bold text-lg hover:bg-black transition-all hover:scale-[1.02] shadow-lg">
-                        Confirmer la demande
-                    </button>
-                    <a href="/voitures/{{ voiture.id }}/itineraire"
-                        class="block w-full bg-gray-900 text-white text-center py-4 rounded-xl font-bold text-lg hover:bg-primary transition-all hover:scale-[1.02] shadow-lg">
-                        Planifier un itinéraire
-                    </a>
-                </form>
-
-                <p class="text-xs text-gray-400 mt-4 text-center">Assistance 24/7 et assurance incluses.</p>
-            </div>
+    <!-- Bouton retour + titre -->
+    <div class="flex items-center gap-3 mb-5">
+        <a href="/voitures"
+           class="w-9 h-9 rounded-full bg-[color:var(--color-neutral-soft)] flex items-center justify-center text-ink hover:bg-[color:var(--color-border-strong)] transition-all"
+           aria-label="Retour catalogue">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+            </svg>
+        </a>
+        <div class="min-w-0 flex-1">
+            <span class="block text-[10px] font-bold uppercase tracking-[0.2em] text-[color:var(--color-neutral)]">Véhicule</span>
+            <h1 class="font-display text-xl font-black text-ink tracking-tight leading-tight truncate">{{ voiture.nom }}</h1>
         </div>
     </div>
+
+    <!-- Galerie image 220px -->
+    {% if photos %}
+    <div class="relative rounded-3xl overflow-hidden bg-[color:var(--color-primary-tint)] mb-4" id="carousel">
+        <div id="carousel-track">
+            {% for photo in photos %}
+            <div class="w-full cursor-zoom-in"
+                 id="slide-{{ loop.index0 }}"
+                 style="height:220px;{% if not loop.first %}display:none{% endif %}"
+                 onclick="openLightbox({{ loop.index0 }})">
+                <img src="{{ photo }}" alt="{{ voiture.nom }} — photo {{ loop.index }}"
+                     style="width:100%;height:100%;object-fit:cover;display:block;">
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if photos | length > 1 %}
+        <button onclick="carouselPrev()"
+                class="absolute left-3 top-1/2 -translate-y-1/2 bg-white/85 backdrop-blur-md hover:bg-white text-ink rounded-full w-9 h-9 flex items-center justify-center shadow-md transition-all">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+            </svg>
+        </button>
+        <button onclick="carouselNext()"
+                class="absolute right-3 top-1/2 -translate-y-1/2 bg-white/85 backdrop-blur-md hover:bg-white text-ink rounded-full w-9 h-9 flex items-center justify-center shadow-md transition-all">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+            </svg>
+        </button>
+        <!-- Dots pagination -->
+        <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5" id="carousel-dots">
+            {% for photo in photos %}
+            <button onclick="carouselGoTo({{ loop.index0 }})"
+                    class="rounded-full transition-all {% if loop.first %}bg-white w-6 h-1.5{% else %}bg-white/50 w-1.5 h-1.5{% endif %}"
+                    id="dot-{{ loop.index0 }}"></button>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <span class="absolute top-3 left-3 bg-success text-white text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full">
+            Disponible
+        </span>
+    </div>
+    {% else %}
+    <div class="rounded-3xl mb-4 flex items-center justify-center"
+         style="height:220px; background-image: repeating-linear-gradient(45deg, rgba(217,119,6,0.12) 0 2px, transparent 2px 14px); background-color: var(--color-primary-tint);">
+        <span class="font-display text-2xl font-black text-primary/60 tracking-tight">{{ voiture.nom }}</span>
+    </div>
+    {% endif %}
+
+    <!-- Grille specs 3 colonnes -->
+    <div class="grid grid-cols-3 gap-2 mb-5">
+        <div class="bg-[color:var(--color-neutral-soft)] rounded-2xl p-3 text-center">
+            <span class="block text-lg mb-0.5">💺</span>
+            <span class="block font-display text-sm font-black text-ink">{{ voiture.places }}</span>
+            <span class="block text-[9px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)]">Places</span>
+        </div>
+        <div class="bg-[color:var(--color-neutral-soft)] rounded-2xl p-3 text-center">
+            <span class="block text-lg mb-0.5">⛽</span>
+            <span class="block font-display text-sm font-black text-ink">{{ voiture.consommation_carburant }}L</span>
+            <span class="block text-[9px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)]">Conso /100</span>
+        </div>
+        <div class="bg-[color:var(--color-neutral-soft)] rounded-2xl p-3 text-center">
+            <span class="block text-lg mb-0.5">📋</span>
+            <span class="block font-display text-sm font-black text-ink">{{ voiture.types_location | length }}</span>
+            <span class="block text-[9px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)]">Forfaits</span>
+        </div>
+    </div>
+
+    <!-- Tarifs disponibles (radio selection) -->
+    {% if voiture.types_location %}
+    <div class="mb-5">
+        <h2 class="font-display text-sm font-black text-ink tracking-tight mb-2 uppercase">
+            Choisis ton forfait
+        </h2>
+        <div class="space-y-2" id="tarifs-list">
+            {% for tl in voiture.types_location %}
+            <label class="flex items-center justify-between bg-white border border-[color:var(--color-border-strong)] rounded-2xl px-4 py-3 cursor-pointer hover:border-primary transition-all has-[:checked]:border-primary has-[:checked]:bg-[color:var(--color-primary-light)]">
+                <div class="flex items-center gap-3">
+                    <input type="radio" name="type_location_selected" value="{{ tl.id }}"
+                           class="accent-primary" {% if loop.first %}checked{% endif %}>
+                    <span class="font-semibold text-ink text-sm">{{ tl.nom }}</span>
+                </div>
+                <span class="font-display font-black text-primary text-sm whitespace-nowrap">
+                    {{ "{:,}".format(tl.prix).replace(",", " ") }} Ar
+                </span>
+            </label>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Formulaire de réservation rapide (card blanche fine) -->
+    <div class="bg-white rounded-3xl p-5 border border-[color:var(--color-border)] shadow-[0_4px_16px_rgba(0,0,0,0.06)]">
+        <h2 class="font-display text-base font-black text-ink tracking-tight mb-4">
+            Réserver ce véhicule
+        </h2>
+
+        {% if error %}
+        <div class="bg-[color:var(--color-primary-light)] border-l-4 border-danger text-danger px-3 py-2 text-xs rounded-lg mb-3">
+            ⚠️ {{ error }}
+        </div>
+        {% endif %}
+
+        <form action="/voitures/{{ voiture.id }}/reserver" method="POST" class="space-y-3" id="form-reserver">
+            <input type="hidden" name="type_location_id" id="hidden-type-location-id"
+                   value="{{ voiture.types_location[0].id if voiture.types_location else '' }}">
+
+            <div class="grid grid-cols-1 gap-3">
+                <label class="block">
+                    <span class="block text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)] mb-1">Nom complet</span>
+                    <input type="text" name="client_nom" required placeholder="Ex : Jean Rakoto"
+                           class="w-full text-sm text-ink bg-[color:var(--color-neutral-soft)] border-0 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-primary focus:bg-white transition-all">
+                </label>
+                <label class="block">
+                    <span class="block text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)] mb-1">Téléphone</span>
+                    <input type="tel" name="client_telephone" required placeholder="+261 34 00 000 00"
+                           class="w-full text-sm text-ink bg-[color:var(--color-neutral-soft)] border-0 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-primary focus:bg-white transition-all">
+                </label>
+                <label class="block">
+                    <span class="block text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)] mb-1">Email (optionnel)</span>
+                    <input type="email" name="client_email" placeholder="jean@email.mg"
+                           class="w-full text-sm text-ink bg-[color:var(--color-neutral-soft)] border-0 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-primary focus:bg-white transition-all">
+                </label>
+                <label class="block">
+                    <span class="block text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)] mb-1">Date souhaitée</span>
+                    <input type="date" name="date_debut" required
+                           class="w-full text-sm text-ink bg-[color:var(--color-neutral-soft)] border-0 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-primary focus:bg-white transition-all">
+                </label>
+            </div>
+
+            <!-- CTA principal ambre : calculateur d'itinéraire -->
+            <a href="/voitures/{{ voiture.id }}/itineraire"
+               class="flex items-center justify-center gap-2 w-full bg-primary hover:bg-primary-dark text-white font-bold text-sm py-3.5 rounded-2xl uppercase tracking-widest transition-all shadow-lg mt-2">
+                <span>📍</span>
+                <span>Ouvrir le calculateur d'itinéraire</span>
+            </a>
+
+            <!-- CTA secondaire noir : réserver -->
+            <button type="submit"
+                    class="block w-full bg-ink hover:bg-primary text-white font-bold text-sm py-3.5 rounded-2xl uppercase tracking-widest transition-all">
+                Réserver ce véhicule
+            </button>
+        </form>
+
+        <p class="text-[10px] text-[color:var(--color-neutral)] mt-3 text-center font-medium">
+            Assistance 24/7 · Assurance incluse
+        </p>
+    </div>
+
 </section>
 
 <!-- Lightbox overlay -->
-{% if photos is defined and photos %}
+{% if photos %}
 <div id="lightbox" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/90" onclick="closeLightboxOnBackdrop(event)">
     <button onclick="closeLightbox()" class="absolute top-4 right-4 text-white bg-white/10 hover:bg-white/30 rounded-full w-11 h-11 flex items-center justify-center text-2xl font-bold transition-all z-10">✕</button>
     {% if photos | length > 1 %}
     <button onclick="lightboxPrev(event)" class="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/30 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-md transition-all z-10">
-        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
     </button>
     <button onclick="lightboxNext(event)" class="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/30 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-md transition-all z-10">
-        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
     </button>
     {% endif %}
     <img id="lightbox-img" src="" alt="" class="max-w-[90vw] max-h-[85vh] rounded-xl object-contain shadow-2xl select-none">
@@ -190,7 +198,6 @@ const photos = [{% for p in photos %}"{{ p }}"{% if not loop.last %},{% endif %}
 const total = photos.length;
 {% endif %}
 
-// Sync radio -> hidden input
 document.querySelectorAll('input[name="type_location_selected"]').forEach(radio => {
     radio.addEventListener('change', () => {
         document.getElementById('hidden-type-location-id').value = radio.value;
