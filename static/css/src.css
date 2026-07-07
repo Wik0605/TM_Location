@@ -4,7 +4,21 @@
   --color-primary: var(--color-primary);
   --color-primary-dark: var(--color-primary-dark);
   --color-primary-light: var(--color-primary-light);
+  --color-primary-tint: var(--color-primary-tint);
+  --color-primary-tint-strong: var(--color-primary-tint-strong);
   --color-secondary: var(--color-secondary);
   --color-accent: var(--color-accent);
+  --color-indigo-cta: var(--color-indigo-cta);
+
+  --color-ink: var(--color-ink);
+  --color-neutral-strong: var(--color-neutral-strong);
+  --color-neutral-soft: var(--color-neutral-soft);
+  --color-border-soft: var(--color-border);
+  --color-border-strong: var(--color-border-strong);
+
+  --color-success: var(--color-success);
+  --color-danger: var(--color-error);
+
   --font-sans: var(--font-main);
+  --font-display: var(--font-display);
 }

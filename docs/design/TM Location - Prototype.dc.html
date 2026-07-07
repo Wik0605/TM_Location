@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #E7E5E4; font-family: 'Inter', sans-serif; }
+  @keyframes pulseDot { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:.4; transform:scale(1.5); } }
+  ::-webkit-scrollbar { width: 0; height: 0; }
+</style>
+</helmet>
+
+<div style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:40px;">
+  <div style="width:390px; height:844px; background:#fff; border-radius:32px; box-shadow:0 30px 60px rgba(0,0,0,.25); overflow:hidden; position:relative; border:1px solid rgba(0,0,0,.06); --primary:{{ primaryColor }}; --primary-dark:{{ primaryDark }}; --primary-light:{{ primaryLight }}; --primary-tint:{{ primaryTint }}; --primary-tint2:{{ primaryTint2 }}; --primary-tint3:{{ primaryTint3 }};">
+
+    <!-- ============ ACCUEIL ============ -->
+    <div style="height:100%; overflow-y:auto; flex-direction:column; display:{{ accueilDisplay }};">
+      <div style="position:sticky; top:0; z-index:10; display:flex; align-items:center; justify-content:space-between; padding:16px 18px; background:rgba(255,255,255,.72); backdrop-filter:blur(14px); border-bottom:1px solid rgba(0,0,0,.06);">
+        <div style="font:900 19px 'Outfit',sans-serif; letter-spacing:-0.03em;"><span style="color:#0A0A0A;">TM</span><span style="color:var(--primary);">Location</span></div>
+        <button onClick="{{ goCatalogue }}" style="font:700 11px 'Inter',sans-serif; letter-spacing:.03em; background:var(--primary); color:#0A0A0A; border:none; padding:9px 16px; border-radius:999px; cursor:pointer; transition:all .3s;" style-hover="background:var(--primary-dark); color:#fff; transform:scale(1.04);">RÉSERVER</button>
+      </div>
+
+      <div style="position:relative; padding:28px 20px 130px; background:linear-gradient(160deg, rgba(217,119,6,.55), rgba(10,10,10,.9)), repeating-linear-gradient(135deg,#171412,#171412 10px,#221D19 10px,#221D19 20px); color:#fff;">
+        <div style="font:400 11px 'Inter',sans-serif; letter-spacing:.12em; text-transform:uppercase; color:var(--primary-light); margin-bottom:10px;">Madagascar · Location premium</div>
+        <div style="font:900 30px/1.05 'Outfit',sans-serif; letter-spacing:-0.03em; margin-bottom:14px;">Explorez la Grande Île<br>en toute liberté</div>
+        <div style="font:400 13px/1.5 'Inter',sans-serif; color:rgba(255,255,255,.75); max-width:280px;">Des véhicules premium, disponibles partout à Madagascar, réservables en quelques secondes.</div>
+
+        <div style="position:absolute; left:20px; right:20px; bottom:-56px; background:rgba(255,255,255,.14); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,.25); border-radius:22px; padding:16px; display:flex; flex-direction:column; gap:10px; box-shadow:0 20px 40px rgba(0,0,0,.25);">
+          <div style="display:flex; gap:8px;">
+            <div style="flex:1; background:rgba(255,255,255,.9); border-radius:12px; padding:9px 12px;">
+              <div style="font:600 8.5px 'Inter',sans-serif; letter-spacing:.05em; text-transform:uppercase; color:#A8A29E;">Départ</div>
+              <div style="font:600 12.5px 'Inter',sans-serif; color:#0A0A0A;">Aujourd'hui</div>
+            </div>
+            <div style="flex:1; background:rgba(255,255,255,.9); border-radius:12px; padding:9px 12px;">
+              <div style="font:600 8.5px 'Inter',sans-serif; letter-spacing:.05em; text-transform:uppercase; color:#A8A29E;">Retour</div>
+              <div style="font:600 12.5px 'Inter',sans-serif; color:#0A0A0A;">Demain</div>
+            </div>
+          </div>
+          <div style="background:rgba(255,255,255,.9); border-radius:12px; padding:9px 12px;">
+            <div style="font:600 8.5px 'Inter',sans-serif; letter-spacing:.05em; text-transform:uppercase; color:#A8A29E;">Type de véhicule</div>
+            <div style="font:600 12.5px 'Inter',sans-serif; color:#0A0A0A;">Tous les véhicules</div>
+          </div>
+          <button onClick="{{ goCatalogue }}" style="font:700 12px 'Inter',sans-serif; letter-spacing:.02em; background:#0A0A0A; color:#fff; border:none; padding:12px; border-radius:12px; cursor:pointer; transition:all .3s;" style-hover="background:var(--primary); color:#0A0A0A;">Rechercher un véhicule</button>
+        </div>
+      </div>
+
+      <div style="padding:76px 18px 24px; flex:1;">
+        <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:14px;">
+          <div style="font:800 17px 'Outfit',sans-serif; letter-spacing:-0.02em; color:#0A0A0A;">Véhicules vedettes</div>
+          <a onClick="{{ goCatalogue }}" style="font:600 11px 'Inter',sans-serif; color:var(--primary); cursor:pointer;">Tout voir →</a>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:14px;">
+          <sc-for list="{{ cars }}" as="car" hint-placeholder-count="6">
+            <div onClick="{{ car.select }}" style="background:#fff; border:1px solid #F0EFED; border-radius:20px; overflow:hidden; box-shadow:0 2px 10px rgba(0,0,0,.04); transition:all .3s; cursor:pointer;" style-hover="box-shadow:0 12px 28px rgba(0,0,0,.1); transform:translateY(-2px);">
+              <div style="position:relative; height:120px; background:repeating-linear-gradient(135deg,#F5F5F4,#F5F5F4 10px,#EBEAE7 10px,#EBEAE7 20px); display:flex; align-items:center; justify-content:center;">
+                <span style="font:500 10px ui-monospace,Menlo,monospace; color:#A8A29E;">photo — {{ car.name }}</span>
+                <div style="position:absolute; top:10px; left:10px; background:rgba(255,255,255,.85); backdrop-filter:blur(6px); border-radius:999px; padding:4px 10px; font:700 9.5px 'Inter',sans-serif; color:#059669;">● Disponible</div>
+                <div style="position:absolute; top:10px; right:10px; background:rgba(10,10,10,.75); backdrop-filter:blur(6px); border-radius:999px; padding:4px 10px; font:700 9.5px 'Inter',sans-serif; color:#fff;">{{ car.category }}</div>
+              </div>
+              <div style="padding:14px;">
+                <div style="font:700 14.5px 'Outfit',sans-serif; color:#0A0A0A; margin-bottom:8px;">{{ car.name }}</div>
+                <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;">
+                  <span style="font:600 9.5px 'Inter',sans-serif; background:#F5F5F4; color:#57534E; padding:4px 9px; border-radius:999px;">{{ car.transmission }}</span>
+                  <span style="font:600 9.5px 'Inter',sans-serif; background:#F5F5F4; color:#57534E; padding:4px 9px; border-radius:999px;">Clim</span>
+                  <span style="font:600 9.5px 'Inter',sans-serif; background:#F5F5F4; color:#57534E; padding:4px 9px; border-radius:999px;">{{ car.fuel }}</span>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                  <div><span style="font:800 16px 'Outfit',sans-serif; color:#0A0A0A;">{{ car.price }}</span><span style="font:600 10.5px 'Inter',sans-serif; color:#A8A29E;"> Ar/jour</span></div>
+                  <button style="font:700 11px 'Inter',sans-serif; background:#0A0A0A; color:#fff; border:none; padding:8px 14px; border-radius:999px; cursor:pointer; transition:all .3s;" style-hover="background:var(--primary); color:#0A0A0A;">Détails</button>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="height:70px;"></div>
+      </div>
+      <div style="flex:1;"></div>
+    </div>
+
+    <!-- ============ CATALOGUE ============ -->
+    <div style="height:100%; overflow-y:auto; flex-direction:column; display:{{ catalogueDisplay }};">
+      <div style="position:sticky; top:0; z-index:10; display:flex; align-items:center; justify-content:space-between; padding:16px 18px; background:rgba(255,255,255,.72); backdrop-filter:blur(14px); border-bottom:1px solid rgba(0,0,0,.06);">
+        <div style="font:900 19px 'Outfit',sans-serif; letter-spacing:-0.03em;"><span style="color:#0A0A0A;">TM</span><span style="color:var(--primary);">Location</span></div>
+        <button onClick="{{ goAccueil }}" style="font:700 11px 'Inter',sans-serif; letter-spacing:.03em; background:#0A0A0A; color:#fff; border:none; padding:9px 16px; border-radius:999px; cursor:pointer;">ACCUEIL</button>
+      </div>
+
+      <div style="padding:18px;">
+        <div style="font:800 20px 'Outfit',sans-serif; letter-spacing:-0.02em; color:#0A0A0A; margin-bottom:12px;">Catalogue</div>
+        <div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:4px;">
+          <sc-for list="{{ filters }}" as="filt" hint-placeholder-count="4">
+            <button onClick="{{ filt.select }}" style="flex-shrink:0; font:700 11px 'Inter',sans-serif; padding:8px 15px; border-radius:999px; border:none; cursor:pointer; transition:all .3s; background:{{ filt.bg }}; color:{{ filt.fg }};">{{ filt.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="padding:0 18px 24px; flex:1;">
+        <div style="display:flex; flex-direction:column; gap:14px;">
+          <sc-for list="{{ filteredCars }}" as="fcar" hint-placeholder-count="6">
+            <div onClick="{{ fcar.select }}" style="background:#fff; border:1px solid #F0EFED; border-radius:20px; overflow:hidden; box-shadow:0 2px 10px rgba(0,0,0,.04); transition:all .3s; cursor:pointer;" style-hover="box-shadow:0 12px 28px rgba(0,0,0,.1); transform:translateY(-2px);">
+              <div style="position:relative; height:110px; background:repeating-linear-gradient(135deg,#F5F5F4,#F5F5F4 10px,#EBEAE7 10px,#EBEAE7 20px); display:flex; align-items:center; justify-content:center;">
+                <span style="font:500 10px ui-monospace,Menlo,monospace; color:#A8A29E;">photo — {{ fcar.name }}</span>
+                <div style="position:absolute; top:10px; right:10px; background:rgba(10,10,10,.75); backdrop-filter:blur(6px); border-radius:999px; padding:4px 10px; font:700 9.5px 'Inter',sans-serif; color:#fff;">{{ fcar.category }}</div>
+              </div>
+              <div style="padding:13px 14px;">
+                <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:6px;">
+                  <span style="font:700 14.5px 'Outfit',sans-serif; color:#0A0A0A;">{{ fcar.name }}</span>
+                  <span><span style="font:800 15px 'Outfit',sans-serif; color:#0A0A0A;">{{ fcar.price }}</span><span style="font:600 9.5px 'Inter',sans-serif; color:#A8A29E;"> Ar/j</span></span>
+                </div>
+                <div style="font:600 10px 'Inter',sans-serif; color:#78716C;">{{ fcar.transmission }} · Clim · {{ fcar.fuel }} · {{ fcar.seats }} places</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ DETAIL ============ -->
+    <div style="height:100%; overflow-y:auto; flex-direction:column; display:{{ detailDisplay }};">
+      <div style="position:sticky; top:0; z-index:10; display:flex; align-items:center; gap:12px; padding:16px 18px; background:rgba(255,255,255,.72); backdrop-filter:blur(14px); border-bottom:1px solid rgba(0,0,0,.06);">
+        <button onClick="{{ goAccueil }}" style="width:32px; height:32px; border-radius:999px; border:none; background:#F5F5F4; color:#0A0A0A; font-size:15px; cursor:pointer;">←</button>
+        <div style="font:800 15px 'Outfit',sans-serif; color:#0A0A0A;">Détails du véhicule</div>
+      </div>
+
+      <div style="position:relative; height:220px; background:repeating-linear-gradient(135deg,#171412,#171412 10px,#221D19 10px,#221D19 20px); display:flex; align-items:center; justify-content:center;">
+        <span style="font:500 10px ui-monospace,Menlo,monospace; color:#78716C;">photo — {{ selectedCar.name }}</span>
+        <div style="position:absolute; bottom:12px; left:0; right:0; display:flex; justify-content:center; gap:6px;">
+          <span style="width:6px; height:6px; border-radius:999px; background:var(--primary);"></span>
+          <span style="width:6px; height:6px; border-radius:999px; background:rgba(255,255,255,.35);"></span>
+          <span style="width:6px; height:6px; border-radius:999px; background:rgba(255,255,255,.35);"></span>
+        </div>
+      </div>
+
+      <div style="padding:20px 18px;">
+        <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:4px;">
+          <div style="font:900 22px 'Outfit',sans-serif; letter-spacing:-0.03em; color:#0A0A0A;">{{ selectedCar.name }}</div>
+          <div style="font:700 9.5px 'Inter',sans-serif; color:#059669;">● Disponible</div>
+        </div>
+        <div style="font:600 12px 'Inter',sans-serif; color:#78716C; margin-bottom:16px;">{{ selectedCar.category }}</div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:20px;">
+          <div style="background:#F5F5F4; border-radius:14px; padding:12px 10px; text-align:center;">
+            <div style="font:700 13px 'Inter',sans-serif; color:#0A0A0A;">{{ selectedCar.transmission }}</div>
+            <div style="font:500 9px 'Inter',sans-serif; color:#A8A29E; margin-top:2px;">Boîte</div>
+          </div>
+          <div style="background:#F5F5F4; border-radius:14px; padding:12px 10px; text-align:center;">
+            <div style="font:700 13px 'Inter',sans-serif; color:#0A0A0A;">{{ selectedCar.fuel }}</div>
+            <div style="font:500 9px 'Inter',sans-serif; color:#A8A29E; margin-top:2px;">Carburant</div>
+          </div>
+          <div style="background:#F5F5F4; border-radius:14px; padding:12px 10px; text-align:center;">
+            <div style="font:700 13px 'Inter',sans-serif; color:#0A0A0A;">{{ selectedCar.seats }} places</div>
+            <div style="font:500 9px 'Inter',sans-serif; color:#A8A29E; margin-top:2px;">Capacité</div>
+          </div>
+        </div>
+
+        <div style="background:#fff; border:1px solid #F0EFED; border-radius:20px; box-shadow:0 4px 16px rgba(0,0,0,.05); padding:16px; display:flex; flex-direction:column; gap:10px; margin-bottom:16px;">
+          <div style="font:700 13px 'Outfit',sans-serif; color:#0A0A0A;">Réservation rapide</div>
+          <div style="display:flex; gap:8px;">
+            <div style="flex:1;">
+              <div style="font:600 8.5px 'Inter',sans-serif; letter-spacing:.05em; text-transform:uppercase; color:#A8A29E; margin-bottom:4px;">Départ</div>
+              <div style="border:1px solid #E7E5E4; border-radius:10px; padding:8px 10px; font:600 12.5px 'Inter',sans-serif; color:#0A0A0A;">Aujourd'hui</div>
+            </div>
+            <div style="flex:1;">
+              <div style="font:600 8.5px 'Inter',sans-serif; letter-spacing:.05em; text-transform:uppercase; color:#A8A29E; margin-bottom:4px;">Retour</div>
+              <div style="border:1px solid #E7E5E4; border-radius:10px; padding:8px 10px; font:600 12.5px 'Inter',sans-serif; color:#0A0A0A;">Demain</div>
+            </div>
+          </div>
+          <div style="display:flex; align-items:baseline; justify-content:space-between; padding-top:4px; border-top:1px solid #F0EFED;">
+            <span style="font:600 11.5px 'Inter',sans-serif; color:#78716C;">Total estimé</span>
+            <span><span style="font:800 18px 'Outfit',sans-serif; color:#0A0A0A;">{{ selectedCar.price }}</span><span style="font:600 10.5px 'Inter',sans-serif; color:#A8A29E;"> Ar</span></span>
+          </div>
+        </div>
+
+        <button onClick="{{ goItineraire }}" style="width:100%; font:700 13px 'Inter',sans-serif; background:var(--primary); color:#0A0A0A; border:none; padding:14px; border-radius:14px; cursor:pointer; transition:all .3s; margin-bottom:10px;" style-hover="background:var(--primary-dark); color:#fff;">📍 Ouvrir le calculateur d'itinéraire</button>
+        <button style="width:100%; font:700 13px 'Inter',sans-serif; background:#0A0A0A; color:#fff; border:none; padding:14px; border-radius:14px; cursor:pointer; transition:all .3s;" style-hover="background:#262626;">Réserver ce véhicule</button>
+      </div>
+    </div>
+
+    <!-- ============ ITINERAIRE ============ -->
+    <div style="height:100%; flex-direction:column; position:relative; display:{{ itineraireDisplay }};">
+      <div style="position:sticky; top:0; z-index:10; display:flex; align-items:center; gap:12px; padding:16px 18px; background:rgba(255,255,255,.9); backdrop-filter:blur(14px); border-bottom:1px solid rgba(0,0,0,.06);">
+        <button onClick="{{ goDetail }}" style="width:32px; height:32px; border-radius:999px; border:none; background:#F5F5F4; color:#0A0A0A; font-size:15px; cursor:pointer;">←</button>
+        <div style="font:800 15px 'Outfit',sans-serif; color:#0A0A0A; flex:1;">Calculateur d'itinéraire</div>
+        <div style="font:700 9.5px 'Inter',sans-serif; color:{{ quotaColor }}; background:{{ quotaBg }}; padding:5px 10px; border-radius:999px;">{{ quotaLabel }}</div>
+      </div>
+
+      <div onClick="{{ mapClick }}" style="position:relative; height:280px; flex-shrink:0; background:repeating-linear-gradient(0deg,#EDECE8,#EDECE8 24px,#E4E2DC 24px,#E4E2DC 25px), repeating-linear-gradient(90deg,#EDECE8,#EDECE8 24px,#E4E2DC 24px,#E4E2DC 25px); cursor:{{ mapCursor }};">
+        <div style="position:absolute; left:0; top:38%; right:0; height:14px; background:linear-gradient(#fff,#fff) center/100% 3px no-repeat; transform:rotate(-4deg);"></div>
+        <div style="position:absolute; left:8%; top:0; bottom:0; width:14px; background:linear-gradient(90deg,#fff,#fff) center/3px 100% no-repeat; transform:rotate(8deg);"></div>
+        <div style="position:absolute; top:10px; left:10px; background:rgba(255,255,255,.85); backdrop-filter:blur(6px); border-radius:8px; padding:4px 9px; font:500 9px ui-monospace,Menlo,monospace; color:#78716C;">carte stylisée — Madagascar</div>
+
+        <div style="position:absolute; top:10px; right:10px; display:flex; flex-direction:column; gap:4px; box-shadow:0 4px 12px rgba(0,0,0,.12); border-radius:10px; overflow:hidden;">
+          <div style="width:30px; height:30px; background:#fff; display:flex; align-items:center; justify-content:center; font:700 15px 'Inter',sans-serif; color:#0A0A0A; border-bottom:1px solid #F0EFED;">+</div>
+          <div style="width:30px; height:30px; background:#fff; display:flex; align-items:center; justify-content:center; font:700 15px 'Inter',sans-serif; color:#0A0A0A;">−</div>
+        </div>
+
+        <sc-for list="{{ markers }}" as="mk" hint-placeholder-count="0">
+          <div style="position:absolute; left:{{ mk.left }}; top:{{ mk.top }}; transform:translate(-50%,-100%); display:flex; flex-direction:column; align-items:center; pointer-events:none;">
+            <div style="width:26px; height:26px; border-radius:999px 999px 999px 2px; background:{{ mk.color }}; transform:rotate(45deg); box-shadow:0 3px 8px rgba(0,0,0,.3); display:flex; align-items:center; justify-content:center;">
+              <span style="transform:rotate(-45deg); font-size:11px;">{{ mk.icon }}</span>
+            </div>
+          </div>
+        </sc-for>
+
+        <div style="position:absolute; top:44px; left:50%; transform:translateX(-50%); background:#0A0A0A; color:#fff; font:700 11px 'Inter',sans-serif; padding:9px 16px; border-radius:999px; align-items:center; gap:8px; box-shadow:0 8px 20px rgba(0,0,0,.3); white-space:nowrap; display:{{ placingBannerDisplay }};">
+          <span style="width:7px; height:7px; border-radius:999px; background:var(--primary); animation:pulseDot 1.2s infinite;"></span>
+          Touche la carte pour placer le point
+          <span onClick="{{ cancelPlacing }}" style="cursor:pointer; opacity:.6; padding-left:4px;">✕</span>
+        </div>
+      </div>
+
+      <div style="flex:1; overflow-y:auto; padding:16px 18px 90px; display:flex; flex-direction:column; gap:14px;">
+
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <button onClick="{{ startPlacingDepart }}" style="display:flex; align-items:center; gap:10px; background:#fff; border:1px solid #E7E5E4; border-radius:14px; padding:12px 14px; cursor:pointer; transition:all .3s; text-align:left;" style-hover="border-color:var(--primary);">
+            <span style="width:10px; height:10px; border-radius:999px; background:{{ departColor }}; flex-shrink:0;"></span>
+            <span style="font:600 12.5px 'Inter',sans-serif; color:#0A0A0A; flex:1;">{{ departLabel }}</span>
+            <span style="font:700 10px 'Inter',sans-serif; color:var(--primary);">📍 Pointer</span>
+          </button>
+          <button onClick="{{ startPlacingArrivee }}" style="display:flex; align-items:center; gap:10px; background:#fff; border:1px solid #E7E5E4; border-radius:14px; padding:12px 14px; cursor:pointer; transition:all .3s; text-align:left;" style-hover="border-color:var(--primary);">
+            <span style="width:10px; height:10px; border-radius:999px; background:{{ arriveeColor }}; flex-shrink:0;"></span>
+            <span style="font:600 12.5px 'Inter',sans-serif; color:#0A0A0A; flex:1;">{{ arriveeLabel }}</span>
+            <span style="font:700 10px 'Inter',sans-serif; color:var(--primary);">🎯 Pointer</span>
+          </button>
+          <sc-for list="{{ escales }}" as="esc" hint-placeholder-count="0">
+            <div style="display:flex; align-items:center; gap:10px; background:var(--primary-tint); border:1px solid var(--primary-tint3); border-radius:14px; padding:12px 14px;">
+              <span style="width:10px; height:10px; border-radius:999px; background:var(--primary); flex-shrink:0;"></span>
+              <span style="font:600 12.5px 'Inter',sans-serif; color:#0A0A0A; flex:1;">Escale {{ esc.n }}</span>
+              <span onClick="{{ esc.remove }}" style="font:700 11px 'Inter',sans-serif; color:#A8A29E; cursor:pointer;">✕</span>
+            </div>
+          </sc-for>
+          <button onClick="{{ startPlacingEscale }}" style="font:700 11.5px 'Inter',sans-serif; color:var(--primary); background:none; border:1px dashed var(--primary); border-radius:14px; padding:10px; cursor:pointer;">+ Ajouter une escale</button>
+        </div>
+
+        <div style="background:#fff; border:1px solid #F0EFED; border-radius:20px; box-shadow:0 4px 16px rgba(0,0,0,.05); padding:16px; display:flex; flex-direction:column; gap:14px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:14px;">📅</span>
+            <div style="font:700 12px 'Inter',sans-serif; letter-spacing:.04em; text-transform:uppercase; color:#0A0A0A;">Date de réservation</div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <div style="flex:1;">
+              <div style="font:600 10px 'Inter',sans-serif; color:#78716C; margin-bottom:5px;">Date début du location</div>
+              <input type="date" value="{{ dateStart }}" onChange="{{ setDateStart }}" style="width:100%; border:1px solid #E7E5E4; border-radius:10px; padding:9px 10px; font:600 12px 'Inter',sans-serif; color:#0A0A0A; background:#fff;" />
+            </div>
+            <div style="flex:1;">
+              <div style="font:600 10px 'Inter',sans-serif; color:#78716C; margin-bottom:5px;">Date fin du location</div>
+              <input type="date" value="{{ dateEnd }}" onChange="{{ setDateEnd }}" style="width:100%; border:1px solid #E7E5E4; border-radius:10px; padding:9px 10px; font:600 12px 'Inter',sans-serif; color:#0A0A0A; background:#fff;" />
+            </div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <div style="flex:1;">
+              <div style="font:600 10px 'Inter',sans-serif; color:#78716C; margin-bottom:5px;">Heure début du location</div>
+              <input type="time" value="{{ timeStart }}" onChange="{{ setTimeStart }}" style="width:100%; border:1px solid #E7E5E4; border-radius:10px; padding:9px 10px; font:600 12px 'Inter',sans-serif; color:#0A0A0A; background:#fff;" />
+            </div>
+            <div style="flex:1;">
+              <div style="font:600 10px 'Inter',sans-serif; color:#78716C; margin-bottom:5px;">Heure fin du location</div>
+              <input type="time" value="{{ timeEnd }}" onChange="{{ setTimeEnd }}" style="width:100%; border:1px solid #E7E5E4; border-radius:10px; padding:9px 10px; font:600 12px 'Inter',sans-serif; color:#0A0A0A; background:#fff;" />
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#fff; border:1px solid #F0EFED; border-radius:20px; box-shadow:0 4px 16px rgba(0,0,0,.05); padding:16px; display:flex; flex-direction:column; gap:12px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:13px;">🏷️</span>
+            <div style="font:700 13px 'Outfit',sans-serif; color:#0A0A0A;">Type de location</div>
+          </div>
+          <div style="position:relative;">
+            <select onChange="{{ setForfaitSelect }}" value="{{ forfait }}" style="width:100%; appearance:none; border:1px solid #E7E5E4; border-radius:12px; padding:12px 14px; font:600 12.5px 'Inter',sans-serif; color:#0A0A0A; background:#fff; cursor:pointer;">
+              <sc-for list="{{ forfaits }}" as="opt" hint-placeholder-count="3">
+                <option value="{{ opt.id }}">{{ opt.label }}</option>
+              </sc-for>
+            </select>
+            <span style="position:absolute; right:14px; top:50%; transform:translateY(-50%); pointer-events:none; color:#A8A29E; font-size:11px;">▾</span>
+          </div>
+          <button style="width:100%; font:700 13px 'Inter',sans-serif; background:{{ calcBg }}; color:#fff; border:none; padding:14px; border-radius:14px; cursor:pointer; transition:all .3s;">Calculer l'itinéraire</button>
+          <div style="border-top:1px solid #F0EFED; padding-top:10px; display:flex; flex-direction:column; gap:6px;">
+            <div style="display:flex; justify-content:space-between; font:500 11.5px 'Inter',sans-serif; color:#78716C;"><span>Distance estimée</span><span style="color:#0A0A0A; font-weight:700;">{{ distanceLabel }}</span></div>
+            <div style="display:flex; justify-content:space-between; align-items:baseline;"><span style="font:600 12px 'Inter',sans-serif; color:#78716C;">Prix total</span><span><span style="font:900 20px 'Outfit',sans-serif; color:#0A0A0A;">{{ priceLabel }}</span><span style="font:600 10.5px 'Inter',sans-serif; color:#A8A29E;"> Ar</span></span></div>
+          </div>
+        </div>
+
+        <button onClick="{{ confirmBooking }}" disabled="{{ notReady }}" style="width:100%; font:700 13.5px 'Inter',sans-serif; background:{{ confirmBg }}; color:{{ confirmFg }}; border:none; padding:15px; border-radius:14px; cursor:pointer; transition:all .3s;" style-hover="background:var(--primary-dark); color:#fff;">{{ confirmLabel }}</button>
+      </div>
+
+      <div style="position:absolute; inset:0; background:rgba(10,10,10,.55); backdrop-filter:blur(4px); align-items:center; justify-content:center; z-index:30; padding:24px; display:{{ quotaModalDisplay }};">
+          <div style="background:#fff; border-radius:24px; padding:24px; width:100%; box-shadow:0 30px 60px rgba(0,0,0,.3); position:relative;">
+            <span onClick="{{ closeQuotaModal }}" style="position:absolute; top:16px; right:16px; cursor:pointer; color:#A8A29E; font:700 13px 'Inter',sans-serif;">✕</span>
+            <div style="width:48px; height:48px; border-radius:999px; background:var(--primary-tint2); color:var(--primary-dark); font:800 14px 'Outfit',sans-serif; display:flex; align-items:center; justify-content:center; margin-bottom:14px;">7/7</div>
+            <div style="font:800 17px 'Outfit',sans-serif; letter-spacing:-0.02em; color:#0A0A0A; margin-bottom:8px;">Limite quotidienne atteinte</div>
+            <div style="font:400 12.5px/1.5 'Inter',sans-serif; color:#78716C; margin-bottom:18px;">Tu as utilisé tes 7 calculs d'itinéraire gratuits aujourd'hui. Connecte-toi pour continuer sans limite.</div>
+            <button onClick="{{ unlockGoogle }}" style="width:100%; display:flex; align-items:center; justify-content:center; gap:10px; background:#fff; border:1px solid #DADCE0; border-radius:12px; padding:11px; cursor:pointer; font:600 12.5px 'Inter',sans-serif; color:#3C4043; margin-bottom:10px; transition:all .2s;" style-hover="background:#F8F9FA;">
+              <span style="width:18px; height:18px; border-radius:999px; background:#4285F4; color:#fff; font:700 11px 'Inter',sans-serif; display:flex; align-items:center; justify-content:center;">G</span>
+              Se connecter avec Google
+            </button>
+            <div style="text-align:center; font:600 11px 'Inter',sans-serif; color:#A8A29E; cursor:pointer;" onClick="{{ closeQuotaModal }}">Continuer plus tard</div>
+          </div>
+      </div>
+    </div>
+
+    <!-- ============ CONFIRMATION ============ -->
+    <div style="height:100%; overflow-y:auto; background:#FAFAF9; flex-direction:column; display:{{ confirmationDisplay }};">
+      <div style="position:sticky; top:0; z-index:10; display:flex; align-items:center; gap:12px; padding:16px 18px; background:rgba(255,255,255,.85); backdrop-filter:blur(14px); border-bottom:1px solid rgba(0,0,0,.06);">
+        <div style="font:800 15px 'Outfit',sans-serif; color:#0A0A0A; flex:1;">Réservation confirmée</div>
+      </div>
+
+      <div style="padding:24px 18px;">
+        <div style="text-align:center; margin-bottom:20px;">
+          <div style="width:56px; height:56px; border-radius:999px; background:#D1FAE5; color:#059669; font-size:26px; display:flex; align-items:center; justify-content:center; margin:0 auto 12px;">✓</div>
+          <div style="font:900 20px 'Outfit',sans-serif; letter-spacing:-0.02em; color:#0A0A0A;">Merci pour votre réservation</div>
+          <div style="font:400 12px 'Inter',sans-serif; color:#78716C; margin-top:4px;">Un récapitulatif a été envoyé par SMS.</div>
+        </div>
+
+        <div style="background:#fff; border-radius:22px; box-shadow:0 10px 30px rgba(0,0,0,.08); overflow:hidden; position:relative;">
+          <div style="padding:18px; background:linear-gradient(135deg,#0A0A0A,#262626); color:#fff; display:flex; align-items:center; justify-content:space-between;">
+            <div style="font:900 15px 'Outfit',sans-serif;"><span>TM</span><span style="color:var(--primary);">Location</span></div>
+            <div style="font:700 9.5px 'Inter',sans-serif; letter-spacing:.05em; background:rgba(255,255,255,.15); padding:4px 10px; border-radius:999px;">TICKET</div>
+          </div>
+
+          <div style="position:relative; height:100px; background:repeating-linear-gradient(0deg,#EDECE8,#EDECE8 20px,#E4E2DC 20px,#E4E2DC 21px), repeating-linear-gradient(90deg,#EDECE8,#EDECE8 20px,#E4E2DC 20px,#E4E2DC 21px);">
+            <sc-for list="{{ markers }}" as="mk2" hint-placeholder-count="0">
+              <div style="position:absolute; left:{{ mk2.left }}; top:{{ mk2.top }}; transform:translate(-50%,-100%);">
+                <div style="width:16px; height:16px; border-radius:999px 999px 999px 2px; background:{{ mk2.color }}; transform:rotate(45deg);"></div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="padding:18px; display:flex; flex-direction:column; gap:12px;">
+            <div style="display:flex; justify-content:space-between;"><span style="font:500 11.5px 'Inter',sans-serif; color:#A8A29E;">Véhicule</span><span style="font:700 12.5px 'Inter',sans-serif; color:#0A0A0A;">{{ selectedCar.name }}</span></div>
+            <div style="display:flex; justify-content:space-between;"><span style="font:500 11.5px 'Inter',sans-serif; color:#A8A29E;">Date de départ</span><span style="font:700 12.5px 'Inter',sans-serif; color:#0A0A0A;">{{ date }} · {{ time }}</span></div>
+            <div style="display:flex; justify-content:space-between;"><span style="font:500 11.5px 'Inter',sans-serif; color:#A8A29E;">Forfait</span><span style="font:700 12.5px 'Inter',sans-serif; color:#0A0A0A;">{{ forfaitLabel }}</span></div>
+            <div style="display:flex; justify-content:space-between;"><span style="font:500 11.5px 'Inter',sans-serif; color:#A8A29E;">Distance estimée</span><span style="font:700 12.5px 'Inter',sans-serif; color:#0A0A0A;">{{ distanceLabel }}</span></div>
+
+            <div style="border-top:1px dashed #E7E5E4; margin:2px 0; position:relative;">
+              <div style="position:absolute; left:-30px; top:-9px; width:18px; height:18px; border-radius:999px; background:#FAFAF9;"></div>
+              <div style="position:absolute; right:-30px; top:-9px; width:18px; height:18px; border-radius:999px; background:#FAFAF9;"></div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:baseline;"><span style="font:700 13px 'Inter',sans-serif; color:#0A0A0A;">Total</span><span><span style="font:900 22px 'Outfit',sans-serif; color:var(--primary);">{{ priceLabel }}</span><span style="font:600 10.5px 'Inter',sans-serif; color:#A8A29E;"> Ar</span></span></div>
+          </div>
+        </div>
+
+        <button onClick="{{ resetFlow }}" style="width:100%; font:700 13px 'Inter',sans-serif; background:#0A0A0A; color:#fff; border:none; padding:14px; border-radius:14px; cursor:pointer; margin-top:20px; transition:all .3s;" style-hover="background:var(--primary); color:#0A0A0A;">Nouvelle réservation</button>
+      </div>
+    </div>
+
+    <!-- ============ BOTTOM NAV (accueil / catalogue only) ============ -->
+      <div style="position:absolute; left:0; right:0; bottom:0; background:rgba(255,255,255,.85); backdrop-filter:blur(16px); border-top:1px solid rgba(0,0,0,.06); padding:10px 0 14px; display:{{ bottomNavDisplay }};">
+        <div onClick="{{ goAccueil }}" style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; color:{{ tabAccueilColor }}; cursor:pointer;">
+          <span style="font-size:19px;">🏠</span>
+          <span style="font:700 9px 'Inter',sans-serif; letter-spacing:.04em;">ACCUEIL</span>
+        </div>
+        <div onClick="{{ goCatalogue }}" style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; color:{{ tabDevisColor }}; cursor:pointer;">
+          <span style="font-size:19px;">📋</span>
+          <span style="font:700 9px 'Inter',sans-serif; letter-spacing:.04em;">DEVIS</span>
+        </div>
+        <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; color:#A8A29E; cursor:pointer;">
+          <span style="font-size:19px;">👤</span>
+          <span style="font:700 9px 'Inter',sans-serif; letter-spacing:.04em;">PROFIL</span>
+        </div>
+      </div>
+
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;primaryColor&quot;: {&quot;editor&quot;: &quot;color&quot;, &quot;default&quot;: &quot;#D97706&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;options&quot;: [&quot;#D97706&quot;, &quot;#73C700&quot;, &quot;#2563EB&quot;, &quot;#7C3AED&quot;, &quot;#DB2777&quot;], &quot;section&quot;: &quot;Thème&quot;}}">
+const CARS = [
+  { name: 'Toyota Rav4', category: 'SUV', transmission: 'Automatique', fuel: 'Essence', seats: 5, priceNum: 180000, price: '180 000' },
+  { name: 'Hyundai Tucson', category: 'SUV', transmission: 'Automatique', fuel: 'Diesel', seats: 5, priceNum: 165000, price: '165 000' },
+  { name: 'Renault Duster', category: 'Crossover', transmission: 'Manuelle', fuel: 'Diesel', seats: 5, priceNum: 120000, price: '120 000' },
+  { name: 'Toyota Land Cruiser', category: '4x4', transmission: 'Manuelle', fuel: 'Diesel', seats: 7, priceNum: 250000, price: '250 000' },
+  { name: 'Nissan Note', category: 'Citadine', transmission: 'Automatique', fuel: 'Essence', seats: 5, priceNum: 85000, price: '85 000' },
+  { name: 'Toyota Hilux', category: 'Pick-up', transmission: 'Manuelle', fuel: 'Diesel', seats: 5, priceNum: 200000, price: '200 000' }
+];
+
+const FORFAIT_DEFS = [
+  { id: 'jour', label: 'Journée', mult: 1 },
+  { id: 'demi', label: 'Demi-jour', mult: 0.6 },
+  { id: 'semaine', label: 'Semaine', mult: 5.5 }
+];
+
+function hexToHsl(hex) {
+  let r = parseInt(hex.slice(1,3),16)/255, g = parseInt(hex.slice(3,5),16)/255, b = parseInt(hex.slice(5,7),16)/255;
+  const max = Math.max(r,g,b), min = Math.min(r,g,b);
+  let h, s, l = (max+min)/2;
+  if (max === min) { h = s = 0; }
+  else {
+    const d = max-min;
+    s = l > 0.5 ? d/(2-max-min) : d/(max+min);
+    switch(max){
+      case r: h = (g-b)/d + (g<b?6:0); break;
+      case g: h = (b-r)/d + 2; break;
+      default: h = (r-g)/d + 4;
+    }
+    h /= 6;
+  }
+  return [h*360, s*100, l*100];
+}
+function hslToHex(h,s,l){
+  s/=100; l/=100;
+  const c = (1-Math.abs(2*l-1))*s, x = c*(1-Math.abs((h/60)%2-1)), m = l-c/2;
+  let r,g,b;
+  if (h<60) [r,g,b]=[c,x,0]; else if (h<120) [r,g,b]=[x,c,0]; else if (h<180) [r,g,b]=[0,c,x];
+  else if (h<240) [r,g,b]=[0,x,c]; else if (h<300) [r,g,b]=[x,0,c]; else [r,g,b]=[c,0,x];
+  const toHex = v => Math.round((v+m)*255).toString(16).padStart(2,'0');
+  return '#'+toHex(r)+toHex(g)+toHex(b);
+}
+function shade(hex, lDelta, sDelta) {
+  const [h,s,l] = hexToHsl(hex);
+  return hslToHex(h, Math.max(0,Math.min(100,s+(sDelta||0))), Math.max(0,Math.min(100,l+lDelta)));
+}
+
+class Component extends DCLogic {
+  state = {
+    screen: 'accueil',
+    selectedCarIdx: 0,
+    depart: null,
+    arrivee: null,
+    escales: [],
+    placingMode: null,
+    forfait: 'jour',
+    dateStart: '',
+    dateEnd: '',
+    timeStart: '',
+    timeEnd: '',
+    quotaUsed: 5,
+    quotaUnlocked: false,
+    showQuotaModal: false
+  };
+
+  goAccueil = () => this.setState({ screen: 'accueil' });
+  goCatalogue = () => this.setState({ screen: 'catalogue' });
+  goDetail = () => this.setState({ screen: 'detail' });
+  goItineraire = () => this.setState({ screen: 'itineraire' });
+
+  selectCar = (idx) => this.setState({ selectedCarIdx: idx, screen: 'detail' });
+  selectCarByName = (name) => {
+    const idx = CARS.findIndex(c => c.name === name);
+    this.setState({ selectedCarIdx: idx < 0 ? 0 : idx, screen: 'detail' });
+  };
+
+  setFilter = (id) => this.setState({ activeFilter: id });
+
+  startPlacingDepart = () => this.setState({ placingMode: 'depart' });
+  startPlacingArrivee = () => this.setState({ placingMode: 'arrivee' });
+  startPlacingEscale = () => this.setState({ placingMode: 'escale' });
+  cancelPlacing = () => this.setState({ placingMode: null });
+
+  mapClick = (e) => {
+    const mode = this.state.placingMode;
+    if (!mode) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const xPct = Math.round(((e.clientX - rect.left) / rect.width) * 100);
+    const yPct = Math.round(((e.clientY - rect.top) / rect.height) * 100);
+    if (mode === 'depart') this.setState({ depart: { x: xPct, y: yPct }, placingMode: null });
+    else if (mode === 'arrivee') this.setState({ arrivee: { x: xPct, y: yPct }, placingMode: null });
+    else {
+      const escales = this.state.escales.concat([{ x: xPct, y: yPct, id: Date.now() }]);
+      this.setState({ escales, placingMode: null });
+    }
+  };
+
+  removeEscale = (id) => this.setState({ escales: this.state.escales.filter(e => e.id !== id) });
+
+  setForfait = (id) => this.setState({ forfait: id });
+  setDateStart = (e) => this.setState({ dateStart: e.target.value });
+  setDateEnd = (e) => this.setState({ dateEnd: e.target.value });
+  setTimeStart = (e) => this.setState({ timeStart: e.target.value });
+  setTimeEnd = (e) => this.setState({ timeEnd: e.target.value });
+
+  closeQuotaModal = () => this.setState({ showQuotaModal: false });
+  unlockGoogle = () => {
+    this.setState({ quotaUnlocked: true, showQuotaModal: false });
+    this.setState({ screen: 'confirmation' });
+  };
+
+  confirmBooking = () => {
+    if (!this.state.depart || !this.state.arrivee) return;
+    if (this.state.quotaUsed >= 7 && !this.state.quotaUnlocked) {
+      this.setState({ showQuotaModal: true });
+      return;
+    }
+    this.setState({ quotaUsed: this.state.quotaUsed + 1, screen: 'confirmation' });
+  };
+
+  resetFlow = () => this.setState({
+    screen: 'accueil', depart: null, arrivee: null, escales: [], placingMode: null,
+    forfait: 'jour', showQuotaModal: false, dateStart: '', dateEnd: '', timeStart: '', timeEnd: ''
+  });
+
+  renderVals() {
+    const s = this.state;
+    const selectedCar = CARS[s.selectedCarIdx];
+    const primaryColor = this.props.primaryColor ?? '#D97706';
+
+    const activeFilter = s.activeFilter || 'tous';
+    const filters = [
+      { id: 'tous', label: 'Tous' },
+      { id: 'suv', label: 'SUV / 4x4' },
+      { id: 'citadine', label: 'Citadines' },
+      { id: 'pickup', label: 'Pick-up' }
+    ].map(f => ({ ...f, select: () => this.setFilter(f.id), bg: f.id === activeFilter ? '#0A0A0A' : '#F5F5F4', fg: f.id === activeFilter ? '#fff' : '#57534E' }));
+
+    let filteredCars = CARS;
+    if (activeFilter === 'suv') filteredCars = CARS.filter(c => c.category === 'SUV' || c.category === '4x4' || c.category === 'Crossover');
+    if (activeFilter === 'citadine') filteredCars = CARS.filter(c => c.category === 'Citadine');
+    if (activeFilter === 'pickup') filteredCars = CARS.filter(c => c.category === 'Pick-up');
+
+    const carsWithSelect = CARS.map((c, i) => ({ ...c, select: () => this.selectCar(i) }));
+    const filteredCarsWithSelect = filteredCars.map((c) => ({ ...c, select: () => this.selectCarByName(c.name) }));
+
+    const markers = [];
+    if (s.depart) markers.push({ left: s.depart.x + '%', top: s.depart.y + '%', color: '#059669', icon: '🟢' });
+    s.escales.forEach(e => markers.push({ left: e.x + '%', top: e.y + '%', color: 'var(--primary)', icon: '🟡' }));
+    if (s.arrivee) markers.push({ left: s.arrivee.x + '%', top: s.arrivee.y + '%', color: '#DC2626', icon: '🔴' });
+
+    const hasRoute = !!(s.depart && s.arrivee);
+    const distanceKm = hasRoute ? 38 + s.escales.length * 24 : 0;
+    const forfaitDef = FORFAIT_DEFS.find(f => f.id === s.forfait) || FORFAIT_DEFS[0];
+    const priceNum = hasRoute ? Math.round((distanceKm * 3500 + selectedCar.priceNum * forfaitDef.mult) / 1000) * 1000 : 0;
+
+    const forfaits = FORFAIT_DEFS.map(f => ({
+      ...f,
+      select: () => this.setForfait(f.id),
+      bg: f.id === s.forfait ? 'var(--primary)' : '#F5F5F4',
+      fg: f.id === s.forfait ? '#0A0A0A' : '#57534E'
+    }));
+
+    const escales = s.escales.map((e, i) => ({ n: i + 1, remove: () => this.removeEscale(e.id) }));
+
+    const quotaLeft = Math.max(0, 7 - s.quotaUsed);
+    const notReady = !hasRoute;
+
+    const showBottomNav = s.screen === 'accueil' || s.screen === 'catalogue';
+
+    return {
+      primaryColor,
+      primaryDark: shade(primaryColor, -14),
+      primaryLight: shade(primaryColor, 22, -10),
+      primaryTint: shade(primaryColor, 46, -55),
+      primaryTint2: shade(primaryColor, 40, -35),
+      primaryTint3: shade(primaryColor, 26, -20),
+      accueilDisplay: s.screen === 'accueil' ? 'flex' : 'none',
+      catalogueDisplay: s.screen === 'catalogue' ? 'flex' : 'none',
+      detailDisplay: s.screen === 'detail' ? 'flex' : 'none',
+      itineraireDisplay: s.screen === 'itineraire' ? 'flex' : 'none',
+      confirmationDisplay: s.screen === 'confirmation' ? 'flex' : 'none',
+      bottomNavDisplay: showBottomNav ? 'flex' : 'none',
+      placingBannerDisplay: s.placingMode ? 'flex' : 'none',
+      quotaModalDisplay: s.showQuotaModal ? 'flex' : 'none',
+      tabAccueilColor: s.screen === 'accueil' ? 'var(--primary)' : '#A8A29E',
+      tabDevisColor: s.screen === 'catalogue' ? 'var(--primary)' : '#A8A29E',
+
+      cars: carsWithSelect,
+      filters, filteredCars: filteredCarsWithSelect,
+      selectedCar,
+
+      goAccueil: this.goAccueil, goCatalogue: this.goCatalogue, goDetail: this.goDetail, goItineraire: this.goItineraire,
+      setFilter: (id) => () => this.setFilter(id),
+
+      placingMode: s.placingMode,
+      mapCursor: s.placingMode ? 'crosshair' : 'default',
+      mapClick: this.mapClick,
+      startPlacingDepart: this.startPlacingDepart,
+      startPlacingArrivee: this.startPlacingArrivee,
+      startPlacingEscale: this.startPlacingEscale,
+      cancelPlacing: this.cancelPlacing,
+      markers,
+
+      departLabel: s.depart ? 'Départ placé ✓' : "Pointer le départ sur la carte",
+      arriveeLabel: s.arrivee ? 'Arrivée placée ✓' : "Pointer l'arrivée sur la carte",
+      departColor: s.depart ? '#059669' : '#D6D3D1',
+      arriveeColor: s.arrivee ? '#DC2626' : '#D6D3D1',
+      escales,
+
+      forfaits, forfaitLabel: forfaitDef.label, forfait: s.forfait,
+      setForfaitSelect: (e) => this.setForfait(e.target.value),
+      calcBg: hasRoute ? '#4F46E5' : '#D6D3D1',
+      dateStart: s.dateStart, dateEnd: s.dateEnd, timeStart: s.timeStart, timeEnd: s.timeEnd,
+      setDateStart: this.setDateStart, setDateEnd: this.setDateEnd, setTimeStart: this.setTimeStart, setTimeEnd: this.setTimeEnd,
+      date: s.dateStart || '—', time: s.timeStart || '—',
+
+      distanceLabel: hasRoute ? distanceKm + ' km' : '—',
+      priceLabel: hasRoute ? priceNum.toLocaleString('fr-FR') : '—',
+
+      notReady,
+      confirmBg: notReady ? '#E7E5E4' : 'var(--primary)',
+      confirmFg: notReady ? '#A8A29E' : '#0A0A0A',
+      confirmLabel: notReady ? 'Place le départ et l\'arrivée' : 'Confirmer la réservation',
+      confirmBooking: this.confirmBooking,
+
+      quotaLabel: quotaLeft + '/7 calculs',
+      quotaColor: quotaLeft <= 2 ? '#DC2626' : '#78716C',
+      quotaBg: quotaLeft <= 2 ? '#FEE2E2' : '#F5F5F4',
+      closeQuotaModal: this.closeQuotaModal,
+      unlockGoogle: this.unlockGoogle,
+
+      resetFlow: this.resetFlow
+    };
+  }
+}
+
+</script>
+</body>
+</html>

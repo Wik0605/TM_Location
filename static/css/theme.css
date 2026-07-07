@@ -1,58 +1,55 @@
 /* ================================================
-   THÈME TM_LOCATION
-   Modifier ce fichier pour changer polices et couleurs
-   sur toutes les pages de l'application.
+   THÈME TM_LOCATION — Refonte UI/UX 2026
+   Palette ambre premium (voir docs/design/README.md)
    ================================================ */
 
-/* --- Police --- */
-/* Utilise la police système d'Apple (San Francisco) */
-
 :root {
-  /* POLICE PRINCIPALE */
-  --font-main: -apple-system, BlinkMacSystemFont, "SF Pro", "SF Pro Text", "SF Pro Display", "SF Compact", system-ui, sans-serif;
+  /* POLICES */
+  --font-main: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-display: 'Outfit', 'Inter', system-ui, sans-serif;
 
-  /* COULEURS PRIMAIRES */
-  --color-primary: #ff4d6d;
-  /* Rouge pastèque principal — boutons, liens actifs */
-  --color-primary-dark: #e03a5c;
-  /* Rouge pastèque foncé — hover */
-  --color-primary-light: #fff0f3;
-  /* Rouge pastèque très clair — fonds légers */
+  /* PRIMAIRES — Ambre premium */
+  --color-primary: #D97706;
+  --color-primary-dark: #B45309;
+  --color-primary-light: #FFFBEB;
+  --color-primary-tint: #FEF3C7;
+  --color-primary-tint-strong: #FDE68A;
 
-  /* COULEURS SECONDAIRES */
-  --color-secondary: #4b5563;
-  /* Gris moyen pour les éléments secondaires */
-  --color-accent: #ff758f;
-  /* Rose pastèque vif pour l'accentuation */
+  /* SECONDAIRES / ACCENT */
+  --color-secondary: #0A0A0A;
+  --color-accent: #FCD34D;
+  --color-indigo-cta: #4F46E5;
+
+  /* NEUTRES */
+  --color-ink: #0A0A0A;
+  --color-neutral-strong: #78716C;
+  --color-neutral: #A8A29E;
+  --color-neutral-soft: #F5F5F4;
+  --color-border: #F0EFED;
+  --color-border-strong: #E7E5E4;
 
   /* FONDS */
-  --color-bg: #f9fafb;
-  /* Fond général de la page */
-  --color-surface: #ffffff;
-  /* Fond des cartes / panneaux */
+  --color-bg: #FFFFFF;
+  --color-surface: #FFFFFF;
 
   /* TEXTE */
-  --color-text: #111827;
-  /* Texte principal */
-  --color-text-muted: #6b7280;
-  /* Texte secondaire / gris */
-
-  /* BORDURES */
-  --color-border: #e5e7eb;
+  --color-text: #0A0A0A;
+  --color-text-muted: #78716C;
+  --color-text-soft: #A8A29E;
 
   /* ÉTATS */
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-error: #ef4444;
-  --color-info: #3b82f6;
+  --color-success: #059669;
+  --color-warning: #D97706;
+  --color-error: #DC2626;
+  --color-info: #4F46E5;
 
-  /* OMBRES */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.15);
+  /* OMBRES (design tokens) */
+  --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.10);
+  --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.15);
 }
 
-/* Application de la police sur tout le site */
 *,
 *::before,
 *::after {
@@ -61,4 +58,17 @@
 
 body {
   font-family: var(--font-main);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
 }
