@@ -6,183 +6,240 @@
 <link rel="stylesheet" href="/static/css/vendor/leaflet.css" />
 <link rel="stylesheet" href="/static/css/itineraire.css" />
 
-<!-- Bannière flottante mode pointage (hors carte, pas d'interférence touch) -->
+<!-- Bannière flottante mode pointage -->
 <div id="pick-banner" style="display:none;">
     <span class="pick-pulse" id="pick-banner-icon">📍</span>
-    <span class="font-bold text-gray-800 text-sm" id="pick-banner-text">Touche la carte</span>
-    <button id="pick-cancel-btn" class="text-xs text-gray-400 underline mt-1">Annuler</button>
+    <span class="font-bold text-ink text-sm" id="pick-banner-text">Touche la carte</span>
+    <button id="pick-cancel-btn" class="text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral)] hover:text-ink mt-1">
+        Annuler
+    </button>
 </div>
 
 <!-- Modal quota itinéraire -->
-<div id="quota-modal" style="display:none;" class="fixed inset-0 z-50 flex items-center justify-center px-4">
-    <div class="absolute inset-0 bg-black/50" id="quota-backdrop"></div>
-    <div class="relative bg-white rounded-2xl shadow-xl p-7 max-w-sm w-full text-center">
-        <div class="text-4xl mb-3">🗺️</div>
-        <h2 class="text-lg font-bold text-gray-900 mb-2">Limite atteinte</h2>
-        <p class="text-sm text-gray-600 mb-5">Vous avez utilisé vos 7 calculs gratuits du jour.<br>Connectez-vous pour continuer sans limite.</p>
-        <a href="/auth/google?next={{ request.url }}" class="inline-block w-full text-center mb-3">
+<div id="quota-modal" style="display:none;" class="fixed inset-0 z-50 flex items-center justify-center px-5">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" id="quota-backdrop"></div>
+    <div class="relative bg-white rounded-3xl shadow-2xl p-7 max-w-sm w-full text-center">
+        <div class="w-16 h-16 rounded-full bg-[color:var(--color-primary-tint)] flex items-center justify-center mx-auto mb-4">
+            <span class="font-display text-xl font-black text-primary tracking-tight">7/7</span>
+        </div>
+        <h2 class="font-display text-xl font-black text-ink tracking-tight mb-2">Limite atteinte</h2>
+        <p class="text-sm text-[color:var(--color-neutral-strong)] mb-6 leading-relaxed">
+            Tu as utilisé tes 7 calculs gratuits du jour.<br>
+            Connecte-toi pour continuer sans limite.
+        </p>
+        <a href="/auth/google?next={{ request.url }}"
+           class="inline-block w-full text-center mb-3">
             <img src="/static/image/auth/web_light_rd_SI.svg"
                  alt="Se connecter avec Google"
                  class="h-12 w-auto mx-auto">
         </a>
-        <button id="quota-close" class="text-sm text-gray-400 hover:text-gray-600 underline">Fermer</button>
+        <button id="quota-close"
+                class="text-[11px] font-bold uppercase tracking-widest text-[color:var(--color-neutral)] hover:text-ink transition-all">
+            Continuer plus tard
+        </button>
     </div>
 </div>
 
-<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-    <div class="mb-5 flex items-center justify-between flex-wrap gap-3">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900">📍 Calculateur d'itinéraire</h1>
+<section class="max-w-md mx-auto px-5 pt-6 pb-8">
+
+    <!-- Header : retour + titre + quota -->
+    <div class="flex items-center gap-3 mb-4">
+        <a href="/voitures/{{ car.id }}"
+           class="w-9 h-9 rounded-full bg-[color:var(--color-neutral-soft)] flex items-center justify-center text-ink hover:bg-[color:var(--color-border-strong)] transition-all shrink-0"
+           aria-label="Retour véhicule">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+            </svg>
+        </a>
+        <div class="min-w-0 flex-1">
+            <span class="block text-[10px] font-bold uppercase tracking-[0.2em] text-[color:var(--color-neutral)]">Itinéraire</span>
+            <h1 class="font-display text-lg font-black text-ink tracking-tight leading-tight truncate">{{ car.nom }}</h1>
         </div>
-        <a href="/voitures/{{ car.id }}" class="text-indigo-600 hover:text-indigo-800 font-medium text-sm">&larr; Retour</a>
+        <!-- Compteur quota (mis à jour par le JS) -->
+        <div id="quota-counter"
+             class="shrink-0 bg-[color:var(--color-neutral-soft)] rounded-full px-3 py-1.5 text-center">
+            <span class="block text-[8px] font-bold uppercase tracking-widest text-[color:var(--color-neutral)]">Calculs</span>
+            <span class="block font-display text-xs font-black text-ink tracking-tight">
+                <span id="quota-used">0</span>/7
+            </span>
+        </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-
-        <!-- ── Formulaire ── -->
-        <div class="lg:col-span-1 space-y-4 order-1 lg:order-none" id="form-panel">
-            <div class="bg-white p-5 rounded-2xl shadow-md border border-gray-100">
-                <h3 class="text-base font-bold text-gray-800 mb-4">🗺️ Définir l'itinéraire</h3>
-
-                <!-- DÉPART -->
-                <div class="mb-4">
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">🟢 Départ</label>
-                    <div id="start-badge" class="location-badge start" style="display:none;">
-                        <span>🟢</span>
-                        <span class="badge-name" id="start-badge-name"></span>
-                        <button class="badge-clear" id="start-clear">✕</button>
-                    </div>
-                    <button type="button" id="pick-start-btn" class="pick-cta mt-1">
-                        <span>📍</span> Pointer le départ sur la carte
-                    </button>
-                </div>
-
-                <!-- Escales -->
-                <div id="waypoints-container" class="space-y-3 mb-2"></div>
-                <button type="button" id="add-waypoint-btn"
-                    class="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1 mb-4">
-                    <span>+</span> Ajouter une escale
-                </button>
-
-                <!-- ARRIVÉE -->
-                <div class="mb-4">
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">🔴 Arrivée</label>
-                    <div id="end-badge" class="location-badge end" style="display:none;">
-                        <span>🔴</span>
-                        <span class="badge-name" id="end-badge-name"></span>
-                        <button class="badge-clear" id="end-clear">✕</button>
-                    </div>
-                    <button type="button" id="pick-end-btn" class="pick-cta end-cta mt-1">
-                        <span>📍</span> Pointer l'arrivée sur la carte
-                    </button>
-                </div>
-
-                <!-- Date de réservation -->
-                <div class="bg-gray-50 p-3 rounded-xl border border-gray-200 mb-4">
-                    <h4 class="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wider">📅 Date de réservation</h4>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-xs text-gray-500 mb-1">Date début du Location</label>
-                            <input type="date" id="date-start"
-                                class="w-full text-sm border border-gray-300 rounded-md px-2 py-2">
-                        </div>
-                        <div>
-                            <label class="block text-xs text-gray-500 mb-1">Date fin du Location</label>
-                            <input type="date" id="date-end"
-                                class="w-full text-sm border border-gray-300 rounded-md px-2 py-2">
-                        </div>
-                        <div>
-                            <label class="block text-xs text-gray-500 mb-1">Heure de début du Location</label>
-                            <input type="time" id="time-start"
-                                class="w-full text-sm border border-gray-300 rounded-md px-2 py-2">
-                        </div>
-                        <div>
-                            <label class="block text-xs text-gray-500 mb-1">Heure de fin du Location</label>
-                            <input type="time" id="time-end"
-                                class="w-full text-sm border border-gray-300 rounded-md px-2 py-2">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Type de réservation -->
-                <div class="mb-4">
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">🏷️ Type de location</label>
-                    <select id="rental-type" name="rental-type"
-                        class="w-full text-sm border border-gray-300 rounded-xl px-3 py-3 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-white">
-                        <option value="" disabled selected>-- Choisir un type --</option>
-                        {% for rt in rental_types %}
-                        <option value="{{ rt.id }}"
-                            data-prix="{{ rt.prix }}"
-                            data-conso="{{ car.consommation_carburant }}">
-                            {{ rt.nom }} — {{ "{:,.0f}".format(rt.prix) }} Ar
-                        </option>
-                        {% else %}
-                        <option disabled>Aucun type configuré dans l'admin</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <button type="button" id="calculate-btn"
-                    class="w-full bg-indigo-600 text-white py-3.5 rounded-xl font-bold text-sm hover:bg-indigo-700 active:scale-95 transition-all shadow-md">
-                    Calculer l'itinéraire
-                </button>
-            </div>
-
-            <!-- Résultats -->
-            <div id="results-card" class="bg-white p-5 rounded-2xl shadow-md border border-emerald-200" style="display:none;">
-                <h3 class="text-base font-bold text-emerald-700 mb-4">✅ Résumé estimatif</h3>
-                <div class="space-y-3">
-                    <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                        <span class="text-sm text-gray-600">Distance totale</span>
-                        <span class="font-bold text-gray-900"><span id="res-distance">0</span> km</span>
-                    </div>
-                    <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                        <span class="text-sm text-gray-500" id="res-rental-label">Location</span>
-                        <span class="text-sm font-medium text-gray-700" id="res-rental-cost">—</span>
-                    </div>
-                    <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                        <span class="text-sm text-gray-500">Carburant estimé</span>
-                        <span class="text-sm font-medium text-gray-700"><span id="res-fuel-cost">0</span> Ar</span>
-                    </div>
-                    <div class="flex justify-between items-center py-2 bg-emerald-50 px-3 rounded-lg">
-                        <span class="font-bold text-gray-800">Total Estimé</span>
-                        <span class="font-bold text-emerald-600 text-lg"><span id="res-total-cost">0</span> Ar</span>
-                    </div>
-                </div>
-                <p class="text-xs text-gray-400 mt-3 text-center">* Estimation indicative. Distance routière réelle peut varier.</p>
-                <p class="fallback-note text-xs text-orange-500 mt-1 text-center" style="display:none;">⚠️ Distance calculée à vol d'oiseau (serveurs de routage indisponibles).</p>
-                <a href="/voitures/{{ car.id }}"
-                    class="block w-full text-center bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700 transition-all shadow-md mt-4 text-sm">
-                    Réserver ce véhicule
-                </a>
+    <!-- ── Carte ── -->
+    <div class="lg:col-span-2 order-2 lg:order-none mb-5" id="map-col">
+        <div id="map-wrapper"
+             class="relative bg-white rounded-3xl shadow-[0_4px_16px_rgba(0,0,0,0.08)] border border-[color:var(--color-border)] overflow-hidden map-wrapper">
+            <div id="map" data-daily-price="{{ car.daily_price }}"></div>
+            <!-- Loader calcul itinéraire -->
+            <div id="map-loader" style="display:none;"
+                 class="absolute inset-0 bg-white/85 backdrop-blur-sm z-50 flex flex-col items-center justify-center">
+                <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mb-3"></div>
+                <p class="text-[11px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)]">Calcul de l'itinéraire...</p>
             </div>
         </div>
+    </div>
 
-        <!-- ── Carte ── -->
-        <div class="lg:col-span-2 order-2 lg:order-none" id="map-col">
-            <div id="map-wrapper" class="bg-white p-2 rounded-2xl shadow-md border border-gray-100 map-wrapper">
-                <div id="map" data-daily-price="{{ car.daily_price }}"></div>
-                <!-- Loader calcul itinéraire -->
-                <div id="map-loader" style="display:none;"
-                    class="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-xl z-50 flex flex-col items-center justify-center">
-                    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 mb-3"></div>
-                    <p class="text-sm text-gray-500 font-medium">Calcul de l'itinéraire...</p>
+    <!-- ── Formulaire ── -->
+    <div class="space-y-4 order-1 lg:order-none" id="form-panel">
+        <div class="bg-white p-5 rounded-3xl shadow-[0_4px_16px_rgba(0,0,0,0.06)] border border-[color:var(--color-border)]">
+
+            <h2 class="font-display text-sm font-black text-ink tracking-tight mb-4 uppercase">
+                Définir l'itinéraire
+            </h2>
+
+            <!-- DÉPART -->
+            <div class="mb-3">
+                <label class="block text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)] mb-1.5">
+                    Départ
+                </label>
+                <div id="start-badge" class="location-badge start" style="display:none;">
+                    <span class="w-2.5 h-2.5 rounded-full bg-success shrink-0"></span>
+                    <span class="badge-name" id="start-badge-name"></span>
+                    <button class="badge-clear" id="start-clear">✕</button>
+                </div>
+                <button type="button" id="pick-start-btn" class="pick-cta mt-1">
+                    <span class="w-2.5 h-2.5 rounded-full bg-success shrink-0"></span>
+                    <span>Pointer le départ</span>
+                </button>
+            </div>
+
+            <!-- Escales -->
+            <div id="waypoints-container" class="space-y-3 mb-2"></div>
+            <button type="button" id="add-waypoint-btn"
+                    class="w-full mt-1 mb-4 py-2.5 rounded-2xl border-2 border-dashed border-[color:var(--color-primary-tint-strong)] text-primary font-bold text-xs uppercase tracking-widest hover:bg-[color:var(--color-primary-light)] transition-all flex items-center justify-center gap-2">
+                <span>+</span> Ajouter une escale
+            </button>
+
+            <!-- ARRIVÉE -->
+            <div class="mb-5">
+                <label class="block text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)] mb-1.5">
+                    Arrivée
+                </label>
+                <div id="end-badge" class="location-badge end" style="display:none;">
+                    <span class="w-2.5 h-2.5 rounded-full bg-danger shrink-0"></span>
+                    <span class="badge-name" id="end-badge-name"></span>
+                    <button class="badge-clear" id="end-clear">✕</button>
+                </div>
+                <button type="button" id="pick-end-btn" class="pick-cta end-cta mt-1">
+                    <span class="w-2.5 h-2.5 rounded-full bg-danger shrink-0"></span>
+                    <span>Pointer l'arrivée</span>
+                </button>
+            </div>
+
+            <!-- Date + Heure de réservation -->
+            <div class="bg-[color:var(--color-neutral-soft)] rounded-2xl p-4 mb-4">
+                <h3 class="text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)] mb-3">
+                    📅 Période de location
+                </h3>
+                <div class="grid grid-cols-2 gap-2">
+                    <label class="block">
+                        <span class="block text-[9px] font-bold uppercase tracking-wider text-[color:var(--color-neutral)] mb-1">Date début</span>
+                        <input type="date" id="date-start"
+                               class="w-full text-xs font-semibold text-ink bg-white border-0 rounded-lg px-2 py-2 focus:ring-2 focus:ring-primary">
+                    </label>
+                    <label class="block">
+                        <span class="block text-[9px] font-bold uppercase tracking-wider text-[color:var(--color-neutral)] mb-1">Date fin</span>
+                        <input type="date" id="date-end"
+                               class="w-full text-xs font-semibold text-ink bg-white border-0 rounded-lg px-2 py-2 focus:ring-2 focus:ring-primary">
+                    </label>
+                    <label class="block">
+                        <span class="block text-[9px] font-bold uppercase tracking-wider text-[color:var(--color-neutral)] mb-1">Heure début</span>
+                        <input type="time" id="time-start"
+                               class="w-full text-xs font-semibold text-ink bg-white border-0 rounded-lg px-2 py-2 focus:ring-2 focus:ring-primary">
+                    </label>
+                    <label class="block">
+                        <span class="block text-[9px] font-bold uppercase tracking-wider text-[color:var(--color-neutral)] mb-1">Heure fin</span>
+                        <input type="time" id="time-end"
+                               class="w-full text-xs font-semibold text-ink bg-white border-0 rounded-lg px-2 py-2 focus:ring-2 focus:ring-primary">
+                    </label>
                 </div>
             </div>
+
+            <!-- Type de location -->
+            <div class="mb-4">
+                <label class="block text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)] mb-1.5">
+                    🏷️ Type de location
+                </label>
+                <select id="rental-type" name="rental-type"
+                        class="w-full text-sm font-semibold text-ink bg-[color:var(--color-neutral-soft)] border-0 rounded-2xl px-3 py-3 focus:ring-2 focus:ring-primary focus:bg-white transition-all">
+                    <option value="" disabled selected>-- Choisir un type --</option>
+                    {% for rt in rental_types %}
+                    <option value="{{ rt.id }}"
+                            data-prix="{{ rt.prix }}"
+                            data-conso="{{ car.consommation_carburant }}">
+                        {{ rt.nom }} — {{ "{:,.0f}".format(rt.prix).replace(",", " ") }} Ar
+                    </option>
+                    {% else %}
+                    <option disabled>Aucun type configuré dans l'admin</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- CTA indigo (spec design) -->
+            <button type="button" id="calculate-btn"
+                    class="w-full bg-indigo-cta hover:brightness-110 text-white py-3.5 rounded-2xl font-bold text-sm uppercase tracking-widest active:scale-[0.98] transition-all shadow-lg">
+                Calculer l'itinéraire
+            </button>
+        </div>
+
+        <!-- Résultats -->
+        <div id="results-card"
+             class="bg-white p-5 rounded-3xl shadow-[0_4px_16px_rgba(0,0,0,0.06)] border border-[color:var(--color-border)]"
+             style="display:none;">
+            <h3 class="font-display text-sm font-black text-ink tracking-tight mb-4 uppercase">
+                Résumé estimatif
+            </h3>
+            <div class="space-y-2">
+                <div class="flex justify-between items-center py-2 border-b border-[color:var(--color-border)]">
+                    <span class="text-xs font-semibold text-[color:var(--color-neutral-strong)] uppercase tracking-wider">Distance</span>
+                    <span class="font-display font-black text-ink"><span id="res-distance">0</span> km</span>
+                </div>
+                <div class="flex justify-between items-center py-2 border-b border-[color:var(--color-border)]">
+                    <span class="text-xs font-semibold text-[color:var(--color-neutral)] uppercase tracking-wider" id="res-rental-label">Location</span>
+                    <span class="text-sm font-semibold text-[color:var(--color-neutral-strong)]" id="res-rental-cost">—</span>
+                </div>
+                <div class="flex justify-between items-center py-2 border-b border-[color:var(--color-border)]">
+                    <span class="text-xs font-semibold text-[color:var(--color-neutral)] uppercase tracking-wider">Carburant estimé</span>
+                    <span class="text-sm font-semibold text-[color:var(--color-neutral-strong)]"><span id="res-fuel-cost">0</span> Ar</span>
+                </div>
+                <div class="flex justify-between items-center py-3 bg-[color:var(--color-primary-light)] px-3 rounded-2xl mt-2">
+                    <span class="font-display font-black text-ink uppercase text-sm tracking-tight">Total</span>
+                    <span class="font-display font-black text-primary text-xl tracking-tight">
+                        <span id="res-total-cost">0</span> Ar
+                    </span>
+                </div>
+            </div>
+            <p class="text-[10px] text-[color:var(--color-neutral)] mt-3 text-center font-medium">
+                * Estimation indicative. Distance routière réelle peut varier.
+            </p>
+            <p class="fallback-note text-[10px] text-primary-dark mt-1 text-center font-semibold" style="display:none;">
+                ⚠️ Distance calculée à vol d'oiseau (serveurs de routage indisponibles).
+            </p>
+            <a href="/voitures/{{ car.id }}"
+               class="block w-full text-center bg-ink hover:bg-primary text-white py-3.5 rounded-2xl font-bold text-sm uppercase tracking-widest transition-all shadow-md mt-4">
+                Confirmer la réservation
+            </a>
         </div>
     </div>
 </section>
 
-<!-- Template escale -->
+<!-- Template escale (utilisé par le JS) -->
 <template id="waypoint-template">
     <div class="waypoint-item space-y-1">
-        <label class="block text-xs font-medium text-gray-500">Escale</label>
+        <label class="block text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)]">Escale</label>
         <div class="flex gap-2">
-            <button type="button" class="pick-waypoint-btn flex-grow border-2 border-dashed border-blue-300 bg-blue-50 text-blue-600 rounded-xl px-3 py-2.5 text-sm font-semibold">📍 Pointer l'escale sur la carte</button>
-            <button type="button" class="remove-waypoint-btn text-red-500 hover:text-red-700 p-2.5 bg-red-50 rounded-xl text-sm leading-none">✕</button>
+            <button type="button"
+                    class="pick-waypoint-btn flex-grow border-2 border-dashed border-[color:var(--color-primary-tint-strong)] bg-[color:var(--color-primary-light)] text-primary-dark rounded-2xl px-3 py-2.5 text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-primary"></span>
+                Pointer l'escale
+            </button>
+            <button type="button"
+                    class="remove-waypoint-btn text-danger hover:bg-[color:var(--color-primary-light)] p-2.5 bg-[color:var(--color-neutral-soft)] rounded-2xl text-sm leading-none">
+                ✕
+            </button>
         </div>
-        <div class="waypoint-badge location-badge" style="display:none; background:#eff6ff; color:#1d4ed8; border:1.5px solid #93c5fd;">
-            <span>🔵</span>
+        <div class="waypoint-badge location-badge" style="display:none; background:#FFFBEB; color:#B45309; border:1.5px solid #FDE68A;">
+            <span class="w-2.5 h-2.5 rounded-full bg-primary shrink-0"></span>
             <span class="badge-name waypoint-badge-name"></span>
             <button type="button" class="badge-clear waypoint-badge-clear">✕</button>
         </div>
