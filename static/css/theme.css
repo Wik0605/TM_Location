@@ -72,3 +72,23 @@ h6,
   font-family: var(--font-display);
   letter-spacing: -0.02em;
 }
+
+/* Normalisation et corrections pour les champs date/time sur iOS (Safari/Chrome Mobile) */
+input[type="date"],
+input[type="time"] {
+  -webkit-appearance: none;
+  appearance: none;
+  min-width: 0;
+  width: 100% !important;
+  max-width: 100%;
+  /* Empêche le débordement dans les layouts flex/grid */
+  box-sizing: border-box;
+}
+
+/* Force l'affichage et l'alignement vertical des valeurs sur iOS */
+input[type="date"]::-webkit-date-and-time-value,
+input[type="time"]::-webkit-date-and-time-value {
+  min-height: 1.5em;
+  display: flex;
+  align-items: center;
+}

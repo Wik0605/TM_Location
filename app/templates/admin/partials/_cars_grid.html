@@ -1,7 +1,0 @@
-<div id="cars-grid" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-    {% for car in cars %}
-        {% include "admin/partials/_car_card.html" %}
-    {% else %}
-    <p class="text-gray-400 col-span-3">Aucune voiture enregistrée.</p>
-    {% endfor %}
-</div>
