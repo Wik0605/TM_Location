@@ -141,20 +141,123 @@ pour l'instant, câblage backend à faire dans une session dédiée
 
 ---
 
-## À venir — Session 5 (itinéraire)
+## Session 5 — Calculateur d'itinéraire (`itineraire.html` + `itineraire.css`, commit `511a825`)
 
-Refonte de `itineraire.html` :
-- Compteur quota `X/7 calculs` (rouge si ≤2)
-- Carte stylisée 280px cliquable + contrôles zoom
-- Bannière de guidage flottante en mode placement
-- Boutons Départ / Arrivée / Escales avec pastilles colorées
-- Formulaire Date début/fin + Heure début/fin + Type location (select)
-- Bouton indigo "Calculer l'itinéraire" + récap distance/prix
-- CTA "Confirmer la réservation" désactivé tant que départ+arrivée
-  non placés
-- Modal de quota avec bouton Google
+**Objectif** : refonte du plus gros écran, avec carte + placement de
+points + formulaire + résumé + modal quota — sans casser la logique JS
+existante (Leaflet + `itineraire.js`).
 
-Puis Session 6 : `voiture_confirmation.html` (ticket détachable).
+### Ce qui change (template)
+- **Header** :
+  - Bouton retour rond → `/voitures/{id}`
+  - Libellé "ITINÉRAIRE" + nom véhicule Outfit
+  - **Compteur quota `X/7`** en pilule (haut-droite), classes CSS
+    `.low` / `.critical` prêtes pour passage en rouge/ambre
+- **Modal quota** :
+  - Icône ronde `7/7` sur fond `primary-tint`
+  - Titre Outfit + texte tutoyé
+  - Bouton Google officiel (SVG assets) + lien discret
+    "Continuer plus tard"
+  - Overlay `bg-black/60 backdrop-blur-sm`
+- **Carte** :
+  - `rounded-3xl` clean, hauteur 280px mobile / 55vh desktop
+  - Loader avec spinner ambre au lieu d'indigo
+- **Départ / Arrivée** :
+  - Boutons `.pick-cta` avec **pastilles colorées** (rond de couleur au
+    lieu d'emoji) : vert `#059669` départ, rouge `#DC2626` arrivée
+  - Libellé UPPERCASE tracking-widest
+- **Escales** :
+  - Bouton "+ Ajouter escale" pleine largeur en **pointillés ambre**
+    (spec)
+  - Template escale mis à jour (couleurs ambre)
+- **Période de location** :
+  - Bloc `neutral-soft` `rounded-2xl` avec 4 inputs (date début/fin +
+    heure début/fin)
+  - Fond blanc + focus `ring-primary`
+- **Type de location** :
+  - Select stylisé bg `neutral-soft` → blanc au focus
+- **CTA principal** :
+  - **Indigo `#4F46E5`** (spec) "Calculer l'itinéraire", pilule pleine
+    largeur, uppercase tracking-widest
+- **Résumé** :
+  - Cards stylisées, ligne Total en fond `primary-light` + prix ambre
+    Outfit gros
+- **CTA "Confirmer la réservation"** :
+  - Bouton noir plein bas de card résumé
+
+### Ce qui change (CSS `itineraire.css`)
+- `.location-badge.start` : palette émeraude douce (`#ECFDF5` fond,
+  `#065F46` texte, `#A7F3D0` bordure)
+- `.location-badge.end` : palette rubis douce (`#FEF2F2` fond,
+  `#991B1B` texte, `#FCA5A5` bordure)
+- `.pick-cta` : uppercase tracking-widest, palette assortie selon le
+  point (start/end)
+- `#pick-banner` : pilule blanche avec ombre douce et bordure fine
+- `.locate-btn` : carré arrondi + icône ambre
+- Classes `#quota-counter.low` / `.critical` prêtes (JS n'y touche pas
+  encore)
+
+### Ce qui n'a pas été refait (préservation logique)
+- `static/js/itineraire.js` **inchangé** — tous les IDs et classes
+  attendus par le JS sont préservés dans le template
+- Le compteur quota affiche `0/7` en dur pour l'instant — le câblage
+  serveur → client se fera plus tard
+- Les marqueurs Leaflet en losange colorés de la spec ne sont pas
+  appliqués (les icônes actuelles définies dans `itineraire.js`
+  restent)
+
+---
+
+## Session 6 — Confirmation réservation (`voiture_confirmation.html`, commit `21f23c6`)
+
+**Objectif** : ticket détachable premium avec bandeau noir dégradé et
+total ambre.
+
+### Ce qui change
+- **Icône succès** : cercle vert doux (`bg-success/15`) avec check SVG
+  épais + titre Outfit "Demande envoyée !" + sous-texte tutoyé
+- **Ticket détachable** :
+  - **Bandeau haut** dégradé `ink → primary-dark` avec logo TM Location
+    deux tons + libellé "TICKET" en accent doré + numéro de référence
+    formaté (`#000042`)
+  - **Détails** : Véhicule, Forfait, Client, Téléphone, Date, Statut
+    (avec pastille verte + point pulsant)
+  - **Séparateur pointillé avec encoches semi-circulaires** — deux ronds
+    gris sur les côtés donnent l'illusion d'un ticket qu'on peut
+    déchirer (effet signature de la spec)
+  - **Bloc Total** en fond `primary-light` avec prix ambre Outfit gros
+- **Actions** :
+  - Bouton **noir** "Nouvelle réservation" → `/` (retour accueil, spec)
+  - Bouton **neutre** "Voir d'autres véhicules" → `/voitures`
+
+### Bug corrigé au passage
+Le template précédent référençait `voiture.marque`, `voiture.modele` et
+`voiture.annee` — **ces champs n'existent pas** dans le modèle `Voiture`
+(seul `nom` existe). Corrigé pour utiliser `voiture.nom`.
+
+---
+
+## Refonte design bouclée ✅
+
+Les 6 sessions sont terminées. Récap des commits :
+
+| # | Page                          | Commit    |
+|---|-------------------------------|-----------|
+| 1 | `base.html` + palette + fonts | `a6681e8` |
+| 2 | `index.html`                  | `355bf1f` |
+| 3 | `voitures.html`               | `c819021` |
+| 4 | `voiture_detail.html`         | `d1bbea4` |
+| 5 | `itineraire.html` + CSS       | `511a825` |
+| 6 | `voiture_confirmation.html`   | `21f23c6` |
+
+### Câblages backend restant (non demandés dans cette itération)
+- Filtres catégories `?type=` côté serveur (`car_service` +
+  champ `categorie` sur le modèle + migration Alembic)
+- Compteur quota `X/7` lu depuis le serveur côté JS (router expose la
+  valeur, `itineraire.js` la lit et applique `.low` / `.critical`)
+- Champs boîte / clim / carburant si tu veux 100 % match spec (migration
+  Alembic + admin form)
+- Marqueurs Leaflet en losange colorés (retoucher `itineraire.js`)
 
 ---
 
