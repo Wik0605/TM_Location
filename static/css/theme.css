@@ -73,6 +73,11 @@ h6,
   letter-spacing: -0.02em;
 }
 
+/* Désactive le double-tap-to-zoom natif iOS/Android (garde le pinch-to-zoom) */
+html {
+  touch-action: manipulation;
+}
+
 /* Normalisation et corrections pour les champs date/time sur iOS (Safari/Chrome Mobile) */
 input[type="date"],
 input[type="time"] {
