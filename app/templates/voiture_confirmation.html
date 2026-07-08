@@ -3,55 +3,116 @@
 {% block title %}Réservation confirmée{% endblock %}
 
 {% block content %}
-<section class="max-w-2xl mx-auto px-4 sm:px-6 py-16 text-center">
+<section class="max-w-md mx-auto px-5 pt-8 pb-8">
 
-    <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 space-y-6">
+    <!-- Icône check + titre -->
+    <div class="text-center mb-6">
+        <div class="w-16 h-16 rounded-full bg-success/15 flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+            </svg>
+        </div>
+        <h1 class="font-display text-2xl font-black text-ink tracking-tight mb-2">
+            Demande envoyée !
+        </h1>
+        <p class="text-sm text-[color:var(--color-neutral-strong)] leading-relaxed max-w-xs mx-auto">
+            Notre équipe te contacte rapidement pour confirmer les détails.
+        </p>
+    </div>
 
-        <div class="text-6xl">✅</div>
-        <h1 class="text-3xl font-bold text-gray-900">Demande envoyée !</h1>
-        <p class="text-gray-500">Nous avons bien reçu votre demande de location. Notre équipe vous contactera rapidement pour confirmer les détails.</p>
+    <!-- TICKET détachable -->
+    <div class="ticket relative bg-white rounded-3xl overflow-hidden shadow-[0_12px_28px_rgba(0,0,0,0.10)] border border-[color:var(--color-border)]">
 
-        <div class="bg-gray-50 rounded-xl p-5 text-left space-y-3 text-sm">
-            <div class="flex justify-between">
-                <span class="text-gray-500">Véhicule</span>
-                <span class="font-semibold text-gray-900">{{ voiture.marque }} {{ voiture.modele }} ({{ voiture.annee }})</span>
+        <!-- Bandeau noir dégradé -->
+        <div class="relative px-6 py-5 text-white overflow-hidden"
+             style="background: linear-gradient(135deg, #0A0A0A 0%, #1F1F1F 60%, #B45309 130%);">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-1 font-display">
+                    <span class="text-lg font-black tracking-tighter text-white">TM</span>
+                    <span class="text-lg font-black tracking-tighter text-primary">Location</span>
+                </div>
+                <span class="text-[10px] font-bold uppercase tracking-[0.25em] text-accent">
+                    Ticket
+                </span>
+            </div>
+            <div class="mt-3 pt-3 border-t border-white/10">
+                <span class="block text-[9px] font-bold uppercase tracking-widest text-white/50">Référence</span>
+                <span class="font-display text-sm font-black tracking-tight text-white">
+                    #{{ "%06d"|format(location.id if location.id else 0) }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Détails -->
+        <div class="px-6 py-5 space-y-3 text-sm">
+            <div class="flex justify-between items-center">
+                <span class="text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral)]">Véhicule</span>
+                <span class="font-semibold text-ink text-right truncate max-w-[60%]">{{ voiture.nom }}</span>
             </div>
             {% if type_location %}
-            <div class="flex justify-between">
-                <span class="text-gray-500">Formule</span>
-                <span class="font-semibold text-gray-900">{{ type_location.nom }}</span>
-            </div>
-            <div class="flex justify-between">
-                <span class="text-gray-500">Prix</span>
-                <span class="font-bold text-primary">{{ "{:,}".format(type_location.prix) }} Ar</span>
+            <div class="flex justify-between items-center">
+                <span class="text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral)]">Forfait</span>
+                <span class="font-semibold text-ink">{{ type_location.nom }}</span>
             </div>
             {% endif %}
-            <div class="flex justify-between">
-                <span class="text-gray-500">Client</span>
-                <span class="font-semibold text-gray-900">{{ location.client_nom }}</span>
+            <div class="flex justify-between items-center">
+                <span class="text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral)]">Client</span>
+                <span class="font-semibold text-ink text-right truncate max-w-[60%]">{{ location.client_nom }}</span>
             </div>
-            <div class="flex justify-between">
-                <span class="text-gray-500">Téléphone</span>
-                <span class="font-semibold text-gray-900">{{ location.client_telephone }}</span>
+            <div class="flex justify-between items-center">
+                <span class="text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral)]">Téléphone</span>
+                <span class="font-semibold text-ink">{{ location.client_telephone }}</span>
             </div>
-            <div class="flex justify-between">
-                <span class="text-gray-500">Date souhaitée</span>
-                <span class="font-semibold text-gray-900">{{ location.date_debut.strftime('%d/%m/%Y') }}</span>
+            <div class="flex justify-between items-center">
+                <span class="text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral)]">Date</span>
+                <span class="font-semibold text-ink">{{ location.date_debut.strftime('%d/%m/%Y') }}</span>
             </div>
-            <div class="flex justify-between">
-                <span class="text-gray-500">Statut</span>
-                <span class="font-semibold text-emerald-600">{{ location.statut }}</span>
+            <div class="flex justify-between items-center">
+                <span class="text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral)]">Statut</span>
+                <span class="inline-flex items-center gap-1.5 bg-success/10 text-success font-bold text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full">
+                    <span class="w-1.5 h-1.5 rounded-full bg-success"></span>
+                    {{ location.statut }}
+                </span>
             </div>
         </div>
 
-        <div class="flex flex-col sm:flex-row gap-3 pt-2">
-            <a href="/voitures" class="flex-1 bg-gray-900 text-white py-3 rounded-xl font-semibold hover:bg-gray-700 transition-colors">
-                Voir d'autres voitures
-            </a>
-            <a href="/" class="flex-1 border border-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
-                Retour à l'accueil
-            </a>
+        <!-- Séparateur pointillé avec encoches (effet ticket détachable) -->
+        <div class="relative">
+            <span class="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-[color:var(--color-neutral-soft)]"></span>
+            <span class="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-[color:var(--color-neutral-soft)]"></span>
+            <div class="mx-5 border-t-2 border-dashed border-[color:var(--color-border-strong)]"></div>
         </div>
+
+        <!-- Total -->
+        <div class="px-6 py-5 bg-[color:var(--color-primary-light)]">
+            <div class="flex items-end justify-between">
+                <div>
+                    <span class="block text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)]">Total</span>
+                    <span class="text-[10px] text-[color:var(--color-neutral)] font-medium">Estimation indicative</span>
+                </div>
+                {% if type_location %}
+                <span class="font-display text-2xl font-black text-primary tracking-tight">
+                    {{ "{:,}".format(type_location.prix).replace(",", " ") }} Ar
+                </span>
+                {% else %}
+                <span class="font-display text-sm font-black text-[color:var(--color-neutral)] tracking-tight">
+                    Sur demande
+                </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="mt-6 space-y-2">
+        <a href="/"
+           class="block w-full text-center bg-ink hover:bg-primary text-white py-3.5 rounded-2xl font-bold text-sm uppercase tracking-widest transition-all shadow-md">
+            Nouvelle réservation
+        </a>
+        <a href="/voitures"
+           class="block w-full text-center bg-[color:var(--color-neutral-soft)] hover:bg-[color:var(--color-border-strong)] text-ink py-3.5 rounded-2xl font-bold text-sm uppercase tracking-widest transition-all">
+            Voir d'autres véhicules
+        </a>
     </div>
 
 </section>
