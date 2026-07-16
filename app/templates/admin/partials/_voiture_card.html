@@ -44,6 +44,12 @@
                     <input type="text" name="nom" value="{{ voiture.nom }}"
                         class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
                 </div>
+                <div class="col-span-2">
+                    <label class="block text-xs text-gray-500 mb-1">Description</label>
+                    <textarea name="description" rows="3"
+                        placeholder="Décris la voiture : confort, équipements, usage recommandé..."
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">{{ voiture.description or '' }}</textarea>
+                </div>
                 <div>
                     <label class="block text-xs text-gray-500 mb-1">Places</label>
                     <input type="number" name="places" value="{{ voiture.places }}" min="1" max="20"
