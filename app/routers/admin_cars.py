@@ -34,6 +34,7 @@ async def admin_voitures(request: Request, db: AsyncSession = Depends(get_db)):
 async def create_voiture(
     request: Request,
     nom: str = Form(...),
+    description: str = Form(...),
     places: int = Form(5),
     consommation_carburant: float = Form(8.0),
     db: AsyncSession = Depends(get_db),
@@ -43,6 +44,7 @@ async def create_voiture(
         return redirect
     data = {
         "nom": nom,
+        "description": description,
         "places": places,
         "consommation_carburant": consommation_carburant,
         "is_available": True,
@@ -93,6 +95,26 @@ async def edit_voiture(
     }
     data = {k: v for k, v in data.items() if v is not None}
     voiture = await admin_service.update_voiture(db, voiture_id, data)
+    return templates.TemplateResponse("admin/partials/_voiture_card.html", {
+        "request": request,
+        "voiture": voiture,
+        "success": True,
+    })
+
+
+@router.post("/voitures/{voiture_id}/description", response_class=HTMLResponse)
+async def update_voiture_description(
+    request: Request,
+    voiture_id: int,
+    description: str = Form(...),
+    db: AsyncSession = Depends(get_db),
+):
+    redirect = require_admin(request)
+    if redirect:
+        return redirect
+    voiture = await admin_service.update_voiture(
+        db, voiture_id, {"description": description}
+    )
     return templates.TemplateResponse("admin/partials/_voiture_card.html", {
         "request": request,
         "voiture": voiture,

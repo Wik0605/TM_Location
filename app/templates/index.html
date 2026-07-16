@@ -18,7 +18,7 @@
                 Location premium · Madagascar
             </span>
             <h1 class="font-display text-3xl sm:text-4xl font-black text-white leading-[1.05] tracking-tight">
-                Prends la route<br>
+                Prenez la Route <br>
                 <span class="text-accent">à ton rythme.</span>
             </h1>
             <p class="mt-4 text-sm text-white/80 leading-relaxed max-w-xs">
@@ -110,15 +110,18 @@
                     <span class="bg-[color:var(--color-neutral-soft)] text-[color:var(--color-neutral-strong)] text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-md">
                         {{ voiture.places }} pl.
                     </span>
-                    <span class="bg-[color:var(--color-neutral-soft)] text-[color:var(--color-neutral-strong)] text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-md">
-                        {{ voiture.consommation_carburant }}L/100
-                    </span>
                     {% if voiture.types_location %}
                     <span class="bg-[color:var(--color-primary-tint)] text-primary-dark text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-md">
                         {{ voiture.types_location | length }} forfait{{ 's' if voiture.types_location|length > 1 else '' }}
                     </span>
                     {% endif %}
                 </div>
+
+                {% if voiture.description %}
+                <p class="mt-3 text-xs text-[color:var(--color-neutral-strong)] leading-relaxed line-clamp-2">
+                    {{ voiture.description }}
+                </p>
+                {% endif %}
 
                 <!-- Prix + CTA -->
                 <div class="flex items-end justify-between mt-4 pt-3 border-t border-[color:var(--color-border)]">
