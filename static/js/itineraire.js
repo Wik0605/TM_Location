@@ -235,7 +235,7 @@
 
         var fuelPriceAttr = selectedOption ? parseFloat(selectedOption.getAttribute('data-fuel-price')) : NaN;
         var PRIX_LITRE = isNaN(fuelPriceAttr) || fuelPriceAttr === 0 ? 4900 : fuelPriceAttr;
-        var fuelCost = (distanceKm / 100) * conso * PRIX_LITRE;
+        var fuelCost = (distanceKm / 100) * conso * PRIX_LITRE + 30000;
         var total = locationCost + fuelCost;
 
         var labelEl = document.getElementById('res-rental-label');
