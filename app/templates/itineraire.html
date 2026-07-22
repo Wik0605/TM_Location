@@ -65,10 +65,10 @@
         </div>
     </div>
 
-    <!-- ── Carte ── -->
-    <div class="lg:col-span-2 order-2 lg:order-none mb-5" id="map-col">
+    <!-- ── Carte (edge-to-edge sur mobile) ── -->
+    <div class="-mx-5 lg:mx-0 mb-5 map-edge" id="map-col">
         <div id="map-wrapper"
-             class="relative bg-white rounded-3xl shadow-[0_4px_16px_rgba(0,0,0,0.08)] border border-[color:var(--color-border)] overflow-hidden map-wrapper">
+             class="relative bg-white overflow-hidden map-wrapper">
             <div id="map" data-daily-price="{{ car.daily_price }}"></div>
             <!-- Loader calcul itinéraire -->
             <div id="map-loader" style="display:none;"
