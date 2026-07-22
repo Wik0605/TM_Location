@@ -22,7 +22,7 @@
         zoomControl: false,
         tap: true,
         tapTolerance: 15
-    }).setView([-18.91, 47.52], 13);
+    }).setView([-18.91, 47.52], 15);
 
     // Contrôles zoom en bas à droite (plus ergonomiques sur mobile)
     L.control.zoom({ position: 'bottomright' }).addTo(map);
