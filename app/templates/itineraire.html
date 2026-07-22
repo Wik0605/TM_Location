@@ -97,9 +97,16 @@
                     <span class="badge-name" id="start-badge-name"></span>
                     <button class="badge-clear" id="start-clear">✕</button>
                 </div>
+                <div class="place-search" data-target="start">
+                    <input type="text" class="place-search-input" id="start-search"
+                           placeholder="Rechercher un lieu (ex. Analakely)"
+                           autocomplete="off" inputmode="search" aria-label="Rechercher le lieu de départ" />
+                    <button type="button" class="place-search-clear" aria-label="Effacer">✕</button>
+                    <ul class="place-suggestions" role="listbox" hidden></ul>
+                </div>
                 <button type="button" id="pick-start-btn" class="pick-cta mt-1">
                     <span class="w-2.5 h-2.5 rounded-full bg-success shrink-0"></span>
-                    <span>Pointer le départ</span>
+                    <span>ou pointer directement</span>
                 </button>
             </div>
 
@@ -120,9 +127,16 @@
                     <span class="badge-name" id="end-badge-name"></span>
                     <button class="badge-clear" id="end-clear">✕</button>
                 </div>
+                <div class="place-search" data-target="end">
+                    <input type="text" class="place-search-input" id="end-search"
+                           placeholder="Rechercher un lieu (ex. Ivato)"
+                           autocomplete="off" inputmode="search" aria-label="Rechercher le lieu d'arrivée" />
+                    <button type="button" class="place-search-clear" aria-label="Effacer">✕</button>
+                    <ul class="place-suggestions" role="listbox" hidden></ul>
+                </div>
                 <button type="button" id="pick-end-btn" class="pick-cta end-cta mt-1">
                     <span class="w-2.5 h-2.5 rounded-full bg-danger shrink-0"></span>
-                    <span>Pointer l'arrivée</span>
+                    <span>ou pointer directement</span>
                 </button>
             </div>
 
@@ -227,11 +241,18 @@
 <template id="waypoint-template">
     <div class="waypoint-item space-y-1">
         <label class="block text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)]">Escale</label>
+        <div class="place-search waypoint-search" data-target="waypoint">
+            <input type="text" class="place-search-input"
+                   placeholder="Rechercher une escale"
+                   autocomplete="off" inputmode="search" aria-label="Rechercher une escale" />
+            <button type="button" class="place-search-clear" aria-label="Effacer">✕</button>
+            <ul class="place-suggestions" role="listbox" hidden></ul>
+        </div>
         <div class="flex gap-2">
             <button type="button"
                     class="pick-waypoint-btn flex-grow border-2 border-dashed border-[color:var(--color-primary-tint-strong)] bg-[color:var(--color-primary-light)] text-primary-dark rounded-2xl px-3 py-2.5 text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2">
                 <span class="w-2.5 h-2.5 rounded-full bg-primary"></span>
-                Pointer l'escale
+                ou pointer directement
             </button>
             <button type="button"
                     class="remove-waypoint-btn text-danger hover:bg-[color:var(--color-primary-light)] p-2.5 bg-[color:var(--color-neutral-soft)] rounded-2xl text-sm leading-none">

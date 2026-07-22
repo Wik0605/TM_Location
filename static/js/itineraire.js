@@ -236,6 +236,9 @@
             activatePickMode(item);
         });
 
+        var searchBox = item.querySelector('.place-search');
+        if (searchBox) attachSearchBox(searchBox, item);
+
         document.getElementById('waypoints-container').appendChild(item);
     });
 
@@ -418,6 +421,162 @@
             document.getElementById('map-loader').style.display = 'none';
         }
     });
+
+    // ── Recherche de lieu (Nominatim autocomplete) ──
+    var NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
+
+    function formatSuggestion(item) {
+        var parts = (item.display_name || '').split(',').map(function (s) { return s.trim(); });
+        var addr = item.address || {};
+        var title = addr.village || addr.suburb || addr.neighbourhood || addr.road
+                    || addr.city || addr.town || addr.hamlet
+                    || parts[0] || 'Lieu';
+        var context = parts.slice(1, 4).filter(function (p) { return p && p !== title; }).join(', ');
+        return { title: title, sub: context };
+    }
+
+    function searchPlaces(query, signal) {
+        var url = NOMINATIM_URL
+            + '?q=' + encodeURIComponent(query)
+            + '&countrycodes=mg&format=json&limit=5&addressdetails=1&accept-language=fr';
+        return fetch(url, { signal: signal, headers: { 'Accept': 'application/json' } })
+            .then(function (r) { return r.ok ? r.json() : []; });
+    }
+
+    function attachSearchBox(container, target) {
+        var input = container.querySelector('.place-search-input');
+        var list = container.querySelector('.place-suggestions');
+        var clearBtn = container.querySelector('.place-search-clear');
+        var debounceTimer = null;
+        var currentCtrl = null;
+        var activeIndex = -1;
+        var currentResults = [];
+
+        function closeList() {
+            list.hidden = true;
+            list.innerHTML = '';
+            activeIndex = -1;
+            currentResults = [];
+        }
+
+        function renderEmpty(msg) {
+            list.hidden = false;
+            list.innerHTML = '<li class="place-suggestions-empty">' + msg + '</li>';
+        }
+
+        function renderResults(results) {
+            currentResults = results;
+            if (!results.length) { renderEmpty('Aucun résultat'); return; }
+            list.hidden = false;
+            list.innerHTML = '';
+            results.forEach(function (item, i) {
+                var li = document.createElement('li');
+                li.className = 'place-suggestion-item';
+                li.setAttribute('role', 'option');
+                var fmt = formatSuggestion(item);
+                li.innerHTML =
+                    '<svg class="place-suggestion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a7 7 0 0 1 7 7c0 5-7 13-7 13S5 14 5 9a7 7 0 0 1 7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>'
+                  + '<div class="place-suggestion-text">'
+                  +   '<div class="place-suggestion-title"></div>'
+                  +   '<div class="place-suggestion-sub"></div>'
+                  + '</div>';
+                li.querySelector('.place-suggestion-title').textContent = fmt.title;
+                li.querySelector('.place-suggestion-sub').textContent = fmt.sub;
+                li.addEventListener('mousedown', function (e) {
+                    e.preventDefault();
+                    selectResult(item, fmt.title);
+                });
+                list.appendChild(li);
+            });
+        }
+
+        function selectResult(item, title) {
+            input.value = title;
+            container.classList.add('has-value');
+            closeList();
+            if (navigator.vibrate) navigator.vibrate(20);
+            var bb = item.boundingbox;
+            if (bb && bb.length === 4) {
+                var bounds = L.latLngBounds(
+                    [parseFloat(bb[0]), parseFloat(bb[2])],
+                    [parseFloat(bb[1]), parseFloat(bb[3])]
+                );
+                map.fitBounds(bounds, { padding: [40, 40], maxZoom: 17 });
+            } else if (item.lat && item.lon) {
+                map.setView([parseFloat(item.lat), parseFloat(item.lon)], 16);
+            }
+            activatePickMode(target);
+        }
+
+        function triggerSearch(query) {
+            if (currentCtrl) currentCtrl.abort();
+            currentCtrl = new AbortController();
+            container.classList.add('is-loading');
+            searchPlaces(query, currentCtrl.signal)
+                .then(function (results) {
+                    container.classList.remove('is-loading');
+                    renderResults(results);
+                })
+                .catch(function (err) {
+                    if (err && err.name === 'AbortError') return;
+                    container.classList.remove('is-loading');
+                    renderEmpty('Aucun résultat');
+                });
+        }
+
+        input.addEventListener('input', function () {
+            var v = input.value.trim();
+            container.classList.toggle('has-value', v.length > 0);
+            if (debounceTimer) clearTimeout(debounceTimer);
+            if (v.length < 2) { closeList(); container.classList.remove('is-loading'); return; }
+            debounceTimer = setTimeout(function () { triggerSearch(v); }, 400);
+        });
+
+        input.addEventListener('focus', function () {
+            if (currentResults.length) list.hidden = false;
+        });
+
+        input.addEventListener('blur', function () {
+            setTimeout(closeList, 180);
+        });
+
+        input.addEventListener('keydown', function (e) {
+            var items = list.querySelectorAll('.place-suggestion-item');
+            if (e.key === 'ArrowDown' && items.length) {
+                e.preventDefault();
+                activeIndex = (activeIndex + 1) % items.length;
+            } else if (e.key === 'ArrowUp' && items.length) {
+                e.preventDefault();
+                activeIndex = (activeIndex - 1 + items.length) % items.length;
+            } else if (e.key === 'Enter' && activeIndex >= 0 && currentResults[activeIndex]) {
+                e.preventDefault();
+                var it = currentResults[activeIndex];
+                var fmt = formatSuggestion(it);
+                selectResult(it, fmt.title);
+                return;
+            } else if (e.key === 'Escape') {
+                closeList();
+                input.blur();
+                return;
+            } else {
+                return;
+            }
+            items.forEach(function (el, i) { el.classList.toggle('is-active', i === activeIndex); });
+            if (items[activeIndex]) items[activeIndex].scrollIntoView({ block: 'nearest' });
+        });
+
+        clearBtn.addEventListener('click', function () {
+            input.value = '';
+            container.classList.remove('has-value');
+            closeList();
+            input.focus();
+        });
+    }
+
+    var startSearch = document.querySelector('.place-search[data-target="start"]');
+    var endSearch = document.querySelector('.place-search[data-target="end"]');
+    if (startSearch) attachSearchBox(startSearch, 'start');
+    if (endSearch) attachSearchBox(endSearch, 'end');
 
     // Forcer Leaflet à recalculer la taille après le rendu
     setTimeout(function () { map.invalidateSize(); }, 200);
