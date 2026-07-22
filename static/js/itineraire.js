@@ -623,6 +623,7 @@
                     [parseFloat(bb[1]), parseFloat(bb[3])]
                 );
                 map.fitBounds(bounds, { padding: [40, 40], maxZoom: 17 });
+                if (map.getZoom() < 15) map.setZoom(15);
             } else if (item.lat && item.lon) {
                 map.setView([parseFloat(item.lat), parseFloat(item.lon)], 16);
             }
