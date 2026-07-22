@@ -42,9 +42,38 @@
         }
     });
     new LocateControl().addTo(map);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    }).addTo(map);
+    var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 19
+    });
+
+    var esriImagery = L.tileLayer(
+        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        {
+            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics',
+            maxZoom: 19
+        }
+    );
+
+    var osmLabels = L.tileLayer(
+        'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png',
+        {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 19,
+            pane: 'shadowPane'
+        }
+    );
+
+    var satelliteLayer = L.layerGroup([esriImagery, osmLabels]);
+
+    osmLayer.addTo(map);
+
+    L.control.layers(
+        { 'Plan': osmLayer, 'Satellite': satelliteLayer },
+        null,
+        { position: 'topright', collapsed: false }
+    ).addTo(map);
 
     var routeLayer = null;
     var markersLayer = L.layerGroup().addTo(map);

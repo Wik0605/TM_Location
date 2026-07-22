@@ -2,10 +2,39 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialisation de la carte Leaflet (Centrée sur Tana)
     const map = L.map('map').setView([-18.91, 47.52], 13);
 
-    // Ajout du fond de carte OpenStreetMap
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
+    // Fonds de carte : Plan (OSM) + Satellite (Esri)
+    const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+    });
+
+    const esriImagery = L.tileLayer(
+        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        {
+            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics',
+            maxZoom: 19
+        }
+    );
+
+    const osmLabels = L.tileLayer(
+        'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png',
+        {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 19,
+            pane: 'shadowPane'
+        }
+    );
+
+    const satelliteLayer = L.layerGroup([esriImagery, osmLabels]);
+
+    osmLayer.addTo(map);
+
+    L.control.layers(
+        { 'Plan': osmLayer, 'Satellite': satelliteLayer },
+        null,
+        { position: 'topright', collapsed: false }
+    ).addTo(map);
 
     let routeLayer = null;
     let markersLayer = L.layerGroup().addTo(map);
