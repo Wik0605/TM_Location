@@ -8,6 +8,13 @@
     width: 100%;
     z-index: 1;
 }
+/* Carte plein bord sur mobile — casse toute contrainte de largeur du parent */
+.map-edge {
+    width: 100vw;
+    max-width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+}
 .map-wrapper {
     height: 62vh;
     min-height: 380px;
@@ -16,6 +23,12 @@
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 @media (min-width: 1024px) {
+    .map-edge {
+        width: auto;
+        max-width: none;
+        margin-left: 0;
+        margin-right: 0;
+    }
     .map-wrapper {
         height: 70vh;
         min-height: 480px;
