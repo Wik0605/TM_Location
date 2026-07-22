@@ -79,16 +79,24 @@ export function attachSearchBox(container, target) {
         container.classList.add('has-value');
         closeList();
         if (navigator.vibrate) navigator.vibrate(20);
+        const centerLat = item.lat ? parseFloat(item.lat) : null;
+        const centerLon = item.lon ? parseFloat(item.lon) : null;
         const bb = item.boundingbox;
         if (bb && bb.length === 4) {
             const bounds = L.latLngBounds(
                 [parseFloat(bb[0]), parseFloat(bb[2])],
                 [parseFloat(bb[1]), parseFloat(bb[3])]
             );
-            state.map.fitBounds(bounds, { padding: [40, 40], maxZoom: 17 });
-            if (state.map.getZoom() < 15) state.map.setZoom(15);
-        } else if (item.lat && item.lon) {
-            state.map.setView([parseFloat(item.lat), parseFloat(item.lon)], 16);
+            state.map.fitBounds(bounds, { padding: [40, 40], maxZoom: 17, animate: false });
+            if (state.map.getZoom() < 15) {
+                if (centerLat !== null && centerLon !== null) {
+                    state.map.setView([centerLat, centerLon], 15, { animate: false });
+                } else {
+                    state.map.setView(bounds.getCenter(), 15, { animate: false });
+                }
+            }
+        } else if (centerLat !== null && centerLon !== null) {
+            state.map.setView([centerLat, centerLon], 16);
         }
         activatePickMode(target);
     }
