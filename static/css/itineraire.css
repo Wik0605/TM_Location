@@ -271,6 +271,120 @@
     font-size: 0.8rem;
 }
 
+/* ── Chips type de location ── */
+.rental-chips {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 2px 2px 8px 2px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+.rental-chips::-webkit-scrollbar { display: none; }
+.rental-chip {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 10px 16px;
+    border-radius: 14px;
+    background: var(--color-neutral-soft);
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s;
+    min-width: 110px;
+    text-align: left;
+}
+.rental-chip:hover { background: var(--color-primary-light); }
+.rental-chip:active { transform: scale(0.97); }
+.rental-chip.is-selected {
+    background: var(--color-primary-light);
+    border-color: var(--color-primary);
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.18);
+}
+.rental-chip-name {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-neutral-strong);
+    white-space: nowrap;
+}
+.rental-chip.is-selected .rental-chip-name { color: var(--color-primary-dark); }
+.rental-chip-price {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: var(--color-ink);
+    white-space: nowrap;
+}
+
+/* ── CTA sticky (réserver) ── */
+.sticky-cta {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 800;
+    background: white;
+    border-top: 1px solid var(--color-border);
+    box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.08);
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+    animation: stickySlide 0.25s ease;
+}
+@keyframes stickySlide {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+}
+.sticky-cta-inner {
+    max-width: 32rem;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+.sticky-cta-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+}
+.sticky-cta-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--color-neutral);
+}
+.sticky-cta-amount {
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: var(--color-primary-dark);
+    letter-spacing: -0.01em;
+}
+.sticky-cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--color-ink);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 14px;
+    font-weight: 800;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.15s;
+}
+.sticky-cta-btn:hover { background: var(--color-primary); }
+.sticky-cta-btn:active { transform: scale(0.97); }
+
+/* Ajuste la marge basse quand la CTA sticky est visible pour ne pas cacher le contenu */
+body.has-sticky-cta { padding-bottom: 88px; }
+
 /* Alerte quota bas (compteur passe en rouge/ambre si peu restant) */
 #quota-counter.low {
     background: var(--color-primary-light) !important;

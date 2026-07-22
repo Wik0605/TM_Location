@@ -195,6 +195,9 @@
         if (isWaypoint) {
             reverseGeocode(lat, lng, target.querySelector('.waypoint-badge-name'));
         }
+
+        if (typeof saveDraft === 'function') saveDraft();
+        if (typeof scheduleCalculation === 'function') scheduleCalculation();
     });
 
     function reverseGeocode(lat, lng, el) {
@@ -209,15 +212,31 @@
     }
 
     // ── Effacer badge ──
+    function hideStickyIfIncomplete() {
+        if (!pickedCoords.start || !pickedCoords.end) {
+            var stickyCta = document.getElementById('sticky-cta');
+            if (stickyCta) {
+                stickyCta.style.display = 'none';
+                document.body.classList.remove('has-sticky-cta');
+            }
+            var card = document.getElementById('results-card');
+            if (card) card.style.display = 'none';
+            lastCalcKey = null;
+        }
+    }
     document.getElementById('start-clear').addEventListener('click', function () {
         pickedCoords.start = null;
         if (pickMarkers.start) { map.removeLayer(pickMarkers.start); pickMarkers.start = null; }
         document.getElementById('start-badge').style.display = 'none';
+        hideStickyIfIncomplete();
+        if (typeof saveDraft === 'function') saveDraft();
     });
     document.getElementById('end-clear').addEventListener('click', function () {
         pickedCoords.end = null;
         if (pickMarkers.end) { map.removeLayer(pickMarkers.end); pickMarkers.end = null; }
         document.getElementById('end-badge').style.display = 'none';
+        hideStickyIfIncomplete();
+        if (typeof saveDraft === 'function') saveDraft();
     });
 
     // ── Escales ──
@@ -283,8 +302,14 @@
 
         var card = document.getElementById('results-card');
         card.style.display = 'block';
-        if (window.innerWidth < 1024) {
-            setTimeout(function () { scrollTo(card); }, 200);
+
+        // Sticky CTA (mobile-first)
+        var stickyTotal = document.getElementById('sticky-total');
+        var stickyCta = document.getElementById('sticky-cta');
+        if (stickyTotal) stickyTotal.textContent = Math.round(total).toLocaleString('fr-FR');
+        if (stickyCta) {
+            stickyCta.style.display = 'block';
+            document.body.classList.add('has-sticky-cta');
         }
     }
 
@@ -382,14 +407,107 @@
     document.getElementById('quota-backdrop').addEventListener('click', function () { quotaModal.style.display = 'none'; });
     document.getElementById('quota-close').addEventListener('click', function () { quotaModal.style.display = 'none'; });
 
-    // ── Calculer ──
-    document.getElementById('calculate-btn').addEventListener('click', async function () {
-        var start = getCoord('start');
-        var end = getCoord('end');
-        if (!start || !end) {
-            alert('Pointez ou sélectionnez un départ et une arrivée.');
+    // ── Chips type de location (miroir vers <select> caché) ──
+    var rentalSelect = document.getElementById('rental-type');
+    var chipsContainer = document.getElementById('rental-type-chips');
+    if (chipsContainer) {
+        chipsContainer.querySelectorAll('.rental-chip').forEach(function (chip) {
+            chip.addEventListener('click', function () {
+                chipsContainer.querySelectorAll('.rental-chip').forEach(function (c) { c.classList.remove('is-selected'); });
+                chip.classList.add('is-selected');
+                if (rentalSelect) rentalSelect.value = chip.getAttribute('data-value');
+                saveDraft();
+                scheduleCalculation();
+            });
+        });
+    }
+
+    // ── Durée (calcul auto entre les deux datetime) ──
+    var dtStart = document.getElementById('datetime-start');
+    var dtEnd = document.getElementById('datetime-end');
+    var durationDisplay = document.getElementById('duration-display');
+
+    function updateDuration() {
+        if (!dtStart || !dtEnd || !dtStart.value || !dtEnd.value) {
+            if (durationDisplay) durationDisplay.style.display = 'none';
             return;
         }
+        var s = new Date(dtStart.value);
+        var e = new Date(dtEnd.value);
+        var diffMs = e - s;
+        if (isNaN(diffMs) || diffMs <= 0) {
+            if (durationDisplay) durationDisplay.style.display = 'none';
+            return;
+        }
+        var totalHours = diffMs / 3600000;
+        var days = Math.floor(totalHours / 24);
+        var hours = Math.round(totalHours - days * 24);
+        var txt = '';
+        if (days > 0) txt += days + ' j';
+        if (hours > 0) txt += (txt ? ' ' : '') + hours + ' h';
+        if (!txt) txt = Math.round(diffMs / 60000) + ' min';
+        durationDisplay.textContent = txt;
+        durationDisplay.style.display = 'inline';
+    }
+
+    if (dtStart) dtStart.addEventListener('change', function () { updateDuration(); saveDraft(); scheduleCalculation(); });
+    if (dtEnd) dtEnd.addEventListener('change', function () { updateDuration(); saveDraft(); scheduleCalculation(); });
+
+    // ── Sauvegarde brouillon (localStorage) ──
+    var DRAFT_KEY = 'itineraire-draft-' + (mapEl.getAttribute('data-car-id') || window.location.pathname);
+
+    function saveDraft() {
+        try {
+            var draft = {
+                dtStart: dtStart ? dtStart.value : '',
+                dtEnd: dtEnd ? dtEnd.value : '',
+                rentalType: rentalSelect ? rentalSelect.value : '',
+                start: pickedCoords.start,
+                end: pickedCoords.end
+            };
+            localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+        } catch (e) { /* localStorage indisponible */ }
+    }
+
+    function restoreDraft() {
+        try {
+            var raw = localStorage.getItem(DRAFT_KEY);
+            if (!raw) return;
+            var d = JSON.parse(raw);
+            if (d.dtStart && dtStart) dtStart.value = d.dtStart;
+            if (d.dtEnd && dtEnd) dtEnd.value = d.dtEnd;
+            if (d.rentalType && rentalSelect) {
+                rentalSelect.value = d.rentalType;
+                var chip = chipsContainer && chipsContainer.querySelector('.rental-chip[data-value="' + d.rentalType + '"]');
+                if (chip) chip.classList.add('is-selected');
+            }
+            updateDuration();
+        } catch (e) { /* JSON invalide */ }
+    }
+    restoreDraft();
+
+    // ── Calcul automatique (debounce) ──
+    var calcTimer = null;
+    var calcInFlight = false;
+    var lastCalcKey = null;
+
+    function currentCalcKey() {
+        return [pickedCoords.start, pickedCoords.end, getWaypointCoords().join('|'), rentalSelect && rentalSelect.value].join('#');
+    }
+
+    function scheduleCalculation() {
+        if (calcTimer) clearTimeout(calcTimer);
+        calcTimer = setTimeout(runCalculation, 700);
+    }
+
+    async function runCalculation() {
+        var start = getCoord('start');
+        var end = getCoord('end');
+        var hasType = rentalSelect && rentalSelect.value;
+        if (!start || !end || !hasType) return;
+
+        var key = currentCalcKey();
+        if (calcInFlight || key === lastCalcKey) return;
 
         try {
             var quotaRes = await fetch(window.location.pathname + '/quota', { method: 'POST' });
@@ -398,14 +516,11 @@
                 quotaModal.style.display = 'flex';
                 return;
             }
-        } catch (e) {
-            // Si l'endpoint échoue, on laisse passer
-        }
+        } catch (e) { /* laisse passer */ }
 
         var coords = [start].concat(getWaypointCoords()).concat([end]);
-
         document.getElementById('map-loader').style.display = 'flex';
-
+        calcInFlight = true;
         try {
             var distanceKm = await firstValid(calcBRouter(coords), calcOSRM(coords));
             var isFallback = false;
@@ -414,13 +529,19 @@
                 isFallback = true;
             }
             showResults(distanceKm, isFallback);
+            lastCalcKey = key;
+            var hint = document.getElementById('calc-hint');
+            if (hint) hint.style.display = 'none';
         } catch (e) {
             console.error(e);
-            alert('Impossible de calculer l\'itinéraire. Vérifiez votre connexion ou réessayez.');
         } finally {
             document.getElementById('map-loader').style.display = 'none';
+            calcInFlight = false;
         }
-    });
+    }
+
+    // Expose pour déclencher depuis map.on('click') après pose d'un marqueur
+    window.__scheduleItineraireCalc = scheduleCalculation;
 
     // ── Recherche de lieu (Nominatim autocomplete) ──
     var NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
