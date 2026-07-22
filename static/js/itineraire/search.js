@@ -1,33 +1,32 @@
 import { state } from './state.js';
 import { activatePickMode } from './pick.js';
 
-const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
+const PHOTON_URL = 'https://photon.komoot.io/api/';
+// Bounding box Madagascar (approx) : ouest, sud, est, nord
+const MG_BBOX = '43.2,-25.6,50.5,-11.9';
 
 function formatSuggestion(item) {
-    const parts = (item.display_name || '').split(',').map((s) => s.trim());
-    const addr = item.address || {};
-    const title =
-        addr.village ||
-        addr.suburb ||
-        addr.neighbourhood ||
-        addr.road ||
-        addr.city ||
-        addr.town ||
-        addr.hamlet ||
-        parts[0] ||
-        'Lieu';
-    const context = parts
-        .slice(1, 4)
-        .filter((p) => p && p !== title)
-        .join(', ');
-    return { title, sub: context };
+    const p = item.properties || {};
+    const title = p.name || p.street || 'Lieu';
+    const contextParts = [];
+    if (p.street && p.street !== title) contextParts.push(p.street);
+    if (p.district && p.district !== title) contextParts.push(p.district);
+    if (p.city && p.city !== title) contextParts.push(p.city);
+    if (p.state && p.state !== title && p.state !== p.city) contextParts.push(p.state);
+    if (p.country && !contextParts.length) contextParts.push(p.country);
+    return { title, sub: contextParts.slice(0, 3).join(', ') };
 }
 
 function searchPlaces(query, signal) {
-    const url = `${NOMINATIM_URL}?q=${encodeURIComponent(query)}&countrycodes=mg&format=json&limit=5&addressdetails=1&accept-language=fr`;
-    return fetch(url, { signal, headers: { Accept: 'application/json' } }).then((r) =>
-        r.ok ? r.json() : []
-    );
+    // Biais de position vers le centre courant de la carte (équivalent viewbox)
+    const center = state.map ? state.map.getCenter() : { lat: -18.91, lng: 47.52 };
+    const url =
+        `${PHOTON_URL}?q=${encodeURIComponent(query)}` +
+        `&lat=${center.lat}&lon=${center.lng}` +
+        `&limit=10&lang=fr&bbox=${MG_BBOX}`;
+    return fetch(url, { signal, headers: { Accept: 'application/json' } })
+        .then((r) => (r.ok ? r.json() : { features: [] }))
+        .then((data) => data.features || []);
 }
 
 export function attachSearchBox(container, target) {
@@ -79,13 +78,15 @@ export function attachSearchBox(container, target) {
         container.classList.add('has-value');
         closeList();
         if (navigator.vibrate) navigator.vibrate(20);
-        const centerLat = item.lat ? parseFloat(item.lat) : null;
-        const centerLon = item.lon ? parseFloat(item.lon) : null;
-        const bb = item.boundingbox;
-        if (bb && bb.length === 4) {
+        // Photon : geometry.coordinates = [lon, lat] ; extent = [west, north, east, south]
+        const coords = item.geometry?.coordinates;
+        const centerLon = coords ? coords[0] : null;
+        const centerLat = coords ? coords[1] : null;
+        const extent = item.properties?.extent;
+        if (extent && extent.length === 4) {
             const bounds = L.latLngBounds(
-                [parseFloat(bb[0]), parseFloat(bb[2])],
-                [parseFloat(bb[1]), parseFloat(bb[3])]
+                [extent[3], extent[0]],
+                [extent[1], extent[2]]
             );
             state.map.fitBounds(bounds, { padding: [40, 40], maxZoom: 17, animate: false });
             if (state.map.getZoom() < 15) {
