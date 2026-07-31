@@ -1,18 +1,23 @@
-from fastapi import APIRouter, Request, Depends, Form
+from fastapi import APIRouter, Request, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Optional
+from pydantic import ValidationError
 import datetime
 from datetime import date
 
 from app.database import get_db
 from app.services import car_service
 from app.models import Location
+from app.schemas import LocationForm
 
 router = APIRouter(prefix="", tags=["web"])
 templates = Jinja2Templates(directory="app/templates")
 templates.env.filters["current_year"] = lambda: datetime.datetime.now().year
+
+
+def _traduire_erreur(exc: ValidationError) -> str:
+    return "Erreur de saisie, veuillez vérifier les informations du formulaire."
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -77,47 +82,51 @@ async def voiture_reserver(
     request: Request,
     voiture_id: int,
     db: AsyncSession = Depends(get_db),
-    type_location_id: Optional[int] = Form(None),
-    client_nom: str = Form(...),
-    client_telephone: str = Form(...),
-    client_email: Optional[str] = Form(None),
-    date_debut: str = Form(...),
-    notes: Optional[str] = Form(None),
-    itinerary_distance_km: Optional[float] = Form(None),
-    itinerary_start_name: Optional[str] = Form(None),
-    itinerary_end_name: Optional[str] = Form(None),
-    itinerary_waypoints: Optional[str] = Form(None),
 ):
     voiture = await car_service.get_voiture_by_id(db, voiture_id)
     if not voiture:
         return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
 
-    type_location = next((t for t in voiture.types_location if t.id == type_location_id), None)
-    prix_total = float(type_location.prix) if type_location else 0.0
-
-    start = datetime.datetime.strptime(date_debut, "%Y-%m-%d")
-
-    if start.date() < date.today():
+    form_data = await request.form()
+    try:
+        form = LocationForm(
+            type_location_id=form_data.get("type_location_id") or None,
+            client_nom=form_data.get("client_nom", ""),
+            client_telephone=form_data.get("client_telephone", ""),
+            client_email=form_data.get("client_email") or None,
+            date_debut=form_data.get("date_debut", ""),
+            notes=form_data.get("notes") or None,
+            itinerary_distance_km=form_data.get("itinerary_distance_km") or None,
+            itinerary_start_name=form_data.get("itinerary_start_name") or None,
+            itinerary_end_name=form_data.get("itinerary_end_name") or None,
+            itinerary_waypoints=form_data.get("itinerary_waypoints") or None,
+        )
+    except ValidationError as e:
         return templates.TemplateResponse("voiture_detail.html", {
             "request": request,
             "voiture": voiture,
-            "error": "La date de départ ne peut pas être dans le passé.",
-        })
+            "error": _traduire_erreur(e),
+        }, status_code=400)
+
+    type_location = next(
+        (t for t in voiture.types_location if t.id == form.type_location_id), None
+    )
+    prix_total = float(type_location.prix) if type_location else 0.0
 
     loc = Location(
         voiture_id=voiture_id,
-        type_location_id=type_location_id,
-        client_nom=client_nom,
-        client_telephone=client_telephone,
-        client_email=client_email,
-        date_debut=start,
+        type_location_id=form.type_location_id,
+        client_nom=form.client_nom,
+        client_telephone=form.client_telephone,
+        client_email=form.client_email,
+        date_debut=datetime.datetime.combine(form.date_debut, datetime.time.min),
         prix_total=prix_total,
         statut="confirmée",
-        notes=notes,
-        itineraire_distance_km=itinerary_distance_km,
-        itineraire_depart=itinerary_start_name,
-        itineraire_arrivee=itinerary_end_name,
-        itineraire_etapes=itinerary_waypoints,
+        notes=form.notes,
+        itineraire_distance_km=form.itinerary_distance_km,
+        itineraire_depart=form.itinerary_start_name,
+        itineraire_arrivee=form.itinerary_end_name,
+        itineraire_etapes=form.itinerary_waypoints,
     )
     db.add(loc)
     await db.commit()

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Depends, Form
+from fastapi import APIRouter, Request, Depends
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.services import admin_service
 from app.routers.admin_auth import require_admin
+from app.schemas import RentalStatusForm
 
 router = APIRouter(prefix="/admin", tags=["admin-rentals"])
 templates = Jinja2Templates(directory="app/templates")
@@ -41,13 +42,13 @@ async def admin_reservations(request: Request, db: AsyncSession = Depends(get_db
 async def update_location_status(
     request: Request,
     location_id: int,
-    status: str = Form(...),
+    form: RentalStatusForm = Depends(RentalStatusForm.as_form),
     db: AsyncSession = Depends(get_db),
 ):
     redirect = require_admin(request)
     if redirect:
         return redirect
-    loc = await admin_service.update_location_statut(db, location_id, status)
+    loc = await admin_service.update_location_statut(db, location_id, form.status.value)
     return templates.TemplateResponse("admin/partials/_rental_row.html", {
         "request": request,
         "rental": loc,

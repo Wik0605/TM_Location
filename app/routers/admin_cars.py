@@ -1,14 +1,15 @@
-from fastapi import APIRouter, Request, Depends, Form, UploadFile, File
+from fastapi import APIRouter, Request, Depends, UploadFile, File
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Optional, List
+from typing import List
 from pathlib import Path
 import uuid
 
 from app.database import get_db
 from app.services import admin_service
 from app.routers.admin_auth import require_admin
+from app.schemas import VoitureCreateForm, VoitureUpdateForm, TypeLocationForm
 
 UPLOAD_DIR = Path(__file__).parent.parent.parent / "static" / "uploads" / "voitures"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
@@ -33,20 +34,17 @@ async def admin_voitures(request: Request, db: AsyncSession = Depends(get_db)):
 @router.post("/voitures/create", response_class=HTMLResponse)
 async def create_voiture(
     request: Request,
-    nom: str = Form(...),
-    description: str = Form(...),
-    places: int = Form(5),
-    consommation_carburant: float = Form(8.0),
+    form: VoitureCreateForm = Depends(VoitureCreateForm.as_form),
     db: AsyncSession = Depends(get_db),
 ):
     redirect = require_admin(request)
     if redirect:
         return redirect
     data = {
-        "nom": nom,
-        "description": description,
-        "places": places,
-        "consommation_carburant": consommation_carburant,
+        "nom": form.nom,
+        "description": form.description,
+        "places": form.places,
+        "consommation_carburant": form.consommation_carburant,
         "is_available": True,
     }
     await admin_service.create_voiture(db, data)
@@ -78,22 +76,18 @@ async def delete_voiture(
 async def edit_voiture(
     request: Request,
     voiture_id: int,
-    nom: Optional[str] = Form(None),
-    description: Optional[str] = Form(None),
-    places: Optional[int] = Form(None),
-    consommation_carburant: Optional[float] = Form(None),
-    is_available: Optional[str] = Form(None),
+    form: VoitureUpdateForm = Depends(VoitureUpdateForm.as_form),
     db: AsyncSession = Depends(get_db),
 ):
     redirect = require_admin(request)
     if redirect:
         return redirect
     data = {
-        "nom": nom if nom else None,
-        "description": description if description is not None else None,
-        "places": places,
-        "consommation_carburant": consommation_carburant,
-        "is_available": is_available == "on" if is_available is not None else None,
+        "nom": form.nom if form.nom else None,
+        "description": form.description if form.description is not None else None,
+        "places": form.places,
+        "consommation_carburant": form.consommation_carburant,
+        "is_available": form.is_available == "on" if form.is_available is not None else None,
     }
     data = {k: v for k, v in data.items() if v is not None}
     voiture = await admin_service.update_voiture(db, voiture_id, data)
@@ -156,14 +150,13 @@ async def delete_voiture_image(
 async def add_type_location(
     request: Request,
     voiture_id: int,
-    nom: str = Form(...),
-    prix: int = Form(...),
+    form: TypeLocationForm = Depends(TypeLocationForm.as_form),
     db: AsyncSession = Depends(get_db),
 ):
     redirect = require_admin(request)
     if redirect:
         return redirect
-    await admin_service.add_type_location(db, voiture_id, nom, prix)
+    await admin_service.add_type_location(db, voiture_id, form.nom, form.prix)
     voiture = await admin_service.get_voiture_by_id(db, voiture_id)
     return templates.TemplateResponse("admin/partials/_types_location_list.html", {
         "request": request,

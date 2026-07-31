@@ -1,8 +1,11 @@
-from fastapi import APIRouter, Request, Form
+import secrets
+
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from app.config import settings
+from app.schemas import AdminLoginForm
 
 router = APIRouter(prefix="/admin", tags=["admin-auth"])
 templates = Jinja2Templates(directory="app/templates")
@@ -24,10 +27,11 @@ async def admin_login_page(request: Request):
 @router.post("/login")
 async def admin_login(
     request: Request,
-    username: str = Form(...),
-    password: str = Form(...),
+    form: AdminLoginForm = Depends(AdminLoginForm.as_form),
 ):
-    if username == settings.admin_username and password == settings.admin_password:
+    ok_user = secrets.compare_digest(form.username, settings.admin_username)
+    ok_pass = secrets.compare_digest(form.password, settings.admin_password)
+    if ok_user and ok_pass:
         request.session["admin_logged_in"] = True
         return RedirectResponse("/admin", status_code=302)
     return templates.TemplateResponse("admin/login.html", {
