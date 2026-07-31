@@ -66,14 +66,36 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-app.add_middleware(SessionMiddleware, secret_key=settings.secret_key)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# NOTE : les protections de sécurité renforcées (cookies HTTPS uniquement,
+# CORS restreint) s'activent uniquement en production. En développement local,
+# on garde des règles permissives pour que localhost fonctionne sans HTTPS.
+# Pour passer en mode production : mettre ENVIRONMENT=production dans .env
+# et lister les domaines autorisés dans ALLOWED_ORIGINS.
+
+if settings.is_production:
+    app.add_middleware(
+        SessionMiddleware,
+        secret_key=settings.secret_key,
+        https_only=True,
+        same_site="lax",
+        max_age=3600,
+    )
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_origins,
+        allow_credentials=True,
+        allow_methods=["GET", "POST"],
+        allow_headers=["*"],
+    )
+else:
+    app.add_middleware(SessionMiddleware, secret_key=settings.secret_key)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
