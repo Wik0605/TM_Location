@@ -23,6 +23,7 @@ from app.routers.admin_auth import router as admin_auth_router
 from app.routers.admin_cars import router as admin_cars_router
 from app.routers.admin_rentals import router as admin_rentals_router
 from app.routers.auth import router as auth_router
+from app.routers.itineraire_api import router as itineraire_api_router
 
 STATIC_DIR = Path(__file__).parent.parent / "static"
 
@@ -106,6 +107,7 @@ app.include_router(admin_auth_router)
 app.include_router(admin_cars_router)
 app.include_router(admin_rentals_router)
 app.include_router(auth_router)
+app.include_router(itineraire_api_router)
 
 
 @app.get("/health")

@@ -7,6 +7,8 @@ export const state = {
     pickingMode: null,
     DAILY_PRICE: 0,
     DRAFT_KEY: '',
+    CAR_ID: null,
+    itineraryToken: null,
 };
 
 export const events = {

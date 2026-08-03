@@ -31,8 +31,8 @@ Le "ticket" = le token éphémère stocké côté serveur.
 | Étape | Statut | Fichier |
 |-------|--------|---------|
 | 1. Service backend (calcul + cache token) | ✅ **Fait** | `app/services/routing_service.py` |
-| 2. Endpoint API `/api/.../calculer` | ⏳ À faire | `app/routers/itineraire_api.py` |
-| 3. Adapter le JS pour appeler l'API | ⏳ À faire | `static/js/itineraire/routing.js` |
+| 2. Endpoint API `/api/.../calculer` | ✅ **Fait** | `app/routers/itineraire_api.py` |
+| 3. Adapter le JS pour appeler l'API | ✅ **Fait** | `static/js/itineraire/routing.js` |
 | 4. Ajouter input hidden `itinerary_token` | ⏳ À faire | `app/templates/voiture_detail.html` |
 | 5. Vérifier le token dans `/reserver` | ⏳ À faire | `app/routers/web.py` |
 | 6. Tests bout en bout | ⏳ À faire | — |
@@ -132,22 +132,102 @@ print(lire_token(tok))
 
 ## ÉTAPES SUIVANTES (résumé rapide)
 
-### Étape 2 — Endpoint API
+## ÉTAPE 2 — Endpoint API (fait)
 
-Créer `app/routers/itineraire_api.py` avec :
+### Fichier créé : `app/routers/itineraire_api.py`
+
+Contrat de l'endpoint :
 ```
 POST /api/voitures/{voiture_id}/itineraire/calculer
-Body: {"waypoints": [[lat, lon], ...]}
-Réponse: {"distance_km": ..., "polyline": {...}, "token": "..."}
+Body JSON: {"waypoints": [[lat, lon], [lat, lon], ...]}
+Réponse: {"distance_km": 127.3, "polyline": {...geojson...},
+          "source": "brouter", "token": "a1b2c3d4..."}
 ```
 
-Réutiliser la logique de quota déjà présente dans `web.py:64-77` (7 calculs/jour pour anonyme).
+### Ce que fait le fichier
 
-### Étape 3 — Adapter le JS
+**Validation d'entrée avec Pydantic** (`WaypointsPayload`) :
+Le body JSON est validé automatiquement — si `waypoints` est absent, mal formé, ou contient moins de 2 / plus de 10 points, FastAPI répond **422 Unprocessable Entity** sans jamais atteindre ton code.
 
-Dans `static/js/itineraire/routing.js` (lignes 39-51), remplacer le `fetch("https://brouter.de/...")` par `fetch("/api/voitures/{id}/itineraire/calculer", {method: "POST", ...})`.
+**Vérification de quota** (`_verifier_quota`) :
+Reprend exactement la logique de `web.py:64-77` : utilisateur connecté → illimité ; anonyme → 7 calculs/jour par session. Si dépassé → HTTP **429 Too Many Requests**.
 
-Stocker le token retourné dans `state.js`.
+**Appel du service** :
+Convertit les waypoints en tuples et appelle `routing_service.calculer_itineraire()`.
+- Si `RoutingError` (coords hors Madagascar, etc.) → HTTP **400 Bad Request** avec le message.
+- Sinon, émission du token via `emettre_token()` et retour du tout en JSON.
+
+### Enregistrement dans `main.py`
+
+Deux lignes ajoutées :
+- Import du router (ligne 26)
+- `app.include_router(itineraire_api_router)` (ligne 110)
+
+### Tester avec curl
+
+```bash
+curl -X POST http://localhost:8000/api/voitures/1/itineraire/calculer \
+  -H "Content-Type: application/json" \
+  -d '{"waypoints": [[-18.8792, 47.5079], [-19.8659, 47.0393]]}'
+```
+
+Réponse attendue : JSON avec `distance_km`, `polyline`, `source`, `token`.
+
+Test d'erreur (hors Madagascar) :
+```bash
+curl -X POST http://localhost:8000/api/voitures/1/itineraire/calculer \
+  -H "Content-Type: application/json" \
+  -d '{"waypoints": [[40.7128, -74.0060], [-18.8792, 47.5079]]}'
+```
+→ HTTP 400 avec `{"detail": "Latitude hors de Madagascar."}`.
+
+### Point important
+
+L'endpoint retourne aussi `"source"` (`"brouter"` / `"osrm"` / `"haversine"`).
+Utile côté JS pour prévenir l'utilisateur : *"Distance approximative (mode dégradé)"* si `source == "haversine"`.
+
+## ÉTAPE 3 — Adapter le JS (fait)
+
+### Fichiers modifiés
+
+1. **`static/js/itineraire/state.js`** — ajout de deux champs partagés :
+   - `CAR_ID` : l'ID de la voiture (lu depuis `<div id="map" data-car-id="...">`)
+   - `itineraryToken` : le token reçu du backend après un calcul
+
+2. **`static/js/itineraire/main.js`** — initialise `state.CAR_ID` au démarrage.
+
+3. **`static/js/itineraire/routing.js`** — **complètement réécrit** :
+   - Supprimé : `calcBRouter`, `calcOSRM`, `calcFallback`, `haversineKm`, `firstValid` (la cascade vit maintenant côté serveur)
+   - Conservé : `drawRoute` (le rendu Leaflet reste côté client)
+   - Ajouté : `calcBackend(coords)` — un seul `fetch()` vers `/api/voitures/{CAR_ID}/itineraire/calculer`
+
+4. **`static/js/itineraire/results.js`** — dans `runCalculation` :
+   - Retiré le pré-check `/quota` (le backend gère lui-même le quota et renvoie 429 si dépassé)
+   - Retirée la cascade `firstValid(calcBRouter, calcOSRM) → calcFallback`
+   - Remplacée par un unique `await calcBackend(coords)`
+   - Le token reçu est stocké dans `state.itineraryToken` (sera injecté dans le formulaire à l'étape 5)
+
+### Ce que ça change pour l'utilisateur
+
+**Visuellement : rien.** L'itinéraire s'affiche pareil, le prix se calcule pareil.
+
+**Dans les outils réseau du navigateur** (F12 → onglet Network) :
+- **Avant** : requêtes vers `brouter.de`, `router.project-osrm.org`, plus une vers `/quota`
+- **Après** : une seule requête vers `/api/voitures/{id}/itineraire/calculer`
+
+### Nouvelle logique de la fonction `calcBackend`
+
+```
+1. Convertir "lon,lat" (format interne JS) en [lat, lon] (format API)
+2. POST /api/voitures/{CAR_ID}/itineraire/calculer avec { waypoints: [...] }
+3. Si 429 → renvoyer { quotaExceeded: true } (affichera le modal quota)
+4. Si autre erreur → renvoyer null (affichera une alerte)
+5. Sinon → dessiner la polyline + renvoyer { distanceKm, isFallback, token }
+```
+
+### Endpoint `/quota` devenu inutile
+
+L'ancien endpoint `POST /voitures/{id}/itineraire/quota` (dans `web.py:64-77`) n'est plus appelé par le JS. On peut le supprimer plus tard — pour l'instant on le laisse, ne casse rien.
 
 ### Étape 4 — Formulaire de réservation
 

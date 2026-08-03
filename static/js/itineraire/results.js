@@ -1,6 +1,6 @@
 import { state, events } from './state.js';
 import { getCoord, getWaypointCoords } from './pick.js';
-import { firstValid, calcBRouter, calcOSRM, calcFallback } from './routing.js';
+import { calcBackend } from './routing.js';
 
 let dtStart, dtEnd, durationDisplay, rentalSelect, chipsContainer, quotaModal;
 let calcTimer = null;
@@ -30,28 +30,21 @@ async function runCalculation() {
     const key = currentCalcKey();
     if (calcInFlight || key === lastCalcKey) return;
 
-    try {
-        const quotaRes = await fetch(`${window.location.pathname}/quota`, { method: 'POST' });
-        const quota = await quotaRes.json();
-        if (!quota.allowed) {
-            quotaModal.style.display = 'flex';
-            return;
-        }
-    } catch {
-        /* laisse passer */
-    }
-
     const coords = [start, ...getWaypointCoords(), end];
     document.getElementById('map-loader').style.display = 'flex';
     calcInFlight = true;
     try {
-        let distanceKm = await firstValid(calcBRouter(coords), calcOSRM(coords));
-        let isFallback = false;
-        if (distanceKm === null) {
-            distanceKm = await calcFallback(coords);
-            isFallback = true;
+        const result = await calcBackend(coords);
+        if (!result) {
+            alert('Impossible de calculer l\'itinéraire. Réessayez.');
+            return;
         }
-        showResults(distanceKm, isFallback);
+        if (result.quotaExceeded) {
+            quotaModal.style.display = 'flex';
+            return;
+        }
+        state.itineraryToken = result.token;
+        showResults(result.distanceKm, result.isFallback);
         lastCalcKey = key;
         const hint = document.getElementById('calc-hint');
         if (hint) hint.style.display = 'none';
