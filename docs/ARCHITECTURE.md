@@ -5,7 +5,7 @@
 ## Vue d'ensemble
 
 ```
-Spass_gasy/
+TM_Location/
 ├── app/                          # Code principal de l'application
 │   ├── __init__.py
 │   ├── main.py                   # Point d'entrée FastAPI + seed données initiales
