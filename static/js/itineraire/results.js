@@ -44,6 +44,9 @@ async function runCalculation() {
             return;
         }
         state.itineraryToken = result.token;
+        try {
+            localStorage.setItem(`itinerary_token_${state.CAR_ID}`, result.token);
+        } catch { /* localStorage indisponible */ }
         showResults(result.distanceKm, result.isFallback);
         lastCalcKey = key;
         const hint = document.getElementById('calc-hint');

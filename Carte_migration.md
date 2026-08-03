@@ -33,7 +33,7 @@ Le "ticket" = le token éphémère stocké côté serveur.
 | 1. Service backend (calcul + cache token) | ✅ **Fait** | `app/services/routing_service.py` |
 | 2. Endpoint API `/api/.../calculer` | ✅ **Fait** | `app/routers/itineraire_api.py` |
 | 3. Adapter le JS pour appeler l'API | ✅ **Fait** | `static/js/itineraire/routing.js` |
-| 4. Ajouter input hidden `itinerary_token` | ⏳ À faire | `app/templates/voiture_detail.html` |
+| 4. Ajouter input hidden `itinerary_token` | ✅ **Fait** | `app/templates/voiture_detail.html` |
 | 5. Vérifier le token dans `/reserver` | ⏳ À faire | `app/routers/web.py` |
 | 6. Tests bout en bout | ⏳ À faire | — |
 
@@ -129,8 +129,6 @@ print(lire_token(tok))
 ```
 
 ---
-
-## ÉTAPES SUIVANTES (résumé rapide)
 
 ## ÉTAPE 2 — Endpoint API (fait)
 
@@ -229,14 +227,49 @@ Utile côté JS pour prévenir l'utilisateur : *"Distance approximative (mode d�
 
 L'ancien endpoint `POST /voitures/{id}/itineraire/quota` (dans `web.py:64-77`) n'est plus appelé par le JS. On peut le supprimer plus tard — pour l'instant on le laisse, ne casse rien.
 
-### Étape 4 — Formulaire de réservation
+## ÉTAPES SUIVANTES (résumé rapide)
 
-Dans `app/templates/voiture_detail.html:112`, ajouter :
-```html
-<input type="hidden" name="itinerary_token" id="itinerary-token" value="">
+## ÉTAPE 4 — Formulaire de réservation (fait)
+
+### Le problème à résoudre
+
+Le calcul se fait sur `/voitures/{id}/itineraire`, mais le formulaire de réservation est sur `/voitures/{id}` (page différente). Quand l'utilisateur clique "Réserver", il navigue vers une nouvelle page → **la mémoire JS est vidée**, le token est perdu.
+
+### La solution : `localStorage`
+
+Le `localStorage` du navigateur est un mini-stockage qui **survit à la navigation entre pages** (contrairement à la mémoire JS classique). On y écrit le token sur la page itinéraire, on le relit sur la page voiture_detail.
+
+### Changements
+
+**1. `static/js/itineraire/results.js`**
+Juste après avoir reçu le token du backend :
+```js
+localStorage.setItem(`itinerary_token_${state.CAR_ID}`, result.token);
+```
+La clé est préfixée par l'ID voiture → si l'utilisateur teste plusieurs voitures, aucun mélange.
+
+**2. `app/templates/voiture_detail.html`**
+Deux ajouts :
+- Un `<input type="hidden" name="itinerary_token" id="itinerary-token" value="">` dans le formulaire de réservation
+- Un petit script qui, au chargement de la page, lit `localStorage` et remplit l'input :
+```js
+const token = localStorage.getItem(`itinerary_token_{{ voiture.id }}`);
+if (token) document.getElementById('itinerary-token').value = token;
 ```
 
-Le JS remplira cette valeur après un calcul réussi.
+### Cas où le token reste vide
+
+- L'utilisateur réserve **sans passer par la page itinéraire** → pas de token en localStorage → input vide → back stockera `NULL` (comportement actuel préservé).
+- Le token a expiré côté serveur (> 15 min) → l'input contient une valeur, mais le back l'ignore à l'étape 5.
+- Le navigateur bloque localStorage (navigation privée stricte) → le `try/catch` évite le crash, input vide.
+
+### Point de sécurité
+
+Le token dans localStorage est **lisible et modifiable** par l'utilisateur (F12 → onglet Application → Local Storage). **Ce n'est pas un problème** :
+- S'il met un token bidon → le back ne le trouve pas dans son cache → distance reste NULL.
+- S'il vole le token d'un autre utilisateur → impossible, chaque token est unique et lié à une session serveur éphémère.
+
+La sécurité ne repose **jamais** sur "le client ne peut pas voir X". Elle repose sur "le serveur seul valide X". C'est le principe de l'étape 5.
 
 ### Étape 5 — Vérification du token dans `/reserver`
 

@@ -112,6 +112,7 @@
         <form action="/voitures/{{ voiture.id }}/reserver" method="POST" class="space-y-3" id="form-reserver">
             <input type="hidden" name="type_location_id" id="hidden-type-location-id"
                    value="{{ voiture.types_location[0].id if voiture.types_location else '' }}">
+            <input type="hidden" name="itinerary_token" id="itinerary-token" value="">
 
             <div class="grid grid-cols-1 gap-3">
                 <label class="block">
@@ -187,6 +188,11 @@ document.querySelectorAll('input[name="type_location_selected"]').forEach(radio 
         document.getElementById('hidden-type-location-id').value = radio.value;
     });
 });
+
+try {
+    const token = localStorage.getItem(`itinerary_token_{{ voiture.id }}`);
+    if (token) document.getElementById('itinerary-token').value = token;
+} catch { /* localStorage indisponible */ }
 </script>
 {% if photos %}
 <script src="/static/js/car_detail.js"></script>
