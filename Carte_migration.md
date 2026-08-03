@@ -34,7 +34,7 @@ Le "ticket" = le token éphémère stocké côté serveur.
 | 2. Endpoint API `/api/.../calculer` | ✅ **Fait** | `app/routers/itineraire_api.py` |
 | 3. Adapter le JS pour appeler l'API | ✅ **Fait** | `static/js/itineraire/routing.js` |
 | 4. Ajouter input hidden `itinerary_token` | ✅ **Fait** | `app/templates/voiture_detail.html` |
-| 5. Vérifier le token dans `/reserver` | ⏳ À faire | `app/routers/web.py` |
+| 5. Vérifier le token dans `/reserver` | ✅ **Fait** | `app/routers/web.py` |
 | 6. Tests bout en bout | ⏳ À faire | — |
 
 ---
@@ -271,18 +271,49 @@ Le token dans localStorage est **lisible et modifiable** par l'utilisateur (F12 
 
 La sécurité ne repose **jamais** sur "le client ne peut pas voir X". Elle repose sur "le serveur seul valide X". C'est le principe de l'étape 5.
 
-### Étape 5 — Vérification du token dans `/reserver`
+## ÉTAPE 5 — Vérification du token dans `/reserver` (fait)
 
-Dans `app/routers/web.py:80-141`, après avoir lu le formulaire :
+### Changement principal
+
+Dans `app/routers/web.py`, l'endpoint `/reserver` a été modifié pour :
+
+1. **Ne plus faire confiance à `itinerary_distance_km` envoyé par le client** — on passe explicitement `None` dans `LocationForm`, même si le formulaire contient cette valeur.
+2. **Lire uniquement le token** (`itinerary_token`) et récupérer la distance depuis le cache serveur via `routing_service.lire_token()`.
+3. **Vérifier que le token appartient bien à cette voiture** (`token_data["voiture_id"] == voiture_id`). Empêche un utilisateur de calculer sur une voiture A puis de réserver sur une voiture B avec le même token.
+
+### Code ajouté
+
 ```python
 token = form_data.get("itinerary_token")
 if token:
-    data = routing_service.lire_token(token)
-    if data:
-        form.itinerary_distance_km = data["distance_km"]
+    token_data = routing_service.lire_token(token)
+    if token_data and token_data["voiture_id"] == voiture_id:
+        form.itinerary_distance_km = token_data["distance_km"]
+        form.itinerary_waypoints = ";".join(
+            f"{lat},{lon}" for lat, lon in token_data["waypoints"]
+        )
 ```
 
-**Point clé** : on **ignore** toute valeur `itinerary_distance_km` envoyée par le client. Seul le token compte.
+### Ce qui se passe dans les 4 scénarios possibles
+
+| Situation | Résultat en BD |
+|-----------|----------------|
+| Utilisateur a calculé un itinéraire → token valide | `itineraire_distance_km` rempli avec la vraie distance |
+| Utilisateur n'a pas calculé (réserve direct) | `itineraire_distance_km` = `NULL` |
+| Token présent mais expiré (> 15 min) | `itineraire_distance_km` = `NULL` |
+| Token forgé par F12 (valeur bidon) | `itineraire_distance_km` = `NULL` |
+| Token valide mais d'une autre voiture | `itineraire_distance_km` = `NULL` |
+
+Dans **tous** ces cas, la valeur envoyée par le champ hidden `itinerary_distance_km` du client est **totalement ignorée**. Le serveur ne se fie qu'à son propre cache.
+
+### Pourquoi c'est incontestable
+
+- Le client ne peut pas **générer** un token valide (UUID aléatoire côté serveur, jamais partagé).
+- Le client ne peut pas **modifier** la distance stockée sous un token (dict Python privé au processus FastAPI).
+- Le client ne peut pas **réutiliser** un token d'une autre voiture (vérification `voiture_id`).
+- Le client ne peut pas **rejouer** un vieux token (TTL 15 min).
+
+**La distance en BD est désormais 100% source-serveur.** Si demain tu factures au km, aucune contestation possible.
 
 ### Étape 6 — Vérification finale
 

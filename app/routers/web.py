@@ -7,7 +7,7 @@ import datetime
 from datetime import date
 
 from app.database import get_db
-from app.services import car_service
+from app.services import car_service, routing_service
 from app.models import Location
 from app.schemas import LocationForm
 
@@ -96,10 +96,10 @@ async def voiture_reserver(
             client_email=form_data.get("client_email") or None,
             date_debut=form_data.get("date_debut", ""),
             notes=form_data.get("notes") or None,
-            itinerary_distance_km=form_data.get("itinerary_distance_km") or None,
+            itinerary_distance_km=None,
             itinerary_start_name=form_data.get("itinerary_start_name") or None,
             itinerary_end_name=form_data.get("itinerary_end_name") or None,
-            itinerary_waypoints=form_data.get("itinerary_waypoints") or None,
+            itinerary_waypoints=None,
         )
     except ValidationError as e:
         return templates.TemplateResponse("voiture_detail.html", {
@@ -107,6 +107,15 @@ async def voiture_reserver(
             "voiture": voiture,
             "error": _traduire_erreur(e),
         }, status_code=400)
+
+    token = form_data.get("itinerary_token")
+    if token:
+        token_data = routing_service.lire_token(token)
+        if token_data and token_data["voiture_id"] == voiture_id:
+            form.itinerary_distance_km = token_data["distance_km"]
+            form.itinerary_waypoints = ";".join(
+                f"{lat},{lon}" for lat, lon in token_data["waypoints"]
+            )
 
     type_location = next(
         (t for t in voiture.types_location if t.id == form.type_location_id), None
