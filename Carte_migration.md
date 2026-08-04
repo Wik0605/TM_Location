@@ -35,7 +35,7 @@ Le "ticket" = le token éphémère stocké côté serveur.
 | 3. Adapter le JS pour appeler l'API | ✅ **Fait** | `static/js/itineraire/routing.js` |
 | 4. Ajouter input hidden `itinerary_token` | ✅ **Fait** | `app/templates/voiture_detail.html` |
 | 5. Vérifier le token dans `/reserver` | ✅ **Fait** | `app/routers/web.py` |
-| 6. Tests bout en bout | ⏳ À faire | — |
+| 6. Nettoyage JS front + fix `CAR_ID` | ✅ **Fait** | `static/js/`, `app/templates/itineraire.html` |
 
 ---
 
@@ -315,17 +315,58 @@ Dans **tous** ces cas, la valeur envoyée par le champ hidden `itinerary_distanc
 
 **La distance en BD est désormais 100% source-serveur.** Si demain tu factures au km, aucune contestation possible.
 
-### Étape 6 — Vérification finale
+## ÉTAPE 6 — Nettoyage JS front (fait)
 
-- Ouvrir `/voitures/{id}/itineraire`, tracer un trajet, cliquer "Calculer"
-- Onglet Réseau : la requête doit aller vers `/api/...`, plus vers `brouter.de`
-- Réserver la voiture
-- Vérifier en BD :
-  ```sql
-  SELECT id, itineraire_distance_km FROM locations ORDER BY id DESC LIMIT 1;
-  ```
-  La distance doit être non-NULL.
-- Test d'attaque : modifier `itinerary_token` via F12 → la distance stockée doit rester NULL (token invalide ignoré).
+Une fois la cascade migrée côté serveur, il restait du code mort côté client
+et un bug bloquant. Objectif de l'étape : rendre le front minimal et cohérent
+avec le nouveau contrat (un seul appel au back, plus rien d'autre).
+
+### Fichiers supprimés
+
+- `static/js/itineraire.js` — ancien script monolithe (~400 lignes) contenant
+  toute la logique Haversine + appels directs BRouter/OSRM. Devenu orphelin
+  après le refactor en 6 modules ES, plus référencé nulle part.
+- `static/js/brouter_map.js` — prototype (~160 lignes) jamais importé dans
+  aucun template.
+
+Vérification faite avant suppression :
+```bash
+grep -rn "itineraire.js\|brouter_map.js" app/templates/ static/
+# → aucune référence
+```
+
+### Bug corrigé : `CAR_ID` valait `null`
+
+`static/js/itineraire/main.js:9` lit `data-car-id` sur `#map` :
+```js
+state.CAR_ID = mapEl.getAttribute('data-car-id');
+```
+
+Or l'attribut n'existait pas dans `app/templates/itineraire.html`. Résultat :
+l'URL construite dans `calcBackend()` devenait
+`/api/voitures/null/itineraire/calculer` → 404 systématique dès l'étape 3.
+
+Correctif dans `app/templates/itineraire.html` :
+```html
+<div id="map"
+     data-daily-price="{{ car.daily_price }}"
+     data-car-id="{{ car.id }}"></div>
+```
+
+### Ce qui a été volontairement conservé
+
+- `static/js/itineraire/routing.js` — contient `calcBackend()`, seul appel valide
+- `static/js/itineraire/results.js` — gère le stockage du token en localStorage
+  et l'affichage de `.fallback-note` si le back signale un calcul dégradé
+- La `.fallback-note` orange dans `itineraire.html` (l. 233-235) — encore
+  utilisée par `results.js` quand `source === "haversine"`
+- L'input hidden `itinerary_token` et son hydratation dans `voiture_detail.html`
+- La vérification token dans `app/routers/web.py`
+
+### Résultat du commit
+
+`7ade339 Migration carte : etape 6 (nettoyage JS front)`
+→ 3 fichiers, 3 insertions, **561 suppressions**.
 
 ---
 
@@ -333,14 +374,40 @@ Dans **tous** ces cas, la valeur envoyée par le champ hidden `itinerary_distanc
 
 **Créés :**
 - ✅ `app/services/routing_service.py`
-- ⏳ `app/routers/itineraire_api.py`
+- ✅ `app/routers/itineraire_api.py`
 
 **Modifiés :**
-- ⏳ `static/js/itineraire/routing.js`
-- ⏳ `app/templates/voiture_detail.html`
-- ⏳ `app/routers/web.py`
-- ⏳ `app/main.py` (pour inclure le nouveau router)
+- ✅ `static/js/itineraire/routing.js`
+- ✅ `static/js/itineraire/state.js`
+- ✅ `static/js/itineraire/main.js`
+- ✅ `static/js/itineraire/results.js`
+- ✅ `app/templates/voiture_detail.html`
+- ✅ `app/templates/itineraire.html` (attribut `data-car-id`)
+- ✅ `app/routers/web.py`
+- ✅ `app/main.py` (inclusion du router API)
+
+**Supprimés :**
+- ✅ `static/js/itineraire.js`
+- ✅ `static/js/brouter_map.js`
 
 **Intacts :**
 - `app/models/models.py` — les colonnes `itineraire_*` existent déjà
 - `app/schemas.py` — `LocationForm` a déjà `itinerary_distance_km`
+
+---
+
+## Vérification bout en bout (à faire dans le navigateur)
+
+1. Relancer l'app : `uvicorn app.main:app --reload`
+2. Ouvrir `/voitures/{id}/itineraire`, vider le cache navigateur
+3. Tracer un trajet, cliquer "Calculer l'itinéraire"
+4. Onglet Réseau : la requête doit partir vers
+   `/api/voitures/<id_réel>/itineraire/calculer` (plus `null`, plus `brouter.de`)
+5. Vérifier que le token est bien posé dans `localStorage`
+6. Réserver la voiture, puis en BD :
+   ```sql
+   SELECT id, itineraire_distance_km FROM locations ORDER BY id DESC LIMIT 1;
+   ```
+   La distance doit être non-NULL et correspondre au calcul serveur.
+7. Test d'attaque : modifier `itinerary_token` via F12 avant de soumettre →
+   la distance stockée doit rester NULL (token invalide ignoré).
