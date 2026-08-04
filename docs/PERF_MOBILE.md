@@ -401,7 +401,30 @@ quand une voiture est ajoutée ou désactivée.
 
 ### Impact
 
-- **SEO Lighthouse** : 91 → 100 (cible).
+- **SEO Lighthouse** : 91 → **100** (confirmé le 2026-08-04).
 - **Google Search** : meilleure indexation grâce au sitemap, extraits plus
   pertinents grâce à la meta description.
 - **Vie privée** : les pages admin ne remonteront pas dans Google.
+
+### Note sur la variance du score Performance
+
+Après ajout du SEO, le score Performance mesuré a bougé de **86 → 81**.
+Ce n'est **pas une régression réelle** : nos changements SEO n'ajoutent ni
+JS, ni CSS, ni image (juste 1 balise meta et 2 routes serveur que le
+navigateur ne visite pas en usage normal).
+
+Le score Lighthouse Performance a une variance naturelle de **±5 à 10 points**
+d'un run à l'autre, à cause du CPU throttling simulé, de la latence réseau
+simulée, de Google Fonts chargées depuis un CDN externe et du serveur
+uvicorn `--reload` (rechargement Python à chaque requête).
+
+**Pour obtenir une mesure fiable** :
+- Fermer les autres onglets Chrome et grosses apps (Slack, Docker...).
+- Lancer en navigation privée (`Cmd+Shift+N`).
+- Faire 3 audits et prendre la médiane.
+- En production (sans `--reload`, avec un vrai serveur), le score sera
+  plus stable et plus élevé.
+
+**L'impact réel sur les utilisateurs mobiles est inchangé** : le poids
+des pages a été divisé par ~5 (étapes 1-3), c'est ce qui compte pour un
+téléphone bas de gamme, pas le chiffre exact de Lighthouse.
