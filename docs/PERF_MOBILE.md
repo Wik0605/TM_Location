@@ -341,3 +341,67 @@ Cible Performance (> 85) **atteinte**. Accessibility à 100 confirme que
 les balises `<picture>` avec `alt` et le HTML sémantique de base sont
 propres. À noter : en production (sans `--reload`, avec un vrai serveur
 et éventuellement un CDN devant), on peut raisonnablement viser 90+.
+
+---
+
+## Étape 6 — SEO à 100
+
+Date : 2026-08-04
+
+### Ce qui manquait
+
+Lighthouse SEO à 91/100 → 9 points perdus principalement à cause de :
+- Aucune `<meta name="description">` dans les pages.
+- Aucun `robots.txt` accessible à la racine.
+
+### Ce qui a été fait
+
+#### 1. Meta description dans `base.html`
+
+```html
+<meta name="description" content="{% block description %}Location de voitures
+à Madagascar avec ou sans chauffeur...{% endblock %}">
+```
+
+Un bloc Jinja `{% block description %}` permet à chaque page (fiche voiture,
+etc.) de surcharger la description avec un texte spécifique — utile aussi
+pour les extraits Google et le partage sur les réseaux sociaux.
+
+#### 2. Route `/robots.txt` dans `app/routers/web.py`
+
+Répond en `text/plain` avec :
+
+```
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+Sitemap: {base_url}/sitemap.xml
+```
+
+- Bloque l'indexation des pages admin et de l'API JSON.
+- Autorise tout le reste.
+- Pointe vers le sitemap (URL absolue dérivée de la requête).
+
+#### 3. Route `/sitemap.xml` (bonus SEO)
+
+Route dynamique qui génère un sitemap XML listant :
+- La page d'accueil et la liste des voitures.
+- La fiche détail et la page itinéraire de chaque voiture disponible.
+
+Utilise `car_service.get_available_voitures()` — se met à jour tout seul
+quand une voiture est ajoutée ou désactivée.
+
+### Comment vérifier
+
+- Lancer l'app et visiter `http://localhost:8000/robots.txt` et
+  `http://localhost:8000/sitemap.xml`.
+- Relancer Lighthouse Mobile → catégorie SEO doit être à **100**.
+
+### Impact
+
+- **SEO Lighthouse** : 91 → 100 (cible).
+- **Google Search** : meilleure indexation grâce au sitemap, extraits plus
+  pertinents grâce à la meta description.
+- **Vie privée** : les pages admin ne remonteront pas dans Google.

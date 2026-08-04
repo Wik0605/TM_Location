@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request, Depends
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import ValidationError
@@ -162,3 +162,34 @@ async def voiture_reserver(
 @router.get("/profile", response_class=HTMLResponse)
 async def profile_page(request: Request):
     return templates.TemplateResponse("profile.html", {"request": request})
+
+
+@router.get("/robots.txt", response_class=PlainTextResponse)
+async def robots_txt(request: Request):
+    base = str(request.base_url).rstrip("/")
+    return (
+        "User-agent: *\n"
+        "Allow: /\n"
+        "Disallow: /admin/\n"
+        "Disallow: /api/\n"
+        f"\nSitemap: {base}/sitemap.xml\n"
+    )
+
+
+@router.get("/sitemap.xml")
+async def sitemap_xml(request: Request, db: AsyncSession = Depends(get_db)):
+    base = str(request.base_url).rstrip("/")
+    voitures = await car_service.get_available_voitures(db)
+
+    urls = [f"{base}/", f"{base}/voitures"]
+    for v in voitures:
+        urls.append(f"{base}/voitures/{v.id}")
+        urls.append(f"{base}/voitures/{v.id}/itineraire")
+
+    body = ['<?xml version="1.0" encoding="UTF-8"?>',
+            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+    for url in urls:
+        body.append(f"  <url><loc>{url}</loc></url>")
+    body.append("</urlset>")
+
+    return Response(content="\n".join(body), media_type="application/xml")
