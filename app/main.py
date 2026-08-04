@@ -13,7 +13,9 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.gzip import GZipMiddleware
 from starlette.middleware.sessions import SessionMiddleware
+from starlette.responses import Response
 from pathlib import Path
 
 from app.config import settings
@@ -26,6 +28,18 @@ from app.routers.auth import router as auth_router
 from app.routers.itineraire_api import router as itineraire_api_router
 
 STATIC_DIR = Path(__file__).parent.parent / "static"
+
+STATIC_CACHE_MAX_AGE = 60 * 60 * 24 * 7  # 7 jours
+
+
+class CachedStaticFiles(StaticFiles):
+    async def get_response(self, path: str, scope):
+        response = await super().get_response(path, scope)
+        if isinstance(response, Response) and response.status_code == 200:
+            response.headers["Cache-Control"] = (
+                f"public, max-age={STATIC_CACHE_MAX_AGE}"
+            )
+        return response
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -67,6 +81,8 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+
 # NOTE : les protections de sécurité renforcées (cookies HTTPS uniquement,
 # CORS restreint) s'activent uniquement en production. En développement local,
 # on garde des règles permissives pour que localhost fonctionne sans HTTPS.
@@ -99,7 +115,7 @@ else:
     )
 
 if STATIC_DIR.exists():
-    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+    app.mount("/static", CachedStaticFiles(directory=str(STATIC_DIR)), name="static")
 
 
 app.include_router(web_router)
