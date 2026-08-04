@@ -418,3 +418,43 @@ body.has-sticky-cta { padding-bottom: 88px; }
 #quota-counter.critical #quota-used {
     color: var(--color-error) !important;
 }
+
+/* ================================================
+   Mobile bas de gamme (< 480 px)
+   - Carte moins haute pour laisser respirer les controles
+   - Cibles tactiles conformes aux guidelines (44 px min)
+   - Typographie legerement reduite
+   ================================================ */
+@media (max-width: 480px) {
+    .map-wrapper {
+        height: 55vh;
+        min-height: 320px;
+    }
+
+    .pick-start-btn,
+    .pick-end-btn,
+    .pick-waypoint-btn,
+    .locate-btn,
+    #pick-cancel-btn,
+    .sticky-cta-btn,
+    #add-waypoint-btn {
+        min-height: 44px;
+    }
+
+    .sticky-cta-btn {
+        font-size: 0.8rem;
+        padding: 12px 16px;
+        letter-spacing: 0.08em;
+    }
+
+    #pick-banner {
+        font-size: 0.85rem;
+        padding: 10px 14px;
+    }
+
+    .waypoint-badge,
+    #start-badge,
+    #end-badge {
+        font-size: 0.82rem;
+    }
+}

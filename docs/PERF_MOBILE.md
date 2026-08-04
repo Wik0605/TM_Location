@@ -268,7 +268,58 @@ Ajout de l'attribut `defer` sur `<script src=".../htmx.min.js">`. Effet :
 - **Alpine.js** : l'audit initial mentionnait Alpine mais il n'est pas
   chargé dans `base.html`. Rien à retirer.
 
-## Prochaine étape
+---
 
-Étape 5 : media queries mobile (< 480 px) pour ajuster la hauteur de carte,
-les tailles de police et les cibles tactiles.
+## Étape 5 — Media queries mobile (< 480 px)
+
+Date : 2026-08-04
+Fichier modifié : `static/css/itineraire.css`
+
+### Ce qui a été fait
+
+Ajout d'une media query `@media (max-width: 480px)` à la fin du fichier
+pour cibler les téléphones bas de gamme et compacts :
+
+- **Hauteur carte** : `55vh` (au lieu de `62vh`) avec `min-height: 320px`.
+  Laisse plus de place aux contrôles (bandeau de sélection, badges départ/
+  arrivée) sans obliger à scroller.
+- **Cibles tactiles** : `min-height: 44px` sur tous les boutons d'action
+  (départ, arrivée, escale, géolocalisation, annuler, CTA sticky, ajouter
+  escale). Conforme aux guidelines Apple (44 px) et Google (48 px, on est
+  à la limite basse acceptable).
+- **CTA sticky** : padding et taille de police réduits pour éviter le
+  débordement sur écran étroit.
+- **Bannière et badges** : taille de police légèrement réduite (0.82-0.85
+  rem) pour rester lisible sans casser le layout.
+
+### Comment vérifier
+
+1. DevTools → mode responsive → choisir un preset < 480 px
+   (ex : iPhone SE 375 px, Galaxy S8+ 360 px).
+2. La carte doit occuper ~55 % de la hauteur écran.
+3. Tous les boutons doivent être facilement cliquables au doigt.
+4. Pas de scroll horizontal, pas de texte tronqué.
+
+### Impact attendu
+
+Meilleure ergonomie sur les petits écrans (Antananarivo = beaucoup d'Android
+bas/moyen gamme avec écrans 5-6 pouces). Moins de mauvais clics, meilleure
+lisibilité, moins de scroll pour atteindre les contrôles.
+
+---
+
+## Récapitulatif
+
+Les 5 étapes du plan sont terminées :
+
+| Étape | Domaine  | Impact |
+| ----- | -------- | ------ |
+| 1     | Back-end | Gzip + cache 7j → -70/80 % sur le texte, 2e visite quasi instantanée |
+| 2     | Build    | Nettoyage `tailwind.config.js` (v3 obsolète) |
+| 3     | Images   | WebP + lazy-load → **-94 %** mesuré (28 MB → 1,8 MB) |
+| 4     | JS       | `whenReady`, AbortController, HTMX `defer` → init fiable, FCP amélioré |
+| 5     | CSS      | Media queries < 480 px → ergonomie mobile bas de gamme |
+
+Pour valider globalement : Lighthouse Mobile avant/après sur les pages
+`/voitures`, `/voitures/<id>` et `/voitures/<id>/itineraire`.
+Cible : Performance > 85, LCP < 2,5 s, poids total < 1 MB.
