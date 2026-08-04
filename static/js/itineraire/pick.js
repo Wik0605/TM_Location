@@ -52,15 +52,27 @@ export function deactivatePickMode() {
     hideBanner();
 }
 
+const geocodeControllers = new WeakMap();
+
 export function reverseGeocode(lat, lng, el) {
-    fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=fr`)
+    const previous = geocodeControllers.get(el);
+    if (previous) previous.abort();
+
+    const controller = new AbortController();
+    geocodeControllers.set(el, controller);
+
+    fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=fr`,
+        { signal: controller.signal },
+    )
         .then((r) => r.json())
         .then((data) => {
             el.textContent = data.display_name
                 ? data.display_name.split(',').slice(0, 2).join(', ')
                 : `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
         })
-        .catch(() => {
+        .catch((err) => {
+            if (err.name === 'AbortError') return;
             el.textContent = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
         });
 }

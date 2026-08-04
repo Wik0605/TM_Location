@@ -206,7 +206,69 @@ via un script de nettoyage une fois la stabilité confirmée).
 
 ---
 
+---
+
+## Étape 4 — Optimisations JS de la carte
+
+Date : 2026-08-04
+
+### Ce qui a été fait
+
+#### 1. `static/js/itineraire/main.js` — init carte plus fiable
+
+Avant :
+```js
+setTimeout(() => map.invalidateSize(), 200);
+```
+
+Après :
+```js
+map.whenReady(() => map.invalidateSize());
+```
+
+- Supprime la race condition (le `200 ms` était arbitraire, trop long sur
+  desktop, parfois trop court sur mobile lent).
+- Leaflet appelle le callback dès que la carte est vraiment prête, une seule
+  fois, sans timer.
+
+#### 2. `static/js/itineraire/pick.js` — annulation des requêtes Nominatim
+
+Utilise un `AbortController` par élément DOM (départ, arrivée, chaque escale).
+Si l'utilisateur clique une nouvelle fois avant que la requête précédente
+soit revenue, on annule l'ancienne. Empêche :
+
+- Les résultats d'anciennes requêtes qui écrasent la nouvelle adresse.
+- La saturation de Nominatim (limité à 1 req/s) sur des clics rapprochés.
+
+#### 3. `app/templates/base.html` — HTMX en `defer`
+
+Ajout de l'attribut `defer` sur `<script src=".../htmx.min.js">`. Effet :
+
+- Le script ne bloque plus le parsing HTML (au lieu de bloquer, il télécharge
+  en parallèle et s'exécute juste avant `DOMContentLoaded`).
+- HTMX continue de fonctionner normalement (il s'auto-initialise sur
+  `DOMContentLoaded`).
+- Gain concret : le premier rendu visuel (First Contentful Paint) arrive
+  plus tôt, surtout sur mobile lent.
+
+### Impact attendu
+
+- Carte itinéraire : disparition d'un éventuel flash de 200 ms au premier
+  rendu, plus de désynchronisation sur mobile lent.
+- Reverse-geocoding : plus de "flash" d'adresse obsolète, moins de risque
+  de rate-limit Nominatim.
+- Toutes les pages : FCP amélioré grâce au `defer` sur HTMX.
+
+### Ce qui n'a pas été fait (et pourquoi)
+
+- **Retrait complet de HTMX sur la page itinéraire** : HTMX est utilisé
+  dans l'ensemble de l'app (admin, formulaires) via `base.html`. Le
+  supprimer conditionnellement ajouterait de la complexité pour un gain
+  marginal (47 KB, désormais mis en cache 7 jours grâce à l'étape 1).
+- **Alpine.js** : l'audit initial mentionnait Alpine mais il n'est pas
+  chargé dans `base.html`. Rien à retirer.
+
 ## Prochaine étape
 
-Étape 4 : optimisations JS de la carte (debounce reverse-geocoding, retrait
-des vendors inutiles).
+Étape 5 : media queries mobile (< 480 px) pour ajuster la hauteur de carte,
+les tailles de police et les cibles tactiles.

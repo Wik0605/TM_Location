@@ -14,4 +14,4 @@ initPick({ attachSearch: attachSearchBox });
 initSearch();
 initResults();
 
-setTimeout(() => map.invalidateSize(), 200);
+map.whenReady(() => map.invalidateSize());
