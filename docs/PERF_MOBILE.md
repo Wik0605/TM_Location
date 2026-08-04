@@ -323,3 +323,21 @@ Les 5 étapes du plan sont terminées :
 Pour valider globalement : Lighthouse Mobile avant/après sur les pages
 `/voitures`, `/voitures/<id>` et `/voitures/<id>/itineraire`.
 Cible : Performance > 85, LCP < 2,5 s, poids total < 1 MB.
+
+## Résultat Lighthouse (2026-08-04)
+
+Audit Lighthouse Mobile lancé depuis Chrome DevTools sur la page `/voitures`
+en local (uvicorn en mode dev, donc score encore un peu sous-estimé
+par rapport à la prod) :
+
+| Catégorie      | Score |
+| -------------- | ----- |
+| Performance    | **86** |
+| Accessibility  | **100** |
+| Best Practices | **96** |
+| SEO            | **91** |
+
+Cible Performance (> 85) **atteinte**. Accessibility à 100 confirme que
+les balises `<picture>` avec `alt` et le HTML sémantique de base sont
+propres. À noter : en production (sans `--reload`, avec un vrai serveur
+et éventuellement un CDN devant), on peut raisonnablement viser 90+.
