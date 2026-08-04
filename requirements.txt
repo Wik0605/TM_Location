@@ -21,6 +21,9 @@ httpx>=0.26.0
 # Utilitaires python
 python-multipart>=0.0.6
 
+# Traitement d'images (conversion WebP, resize)
+Pillow>=10.0.0
+
 # Migrations
 alembic
 

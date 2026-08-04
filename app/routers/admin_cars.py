@@ -4,7 +4,10 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 from pathlib import Path
+import io
 import uuid
+
+from PIL import Image
 
 from app.database import get_db
 from app.services import admin_service
@@ -13,6 +16,20 @@ from app.schemas import VoitureCreateForm, VoitureUpdateForm, TypeLocationForm
 
 UPLOAD_DIR = Path(__file__).parent.parent.parent / "static" / "uploads" / "voitures"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+IMAGE_MAX_WIDTH = 1280
+IMAGE_WEBP_QUALITY = 82
+
+
+def _save_optimized_image(raw: bytes, dest: Path) -> None:
+    with Image.open(io.BytesIO(raw)) as im:
+        im = im.convert("RGB") if im.mode in ("RGBA", "P") else im
+        if im.width > IMAGE_MAX_WIDTH:
+            ratio = IMAGE_MAX_WIDTH / im.width
+            im = im.resize(
+                (IMAGE_MAX_WIDTH, int(im.height * ratio)), Image.LANCZOS
+            )
+        im.save(dest, "WEBP", quality=IMAGE_WEBP_QUALITY, method=6)
 
 router = APIRouter(prefix="/admin", tags=["admin-cars"])
 templates = Jinja2Templates(directory="app/templates")
@@ -114,10 +131,12 @@ async def add_voiture_images(
     for file in files:
         if not file.content_type or not file.content_type.startswith("image/"):
             continue
-        ext = Path(file.filename).suffix.lower() if file.filename else ".jpg"
-        filename = f"{uuid.uuid4().hex}{ext}"
+        filename = f"{uuid.uuid4().hex}.webp"
         dest = upload_dir / filename
-        dest.write_bytes(await file.read())
+        try:
+            _save_optimized_image(await file.read(), dest)
+        except Exception:
+            continue
         url = f"/static/uploads/voitures/{voiture_id}/{filename}"
         await admin_service.add_voiture_image(db, voiture_id, url)
 

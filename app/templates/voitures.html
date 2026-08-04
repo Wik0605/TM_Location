@@ -45,7 +45,12 @@
             <!-- Image 110px -->
             <div class="relative h-[110px] bg-[color:var(--color-primary-tint)] overflow-hidden">
                 {% if first_photo %}
-                <img src="{{ first_photo }}" alt="{{ voiture.nom }}" class="w-full h-full object-cover">
+                <picture>
+                    <source srcset="{{ first_photo | to_webp }}" type="image/webp">
+                    <img src="{{ first_photo }}" alt="{{ voiture.nom }}"
+                         loading="lazy" decoding="async"
+                         class="w-full h-full object-cover">
+                </picture>
                 {% else %}
                 <div class="w-full h-full flex items-center justify-center"
                      style="background-image: repeating-linear-gradient(45deg, rgba(217,119,6,0.12) 0 2px, transparent 2px 12px);">

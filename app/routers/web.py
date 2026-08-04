@@ -12,8 +12,18 @@ from app.models import Location
 from app.schemas import LocationForm
 
 router = APIRouter(prefix="", tags=["web"])
+def _to_webp(url: str) -> str:
+    if not url:
+        return url
+    for ext in (".png", ".jpg", ".jpeg", ".PNG", ".JPG", ".JPEG"):
+        if url.endswith(ext):
+            return url[: -len(ext)] + ".webp"
+    return url
+
+
 templates = Jinja2Templates(directory="app/templates")
 templates.env.filters["current_year"] = lambda: datetime.datetime.now().year
+templates.env.filters["to_webp"] = _to_webp
 
 
 def _traduire_erreur(exc: ValidationError) -> str:
