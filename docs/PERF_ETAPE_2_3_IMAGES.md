@@ -90,6 +90,19 @@ Nouvelle fonction `_save_optimized_image()` :
 - **Poids page detail** : de ~15-25 MB à < 1 MB.
 - **Nouveaux uploads** : automatiquement optimisés, plus de PNG géants en DB.
 
+## Résultat mesuré (2026-08-04)
+
+Script exécuté sur les 22 images existantes :
+
+| Format | Taille totale |
+| ------ | ------------- |
+| PNG originaux | **28 MB** |
+| WebP générés  | **1,8 MB** |
+
+**Gain : ~94 %** sur les photos voitures. Les originaux sont conservés
+comme fallback (utile pour anciens navigateurs, sinon supprimables plus tard
+via un script de nettoyage une fois la stabilité confirmée).
+
 ## Prochaine étape
 
 Étape 4 : optimisations JS de la carte (debounce reverse-geocoding, retrait
