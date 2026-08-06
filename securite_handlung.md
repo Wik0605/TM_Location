@@ -271,6 +271,42 @@ WARNING security oauth_state_mismatch ip=testclient
 
 ## Statut final
 
-Tous les fixes techniques identifiés dans `securite.md` sont appliqués + OAuth Google durci. Reste **1 action manuelle** côté utilisateur :
+Tous les fixes techniques identifiés dans `securite.md` sont appliqués + 7 durcissements complémentaires (OAuth, headers, rate limits, uploads, logs, CSRF).
+
+### Ce que l'app gagne
+
+- Auth admin centralisée (impossible d'oublier le check `require_admin`)
+- Rate limit sur `/admin/login` (5/15min), `/reserver` (10/h), `/auth/google` (20/h)
+- Refus de démarrer en prod avec `SECRET_KEY`/`ADMIN_PASSWORD` par défaut
+- Rotation session au login admin
+- OAuth Google durci : CSRF `state`, `email_verified` obligatoire, gestion d'erreurs, config manquante détectée
+- Security headers globaux : `X-Content-Type-Options`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy`, `HSTS` (prod)
+- Uploads bornés à 8 MB + protection Pillow contre decompression bombs (40 Mpixels max)
+- Logger `security` qui trace login (success/failure), rate limit exceeded, OAuth state mismatch, OAuth email non vérifié — avec IP
+- Protection CSRF sur tous les POST (form classique via `csrf_input`, HTMX via `X-CSRF-Token` posé sur `<body>` du template admin)
+
+### Reste à faire
 
 - 🔴 **Changer `ADMIN_PASSWORD` dans `.env`** pour une chaîne longue et aléatoire (ex. `openssl rand -base64 24`). Le fix #4 imposera de le faire au plus tard au passage en production.
+- 🟡 **CSP stricte** : impossible tant que les templates contiennent des `onclick=""` inline (`voiture_detail.html`, `admin/voitures.html`). À prévoir dans un chantier séparé — migration vers event listeners externes.
+
+### Tests navigateur nécessaires
+
+Tous les fixes ont été validés via `TestClient`. Une session dans le vrai navigateur reste indispensable pour confirmer qu'aucun workflow n'est cassé, notamment par la CSRF. Lancer :
+
+```
+uvicorn app.main:app --reload
+```
+
+Puis vérifier :
+
+- [ ] Login admin (`/admin/login`) → redirection dashboard OK
+- [ ] Login admin avec mauvais mdp × 5 → 6ᵉ tentative bloquée (429)
+- [ ] Création d'une voiture (form admin)
+- [ ] Upload d'images de voiture (< 8 MB → OK, > 8 MB → ignoré)
+- [ ] Édition d'une voiture (HTMX PUT)
+- [ ] Suppression d'un type de location (HTMX POST)
+- [ ] Changement de statut d'une réservation (HTMX POST)
+- [ ] Réservation côté client (form public `/voitures/{id}/reserver`)
+- [ ] OAuth Google `/auth/google` (nécessite les vraies clés dans `.env`)
+- [ ] Tests d'attaque de la migration carte (voir mémoire projet — pas encore fait)
