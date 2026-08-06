@@ -9,6 +9,7 @@ Ce fichier configure :
 - Les données initiales (seed)
 """
 
+import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
@@ -30,6 +31,11 @@ from app.routers.admin_cars import router as admin_cars_router
 from app.routers.admin_rentals import router as admin_rentals_router
 from app.routers.auth import router as auth_router
 from app.routers.itineraire_api import router as itineraire_api_router
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s %(message)s",
+)
 
 STATIC_DIR = Path(__file__).parent.parent / "static"
 

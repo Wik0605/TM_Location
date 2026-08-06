@@ -1,3 +1,4 @@
+import logging
 import secrets
 from urllib.parse import urlencode
 
@@ -12,6 +13,8 @@ from app.limiter import limiter
 from app.models.models import User
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+security_logger = logging.getLogger("security")
 
 GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
@@ -51,6 +54,8 @@ async def google_login(request: Request):
 async def google_callback(request: Request, code: str = "", state: str = ""):
     expected_state = request.session.pop("oauth_state", None)
     if not expected_state or not state or not secrets.compare_digest(state, expected_state):
+        ip = request.client.host if request.client else "unknown"
+        security_logger.warning("oauth_state_mismatch ip=%s", ip)
         raise HTTPException(status_code=400, detail="État OAuth invalide.")
 
     if not code:
@@ -88,6 +93,7 @@ async def google_callback(request: Request, code: str = "", state: str = ""):
     if not google_id or not email:
         raise HTTPException(status_code=502, detail="Profil Google incomplet.")
     if not email_verified:
+        security_logger.warning("oauth_email_not_verified email=%s", email)
         raise HTTPException(status_code=403, detail="Email Google non vérifié.")
 
     async with AsyncSessionLocal() as session:
