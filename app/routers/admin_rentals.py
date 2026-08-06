@@ -8,15 +8,16 @@ from app.services import admin_service
 from app.routers.admin_auth import require_admin
 from app.schemas import RentalStatusForm
 
-router = APIRouter(prefix="/admin", tags=["admin-rentals"])
+router = APIRouter(
+    prefix="/admin",
+    tags=["admin-rentals"],
+    dependencies=[Depends(require_admin)],
+)
 templates = Jinja2Templates(directory="app/templates")
 
 
 @router.get("", response_class=HTMLResponse)
 async def admin_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
-    redirect = require_admin(request)
-    if redirect:
-        return redirect
     stats = await admin_service.get_dashboard_stats(db)
     recent_locations = await admin_service.get_all_locations(db)
     return templates.TemplateResponse("admin/dashboard.html", {
@@ -28,9 +29,6 @@ async def admin_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
 
 @router.get("/reservations", response_class=HTMLResponse)
 async def admin_reservations(request: Request, db: AsyncSession = Depends(get_db)):
-    redirect = require_admin(request)
-    if redirect:
-        return redirect
     locations = await admin_service.get_all_locations(db)
     return templates.TemplateResponse("admin/reservations.html", {
         "request": request,
@@ -45,9 +43,6 @@ async def update_location_status(
     form: RentalStatusForm = Depends(RentalStatusForm.as_form),
     db: AsyncSession = Depends(get_db),
 ):
-    redirect = require_admin(request)
-    if redirect:
-        return redirect
     loc = await admin_service.update_location_statut(db, location_id, form.status.value)
     return templates.TemplateResponse("admin/partials/_rental_row.html", {
         "request": request,

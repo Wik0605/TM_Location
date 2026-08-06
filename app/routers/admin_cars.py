@@ -31,15 +31,16 @@ def _save_optimized_image(raw: bytes, dest: Path) -> None:
             )
         im.save(dest, "WEBP", quality=IMAGE_WEBP_QUALITY, method=6)
 
-router = APIRouter(prefix="/admin", tags=["admin-cars"])
+router = APIRouter(
+    prefix="/admin",
+    tags=["admin-cars"],
+    dependencies=[Depends(require_admin)],
+)
 templates = Jinja2Templates(directory="app/templates")
 
 
 @router.get("/voitures", response_class=HTMLResponse)
 async def admin_voitures(request: Request, db: AsyncSession = Depends(get_db)):
-    redirect = require_admin(request)
-    if redirect:
-        return redirect
     voitures = await admin_service.get_all_voitures(db)
     return templates.TemplateResponse("admin/voitures.html", {
         "request": request,
@@ -54,9 +55,6 @@ async def create_voiture(
     form: VoitureCreateForm = Depends(VoitureCreateForm.as_form),
     db: AsyncSession = Depends(get_db),
 ):
-    redirect = require_admin(request)
-    if redirect:
-        return redirect
     data = {
         "nom": form.nom,
         "description": form.description,
@@ -78,9 +76,6 @@ async def delete_voiture(
     voiture_id: int,
     db: AsyncSession = Depends(get_db),
 ):
-    redirect = require_admin(request)
-    if redirect:
-        return redirect
     await admin_service.delete_voiture(db, voiture_id)
     voitures = await admin_service.get_all_voitures(db)
     return templates.TemplateResponse("admin/partials/_voitures_grid.html", {
@@ -96,9 +91,6 @@ async def edit_voiture(
     form: VoitureUpdateForm = Depends(VoitureUpdateForm.as_form),
     db: AsyncSession = Depends(get_db),
 ):
-    redirect = require_admin(request)
-    if redirect:
-        return redirect
     data = {
         "nom": form.nom if form.nom else None,
         "description": form.description if form.description is not None else None,
@@ -122,9 +114,6 @@ async def add_voiture_images(
     files: List[UploadFile] = File(default=[]),
     db: AsyncSession = Depends(get_db),
 ):
-    redirect = require_admin(request)
-    if redirect:
-        return redirect
     upload_dir = UPLOAD_DIR / str(voiture_id)
     upload_dir.mkdir(exist_ok=True)
 
@@ -154,9 +143,6 @@ async def delete_voiture_image(
     image_id: int,
     db: AsyncSession = Depends(get_db),
 ):
-    redirect = require_admin(request)
-    if redirect:
-        return redirect
     await admin_service.delete_voiture_image(db, image_id)
     voiture = await admin_service.get_voiture_by_id(db, voiture_id)
     return templates.TemplateResponse("admin/partials/_voiture_images.html", {
@@ -172,9 +158,6 @@ async def add_type_location(
     form: TypeLocationForm = Depends(TypeLocationForm.as_form),
     db: AsyncSession = Depends(get_db),
 ):
-    redirect = require_admin(request)
-    if redirect:
-        return redirect
     await admin_service.add_type_location(db, voiture_id, form.nom, form.prix)
     voiture = await admin_service.get_voiture_by_id(db, voiture_id)
     return templates.TemplateResponse("admin/partials/_types_location_list.html", {
@@ -190,9 +173,6 @@ async def delete_type_location(
     type_id: int,
     db: AsyncSession = Depends(get_db),
 ):
-    redirect = require_admin(request)
-    if redirect:
-        return redirect
     await admin_service.delete_type_location(db, type_id)
     voiture = await admin_service.get_voiture_by_id(db, voiture_id)
     return templates.TemplateResponse("admin/partials/_types_location_list.html", {

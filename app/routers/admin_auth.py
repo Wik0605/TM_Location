@@ -1,6 +1,6 @@
 import secrets
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
@@ -11,10 +11,9 @@ router = APIRouter(prefix="/admin", tags=["admin-auth"])
 templates = Jinja2Templates(directory="app/templates")
 
 
-def require_admin(request: Request):
+def require_admin(request: Request) -> None:
     if not request.session.get("admin_logged_in"):
-        return RedirectResponse("/admin/login", status_code=302)
-    return None
+        raise HTTPException(status_code=302, headers={"Location": "/admin/login"})
 
 
 @router.get("/login", response_class=HTMLResponse)
