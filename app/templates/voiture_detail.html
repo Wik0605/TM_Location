@@ -115,6 +115,7 @@
         {% endif %}
 
         <form action="/voitures/{{ voiture.id }}/reserver" method="POST" class="space-y-3" id="form-reserver">
+            {{ csrf_input(request) }}
             <input type="hidden" name="type_location_id" id="hidden-type-location-id"
                    value="{{ voiture.types_location[0].id if voiture.types_location else '' }}">
             <input type="hidden" name="itinerary_token" id="itinerary-token" value="">

@@ -1,19 +1,19 @@
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.csrf import require_csrf
 from app.database import get_db
 from app.services import admin_service
 from app.routers.admin_auth import require_admin
 from app.schemas import RentalStatusForm
+from app.templating import templates
 
 router = APIRouter(
     prefix="/admin",
     tags=["admin-rentals"],
-    dependencies=[Depends(require_admin)],
+    dependencies=[Depends(require_admin), Depends(require_csrf)],
 )
-templates = Jinja2Templates(directory="app/templates")
 
 
 @router.get("", response_class=HTMLResponse)

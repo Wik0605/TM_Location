@@ -16,7 +16,7 @@
         .htmx-settling { opacity: 1; transition: opacity 150ms ease-in; }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-gray-100 min-h-screen" hx-headers='{"X-CSRF-Token": "{{ csrf_token(request) }}"}'>
 
     <!-- Header mobile -->
     <header class="lg:hidden bg-gray-900 text-white px-4 py-3 flex items-center justify-between sticky top-0 z-50">

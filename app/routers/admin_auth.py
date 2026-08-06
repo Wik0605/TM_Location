@@ -3,12 +3,13 @@ import secrets
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
 from slowapi.errors import RateLimitExceeded
 
 from app.config import settings
+from app.csrf import require_csrf
 from app.limiter import limiter
 from app.schemas import AdminLoginForm
+from app.templating import templates
 
 LOGIN_RATE_LIMIT = "5/15minutes"
 
@@ -22,7 +23,6 @@ def _client_ip(request: Request) -> str:
     return request.client.host if request.client else "unknown"
 
 router = APIRouter(prefix="/admin", tags=["admin-auth"])
-templates = Jinja2Templates(directory="app/templates")
 
 
 def require_admin(request: Request) -> None:
@@ -42,6 +42,7 @@ async def admin_login_page(request: Request):
 async def admin_login(
     request: Request,
     form: AdminLoginForm = Depends(AdminLoginForm.as_form),
+    _csrf: None = Depends(require_csrf),
 ):
     ok_user = secrets.compare_digest(form.username, settings.admin_username)
     ok_pass = secrets.compare_digest(form.password, settings.admin_password)

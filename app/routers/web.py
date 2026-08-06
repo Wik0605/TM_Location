@@ -1,16 +1,17 @@
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse, Response
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import ValidationError
 import datetime
 from datetime import date
 
+from app.csrf import require_csrf
 from app.database import get_db
 from app.limiter import limiter
 from app.services import car_service, routing_service
 from app.models import Location
 from app.schemas import LocationForm
+from app.templating import templates
 
 router = APIRouter(prefix="", tags=["web"])
 def _to_webp(url: str) -> str:
@@ -22,7 +23,6 @@ def _to_webp(url: str) -> str:
     return url
 
 
-templates = Jinja2Templates(directory="app/templates")
 templates.env.filters["current_year"] = lambda: datetime.datetime.now().year
 templates.env.filters["to_webp"] = _to_webp
 
@@ -94,6 +94,7 @@ async def voiture_reserver(
     request: Request,
     voiture_id: int,
     db: AsyncSession = Depends(get_db),
+    _csrf: None = Depends(require_csrf),
 ):
     voiture = await car_service.get_voiture_by_id(db, voiture_id)
     if not voiture:

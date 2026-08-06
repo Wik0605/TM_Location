@@ -23,6 +23,7 @@
             {% endif %}
 
             <form method="POST" action="/admin/login" class="space-y-5">
+                {{ csrf_input(request) }}
                 <div>
                     <label class="block text-sm font-medium text-gray-300 mb-1.5">Identifiant</label>
                     <input type="text" name="username" required autofocus

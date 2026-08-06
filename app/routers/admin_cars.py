@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Request, Depends, UploadFile, File
 from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 from pathlib import Path
@@ -9,10 +8,12 @@ import uuid
 
 from PIL import Image
 
+from app.csrf import require_csrf
 from app.database import get_db
 from app.services import admin_service
 from app.routers.admin_auth import require_admin
 from app.schemas import VoitureCreateForm, VoitureUpdateForm, TypeLocationForm
+from app.templating import templates
 
 UPLOAD_DIR = Path(__file__).parent.parent.parent / "static" / "uploads" / "voitures"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
@@ -45,9 +46,8 @@ async def _lire_upload_limite(file: UploadFile) -> bytes | None:
 router = APIRouter(
     prefix="/admin",
     tags=["admin-cars"],
-    dependencies=[Depends(require_admin)],
+    dependencies=[Depends(require_admin), Depends(require_csrf)],
 )
-templates = Jinja2Templates(directory="app/templates")
 
 
 @router.get("/voitures", response_class=HTMLResponse)
