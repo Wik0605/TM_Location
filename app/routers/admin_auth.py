@@ -36,6 +36,7 @@ async def admin_login(
     ok_user = secrets.compare_digest(form.username, settings.admin_username)
     ok_pass = secrets.compare_digest(form.password, settings.admin_password)
     if ok_user and ok_pass:
+        request.session.clear()
         request.session["admin_logged_in"] = True
         return RedirectResponse("/admin", status_code=302)
     return templates.TemplateResponse("admin/login.html", {
