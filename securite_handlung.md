@@ -13,8 +13,9 @@ Historique des fixes appliqués sur les vulnérabilités identifiées dans `secu
 | 5 | Rotation session au login | `95fc972` | §3.4 | ✅ |
 | 6 | SessionMiddleware dev durci | `56d24e7` | §3.5 | ✅ |
 | 7 | Vérif historique `.env` (rien commité) | — | §3.6 | ✅ |
+| 8 | Durcissement OAuth Google (state, email_verified, erreurs) | `0c0e62a` | §6 | ✅ |
 
-**6/7 fixes techniques appliqués.** Reste 1 action manuelle : changer `ADMIN_PASSWORD` dans `.env` (voir "Statut final" en bas).
+**7/8 fixes techniques appliqués.** Reste 1 action manuelle : changer `ADMIN_PASSWORD` dans `.env` (voir "Statut final" en bas).
 
 ---
 
@@ -120,8 +121,28 @@ git log --all --full-history --oneline -- .env
 
 ---
 
+### Fix #8 — Durcissement du flow OAuth Google (commit `0c0e62a`)
+
+**Vuln traitée** : `securite.md` §6 "à prévoir pour OAuth" — le flow Google existait mais sans les protections critiques.
+
+**Changements** (`app/routers/auth.py`) :
+- **CSRF `state`** : `secrets.token_urlsafe(32)` généré et stocké en session à `/auth/google`, vérifié avec `compare_digest` au callback. Rejette avec `400` si absent ou différent.
+- **`email_verified` obligatoire** : la réponse Google doit contenir `email_verified: true`, sinon `403`. Bouche le piège classique où un provider mal configuré permettrait de s'inscrire avec l'email d'un tiers.
+- **Gestion d'erreurs** : timeout 10s, `raise_for_status()`, `try/except httpx.HTTPError` → `502`. Réponses vides ou profil incomplet → `502`.
+- **Config absente** : si `GOOGLE_CLIENT_ID` ou `GOOGLE_CLIENT_SECRET` sont vides, `/auth/google` renvoie `503` au lieu de rediriger vers une URL cassée.
+- **URL propre** : `urlencode()` au lieu d'une f-string.
+
+**Résultat** (testé via `TestClient`) :
+- Sans `client_id` → `503` ✅
+- Callback sans `state` → `400` ✅
+- Callback avec `state` pourri → `400` ✅
+
+**Diff net** : 1 fichier, +60 / −25 lignes.
+
+---
+
 ## Statut final
 
-Tous les fixes techniques identifiés dans `securite.md` sont appliqués. Reste **1 action manuelle** côté utilisateur :
+Tous les fixes techniques identifiés dans `securite.md` sont appliqués + OAuth Google durci. Reste **1 action manuelle** côté utilisateur :
 
 - 🔴 **Changer `ADMIN_PASSWORD` dans `.env`** pour une chaîne longue et aléatoire (ex. `openssl rand -base64 24`). Le fix #4 imposera de le faire au plus tard au passage en production.
