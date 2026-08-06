@@ -16,8 +16,10 @@ Historique des fixes appliqués sur les vulnérabilités identifiées dans `secu
 | 8 | Durcissement OAuth Google (state, email_verified, erreurs) | `0c0e62a` | §6 | ✅ |
 | 9 | Middleware security headers (X-Frame, nosniff, HSTS, ...) | `b998cf7` | hors `securite.md` | ✅ |
 | 10 | Rate limit sur `/reserver` (10/h) et `/auth/google` (20/h) | `4bb4061` | hors `securite.md` | ✅ |
+| 11 | Validation waypoints (bounding box, max 10, timeout) | déjà fait | `CARTE.md §3.2` | ✅ |
+| 12 | Limite de taille upload image (8 MB, 40 Mpixels) | `d9e2539` | hors `securite.md` | ✅ |
 
-**9/10 fixes techniques appliqués.** Reste 1 action manuelle : changer `ADMIN_PASSWORD` dans `.env` (voir "Statut final" en bas).
+**11/12 fixes techniques appliqués.** Reste 1 action manuelle : changer `ADMIN_PASSWORD` dans `.env` (voir "Statut final" en bas).
 
 ---
 
@@ -178,6 +180,35 @@ git log --all --full-history --oneline -- .env
 - `/auth/google` : 20 tentatives → `307`, la 21ᵉ → `429` avec body "Trop de requêtes..." ✅
 
 **Diff net** : 3 fichiers, +16 / −6 lignes.
+
+---
+
+### Fix #11 — Validation waypoints (déjà couvert)
+
+**Vuln** : `CARTE.md §3.2` — protéger `/api/voitures/{id}/itineraire/calculer` contre les waypoints malicieux (DoS via 500 points, coordonnées hors Madagascar, timeout serveur).
+
+**État** : **déjà en place** dans le code après la migration carte du 4 août 2026.
+
+Preuves :
+- `app/services/routing_service.py:9-13` : constantes `MADAGASCAR_LAT`, `MADAGASCAR_LON`, `MAX_WAYPOINTS = 10`, `HTTP_TIMEOUT = 5.0`.
+- `app/services/routing_service.py:22-31` : `_valider_waypoints()` vérifie min 2, max 10, chaque point dans la bounding box.
+- `app/routers/itineraire_api.py:14-19` : validation Pydantic `conlist` en amont (structure + longueur).
+
+**Diff net** : aucun (rien à ajouter).
+
+---
+
+### Fix #12 — Limite de taille sur les uploads d'images (commit `d9e2539`)
+
+**Contexte** : hors `securite.md`. Auparavant, `await file.read()` chargeait le fichier entier en RAM sans limite. Un fichier de 2 GB → app OOM. Un PNG "bomb" (petit fichier qui décompresse en plusieurs GB) → même problème via Pillow.
+
+**Changements** (`app/routers/admin_cars.py`) :
+- Constantes : `IMAGE_MAX_BYTES = 8 * 1024 * 1024` (8 MB) et `IMAGE_MAX_PIXELS = 40_000_000`.
+- `Image.MAX_IMAGE_PIXELS = IMAGE_MAX_PIXELS` — configure Pillow pour bloquer les decompression bombs.
+- Nouvelle helper `_lire_upload_limite(file)` : lit `IMAGE_MAX_BYTES + 1` octets, renvoie `None` si dépassé (jamais plus de 8 MB en RAM).
+- `add_voiture_images` : passe par le lecteur borné, skip silencieux si trop gros (comme pour les non-images).
+
+**Diff net** : 1 fichier, +15 / −1 lignes.
 
 ---
 
