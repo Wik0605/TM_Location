@@ -69,10 +69,45 @@ Historique des fixes appliqués sur les vulnérabilités identifiées dans `secu
 
 ---
 
-## À venir
+### Fix #5 — Rotation de session au login (commit `95fc972`)
 
-Voir `securite.md` §5 — plan de correction priorisé. Prochains fixes :
-- 🔴 Changer `ADMIN_PASSWORD` dans `.env` (à faire par l'utilisateur)
-- 🟡 Rotation session au login (`session.clear()`)
-- 🟡 `max_age` SessionMiddleware en dev
-- 🟡 Vérif historique Git pour `.env`
+**Vuln traitée** : `securite.md` §3.4 — pas de rotation de session au login, risque de session fixation.
+
+**Changements** :
+- `app/routers/admin_auth.py` : `request.session.clear()` avant de poser `admin_logged_in = True`.
+
+**Diff net** : 1 fichier, +1 ligne.
+
+---
+
+### Fix #6 — SessionMiddleware dev durci (commit `56d24e7`)
+
+**Vuln traitée** : `securite.md` §3.5 — en dev, ni `same_site` ni `max_age` sur le middleware de session.
+
+**Changements** :
+- `app/main.py` : ajout de `same_site="lax"` et `max_age=3600` dans la branche `else` (dev). Aligne le comportement dev sur prod (sauf `https_only`).
+
+**Diff net** : 1 fichier, +6 / −1 lignes.
+
+---
+
+### Fix #7 — Vérification historique Git pour `.env`
+
+**Vuln traitée** : `securite.md` §3.6 — vérifier si `.env` a jamais été commité.
+
+**Commande exécutée** :
+```
+git log --all --full-history --oneline -- .env
+```
+
+**Résultat** : sortie vide → `.env` **n'a jamais été commité**. Aucune action nécessaire, pas de secrets à régénérer, pas de réécriture d'historique.
+
+**Diff net** : aucun (vérification seule).
+
+---
+
+## Statut final
+
+Tous les fixes techniques identifiés dans `securite.md` sont appliqués. Reste **1 action manuelle** côté utilisateur :
+
+- 🔴 **Changer `ADMIN_PASSWORD` dans `.env`** pour une chaîne longue et aléatoire (ex. `openssl rand -base64 24`). Le fix #4 imposera de le faire au plus tard au passage en production.
