@@ -49,11 +49,30 @@ Historique des fixes appliqués sur les vulnérabilités identifiées dans `secu
 
 ---
 
+### Fix #4 — Refus de démarrer en prod avec secrets par défaut (commit `f77a24d`)
+
+**Vuln traitée** : `securite.md` §3.2 — si `.env` disparaît ou n'est pas chargé en prod, l'app démarrait avec `secret_key="changeme"` et `admin/admin`.
+
+**Changements** :
+- `app/config.py` :
+  - Constante `INSECURE_DEFAULTS = {"changeme", "admin", ""}`.
+  - Méthode `Settings.assert_production_ready()` : en prod uniquement, vérifie que `secret_key` ≥ 32 chars et hors défauts, `admin_password` ≥ 12 chars et hors défauts, `admin_username` ≠ "admin".
+  - Appel de `assert_production_ready()` au chargement du module → l'import échoue si config invalide en prod.
+- En dev : aucun check (démarrage local rapide conservé).
+
+**Résultat** (testé avec 3 scénarios) :
+- Dev avec défauts : passe ✅
+- Prod avec défauts : `RuntimeError` avec liste des problèmes ✅
+- Prod avec valeurs correctes : passe ✅
+
+**Diff net** : 1 fichier, +19 lignes.
+
+---
+
 ## À venir
 
 Voir `securite.md` §5 — plan de correction priorisé. Prochains fixes :
 - 🔴 Changer `ADMIN_PASSWORD` dans `.env` (à faire par l'utilisateur)
-- 🔴 Crasher si secrets == valeurs par défaut en prod (`config.py`)
 - 🟡 Rotation session au login (`session.clear()`)
 - 🟡 `max_age` SessionMiddleware en dev
 - 🟡 Vérif historique Git pour `.env`
