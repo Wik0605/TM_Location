@@ -2,6 +2,20 @@
 
 Historique des fixes appliqués sur les vulnérabilités identifiées dans `securite.md`.
 
+## Récapitulatif
+
+| # | Fix | Commit | Vuln (`securite.md`) | Statut |
+|---|---|---|---|---|
+| 1 | Centralisation `require_admin` | `4781fa6` | §3.3 | ✅ |
+| 2 | Rate limit `/admin/login` (5/15min) | `29d2690` | §3.1 | ✅ |
+| 3 | Changer `ADMIN_PASSWORD` dans `.env` | — | §3.2 | ⏳ à faire par l'utilisateur |
+| 4 | Crash en prod si secrets par défaut | `f77a24d` | §3.2 | ✅ |
+| 5 | Rotation session au login | `95fc972` | §3.4 | ✅ |
+| 6 | SessionMiddleware dev durci | `56d24e7` | §3.5 | ✅ |
+| 7 | Vérif historique `.env` (rien commité) | — | §3.6 | ✅ |
+
+**6/7 fixes techniques appliqués.** Reste 1 action manuelle : changer `ADMIN_PASSWORD` dans `.env` (voir "Statut final" en bas).
+
 ---
 
 ## 2026-08-06
