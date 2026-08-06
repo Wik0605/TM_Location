@@ -4,61 +4,67 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<h1 class="text-xl lg:text-2xl font-bold text-gray-900 mb-6">Dashboard</h1>
+<div class="mb-8">
+    <p class="text-[10px] text-[color:var(--color-neutral-strong)] uppercase tracking-[0.3em] font-semibold mb-1">Vue d'ensemble</p>
+    <h1 class="font-display text-2xl lg:text-3xl font-black text-[color:var(--color-ink)] tracking-tight">Dashboard</h1>
+</div>
 
 <!-- Stats -->
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
-    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-        <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Réservations</p>
-        <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ stats.total_rentals }}</p>
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-8">
+    <div class="bg-white rounded-2xl p-5 border border-[color:var(--color-border)] shadow-sm hover:shadow-md transition-shadow">
+        <p class="text-[10px] text-[color:var(--color-neutral-strong)] uppercase tracking-widest font-semibold mb-2">Réservations</p>
+        <p class="font-display text-3xl lg:text-4xl font-black text-[color:var(--color-ink)]">{{ stats.total_rentals }}</p>
     </div>
-    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-        <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Voitures</p>
-        <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ stats.total_cars }}</p>
-        <p class="text-xs text-emerald-600 mt-1">{{ stats.available_cars }} dispo.</p>
+    <div class="bg-white rounded-2xl p-5 border border-[color:var(--color-border)] shadow-sm hover:shadow-md transition-shadow">
+        <p class="text-[10px] text-[color:var(--color-neutral-strong)] uppercase tracking-widest font-semibold mb-2">Voitures</p>
+        <p class="font-display text-3xl lg:text-4xl font-black text-[color:var(--color-ink)]">{{ stats.total_cars }}</p>
+        <p class="text-xs text-[#059669] font-semibold mt-1">{{ stats.available_cars }} disponibles</p>
     </div>
-    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-        <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Revenus</p>
-        <p class="text-lg lg:text-2xl font-bold text-emerald-600">{{ "{:,.0f}".format(stats.total_revenue) }} Ar</p>
+    <div class="bg-gradient-to-br from-[color:var(--color-primary)] to-[color:var(--color-primary-dark)] rounded-2xl p-5 shadow-md text-white">
+        <p class="text-[10px] text-white/80 uppercase tracking-widest font-semibold mb-2">Revenus</p>
+        <p class="font-display text-xl lg:text-3xl font-black">{{ "{:,.0f}".format(stats.total_revenue) }}</p>
+        <p class="text-xs text-white/80 font-semibold mt-1">Ariary</p>
     </div>
-    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-        <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Indisponibles</p>
-        <p class="text-2xl lg:text-3xl font-bold text-orange-500">{{ stats.total_cars - stats.available_cars }}</p>
+    <div class="bg-white rounded-2xl p-5 border border-[color:var(--color-border)] shadow-sm hover:shadow-md transition-shadow">
+        <p class="text-[10px] text-[color:var(--color-neutral-strong)] uppercase tracking-widest font-semibold mb-2">Indispo.</p>
+        <p class="font-display text-3xl lg:text-4xl font-black text-[color:var(--color-ink)]">{{ stats.total_cars - stats.available_cars }}</p>
     </div>
 </div>
 
 <!-- Dernières réservations -->
-<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-    <div class="px-4 lg:px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-        <h2 class="font-bold text-gray-800 text-sm lg:text-base">Dernières réservations</h2>
-        <a href="/admin/reservations" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">Voir toutes →</a>
+<div class="bg-white rounded-2xl shadow-sm border border-[color:var(--color-border)] overflow-hidden">
+    <div class="px-5 lg:px-6 py-4 border-b border-[color:var(--color-border)] flex items-center justify-between">
+        <h2 class="font-display font-bold text-[color:var(--color-ink)] text-base lg:text-lg tracking-tight">Dernières réservations</h2>
+        <a href="/admin/reservations" class="text-xs lg:text-sm text-[color:var(--color-primary)] hover:text-[color:var(--color-primary-dark)] font-semibold tracking-wide">
+            Voir toutes →
+        </a>
     </div>
 
     <!-- Vue mobile : cartes -->
-    <div class="lg:hidden divide-y divide-gray-50">
+    <div class="lg:hidden divide-y divide-[color:var(--color-border)]">
         {% for rental in recent_rentals %}
-        <div class="px-4 py-4 space-y-1">
+        <div class="px-5 py-4 space-y-1.5">
             <div class="flex items-center justify-between">
-                <span class="font-semibold text-gray-900 text-sm">{{ rental.client_nom }}</span>
-                <span class="px-2 py-0.5 rounded-full text-xs font-semibold
-                    {% if rental.status == 'confirmée' %}bg-blue-100 text-blue-700
-                    {% elif rental.status == 'en_cours' %}bg-emerald-100 text-emerald-700
-                    {% elif rental.status == 'terminée' %}bg-gray-100 text-gray-600
-                    {% else %}bg-red-100 text-red-600{% endif %}">
+                <span class="font-semibold text-[color:var(--color-ink)] text-sm">{{ rental.client_nom }}</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider
+                    {% if rental.status == 'confirmée' %}bg-[#FEF3C7] text-[#B45309]
+                    {% elif rental.status == 'en_cours' %}bg-[#ECFDF5] text-[#065F46]
+                    {% elif rental.status == 'terminée' %}bg-[color:var(--color-neutral-soft)] text-[color:var(--color-neutral-strong)]
+                    {% else %}bg-[#FEF2F2] text-[#991B1B]{% endif %}">
                     {{ rental.status }}
                 </span>
             </div>
-            <p class="text-xs text-gray-500">{% if rental.voiture %}{{ rental.voiture.marque }} {{ rental.voiture.modele }}{% endif %}</p>
-            <p class="text-xs font-bold text-gray-800">{{ "{:,.0f}".format(rental.prix_total) }} Ar</p>
+            <p class="text-xs text-[color:var(--color-neutral-strong)]">{% if rental.voiture %}{{ rental.voiture.marque }} {{ rental.voiture.modele }}{% endif %}</p>
+            <p class="text-sm font-display font-bold text-[color:var(--color-primary)]">{{ "{:,.0f}".format(rental.prix_total) }} Ar</p>
         </div>
         {% else %}
-        <p class="px-4 py-8 text-center text-gray-400 text-sm">Aucune réservation</p>
+        <p class="px-5 py-10 text-center text-[color:var(--color-neutral)] text-sm">Aucune réservation</p>
         {% endfor %}
     </div>
 
     <!-- Vue desktop : table -->
     <table class="hidden lg:table w-full text-sm">
-        <thead class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+        <thead class="bg-[color:var(--color-neutral-soft)] text-[color:var(--color-neutral-strong)] text-[10px] uppercase tracking-widest font-semibold">
             <tr>
                 <th class="px-6 py-3 text-left">#</th>
                 <th class="px-6 py-3 text-left">Client</th>
@@ -67,25 +73,25 @@
                 <th class="px-6 py-3 text-right">Total</th>
             </tr>
         </thead>
-        <tbody class="divide-y divide-gray-50">
+        <tbody class="divide-y divide-[color:var(--color-border)]">
             {% for rental in recent_rentals %}
-            <tr class="hover:bg-gray-50 transition-colors">
-                <td class="px-6 py-4 text-gray-400">#{{ rental.id }}</td>
-                <td class="px-6 py-4 font-medium text-gray-900">{{ rental.client_nom }}</td>
-                <td class="px-6 py-4 text-gray-600">{% if rental.voiture %}{{ rental.voiture.marque }} {{ rental.voiture.modele }}{% endif %}</td>
+            <tr class="hover:bg-[color:var(--color-neutral-soft)] transition-colors">
+                <td class="px-6 py-4 text-[color:var(--color-neutral)]">#{{ rental.id }}</td>
+                <td class="px-6 py-4 font-semibold text-[color:var(--color-ink)]">{{ rental.client_nom }}</td>
+                <td class="px-6 py-4 text-[color:var(--color-neutral-strong)]">{% if rental.voiture %}{{ rental.voiture.marque }} {{ rental.voiture.modele }}{% endif %}</td>
                 <td class="px-6 py-4">
-                    <span class="px-2 py-1 rounded-full text-xs font-semibold
-                        {% if rental.statut == 'confirmée' %}bg-blue-100 text-blue-700
-                        {% elif rental.statut == 'en_cours' %}bg-emerald-100 text-emerald-700
-                        {% elif rental.statut == 'terminée' %}bg-gray-100 text-gray-600
-                        {% else %}bg-red-100 text-red-600{% endif %}">
+                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider
+                        {% if rental.statut == 'confirmée' %}bg-[#FEF3C7] text-[#B45309]
+                        {% elif rental.statut == 'en_cours' %}bg-[#ECFDF5] text-[#065F46]
+                        {% elif rental.statut == 'terminée' %}bg-[color:var(--color-neutral-soft)] text-[color:var(--color-neutral-strong)]
+                        {% else %}bg-[#FEF2F2] text-[#991B1B]{% endif %}">
                         {{ rental.statut }}
                     </span>
                 </td>
-                <td class="px-6 py-4 text-right font-semibold text-gray-800">{{ "{:,.0f}".format(rental.prix_total) }} Ar</td>
+                <td class="px-6 py-4 text-right font-display font-bold text-[color:var(--color-primary)]">{{ "{:,.0f}".format(rental.prix_total) }} Ar</td>
             </tr>
             {% else %}
-            <tr><td colspan="5" class="px-6 py-8 text-center text-gray-400">Aucune réservation</td></tr>
+            <tr><td colspan="5" class="px-6 py-10 text-center text-[color:var(--color-neutral)]">Aucune réservation</td></tr>
             {% endfor %}
         </tbody>
     </table>
