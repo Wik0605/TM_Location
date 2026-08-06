@@ -14,8 +14,9 @@ Historique des fixes appliqués sur les vulnérabilités identifiées dans `secu
 | 6 | SessionMiddleware dev durci | `56d24e7` | §3.5 | ✅ |
 | 7 | Vérif historique `.env` (rien commité) | — | §3.6 | ✅ |
 | 8 | Durcissement OAuth Google (state, email_verified, erreurs) | `0c0e62a` | §6 | ✅ |
+| 9 | Middleware security headers (X-Frame, nosniff, HSTS, ...) | `b998cf7` | hors `securite.md` | ✅ |
 
-**7/8 fixes techniques appliqués.** Reste 1 action manuelle : changer `ADMIN_PASSWORD` dans `.env` (voir "Statut final" en bas).
+**8/9 fixes techniques appliqués.** Reste 1 action manuelle : changer `ADMIN_PASSWORD` dans `.env` (voir "Statut final" en bas).
 
 ---
 
@@ -138,6 +139,28 @@ git log --all --full-history --oneline -- .env
 - Callback avec `state` pourri → `400` ✅
 
 **Diff net** : 1 fichier, +60 / −25 lignes.
+
+---
+
+### Fix #9 — Middleware security headers (commit `b998cf7`)
+
+**Contexte** : ces headers ne figuraient pas dans `securite.md` mais sont des protections défensives standards (OWASP Secure Headers).
+
+**Changements** (`app/main.py`) :
+- Nouveau `SecurityHeadersMiddleware` (`BaseHTTPMiddleware`) qui pose sur chaque réponse :
+  - `X-Content-Type-Options: nosniff` — bloque MIME sniffing
+  - `X-Frame-Options: DENY` — bloque clickjacking (iframe)
+  - `Referrer-Policy: strict-origin-when-cross-origin` — fuite d'URL limitée
+  - `Permissions-Policy: geolocation=(self), microphone=(), camera=()` — désactive APIs sensibles sauf géoloc (utilisée par la carte)
+- En prod uniquement : `Strict-Transport-Security: max-age=31536000; includeSubDomains` (1 an).
+
+**Note** : CSP volontairement omise. Les templates (`voiture_detail.html`, `admin/voitures.html`) contiennent des `onclick=""` inline qu'il faudrait migrer vers des event listeners externes avant d'activer une CSP stricte. À prévoir si on veut boucher les XSS.
+
+**Résultat** (testé via `TestClient` en dev) :
+- Les 4 headers de base sont présents sur `GET /` ✅
+- HSTS bien absent en dev ✅
+
+**Diff net** : 1 fichier, +23 lignes.
 
 ---
 
