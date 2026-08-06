@@ -19,6 +19,10 @@ UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 IMAGE_MAX_WIDTH = 1280
 IMAGE_WEBP_QUALITY = 82
+IMAGE_MAX_BYTES = 8 * 1024 * 1024
+IMAGE_MAX_PIXELS = 40_000_000
+
+Image.MAX_IMAGE_PIXELS = IMAGE_MAX_PIXELS
 
 
 def _save_optimized_image(raw: bytes, dest: Path) -> None:
@@ -30,6 +34,13 @@ def _save_optimized_image(raw: bytes, dest: Path) -> None:
                 (IMAGE_MAX_WIDTH, int(im.height * ratio)), Image.LANCZOS
             )
         im.save(dest, "WEBP", quality=IMAGE_WEBP_QUALITY, method=6)
+
+
+async def _lire_upload_limite(file: UploadFile) -> bytes | None:
+    raw = await file.read(IMAGE_MAX_BYTES + 1)
+    if len(raw) > IMAGE_MAX_BYTES:
+        return None
+    return raw
 
 router = APIRouter(
     prefix="/admin",
@@ -120,10 +131,13 @@ async def add_voiture_images(
     for file in files:
         if not file.content_type or not file.content_type.startswith("image/"):
             continue
+        raw = await _lire_upload_limite(file)
+        if raw is None:
+            continue
         filename = f"{uuid.uuid4().hex}.webp"
         dest = upload_dir / filename
         try:
-            _save_optimized_image(await file.read(), dest)
+            _save_optimized_image(raw, dest)
         except Exception:
             continue
         url = f"/static/uploads/voitures/{voiture_id}/{filename}"
