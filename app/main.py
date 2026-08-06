@@ -111,7 +111,12 @@ if settings.is_production:
         allow_headers=["*"],
     )
 else:
-    app.add_middleware(SessionMiddleware, secret_key=settings.secret_key)
+    app.add_middleware(
+        SessionMiddleware,
+        secret_key=settings.secret_key,
+        same_site="lax",
+        max_age=3600,
+    )
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,
