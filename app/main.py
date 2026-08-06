@@ -18,10 +18,13 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.responses import Response
 from pathlib import Path
 
+from slowapi.errors import RateLimitExceeded
+
 from app.config import settings
 from app.database import init_db, engine
+from app.limiter import limiter
 from app.routers.web import router as web_router
-from app.routers.admin_auth import router as admin_auth_router
+from app.routers.admin_auth import router as admin_auth_router, login_rate_limit_handler
 from app.routers.admin_cars import router as admin_cars_router
 from app.routers.admin_rentals import router as admin_rentals_router
 from app.routers.auth import router as auth_router
@@ -80,6 +83,9 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, login_rate_limit_handler)
 
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
