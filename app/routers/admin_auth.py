@@ -52,11 +52,17 @@ async def admin_logout(request: Request):
 
 
 async def login_rate_limit_handler(request: Request, exc: RateLimitExceeded):
-    return templates.TemplateResponse(
-        "admin/login.html",
-        {
-            "request": request,
-            "error": "Trop de tentatives. Réessayez dans quelques minutes.",
-        },
+    if request.url.path == "/admin/login":
+        return templates.TemplateResponse(
+            "admin/login.html",
+            {
+                "request": request,
+                "error": "Trop de tentatives. Réessayez dans quelques minutes.",
+            },
+            status_code=429,
+        )
+    from fastapi.responses import PlainTextResponse
+    return PlainTextResponse(
+        "Trop de requêtes. Réessayez dans quelques minutes.",
         status_code=429,
     )

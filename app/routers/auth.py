@@ -8,6 +8,7 @@ from sqlalchemy import select
 
 from app.config import settings
 from app.database import AsyncSessionLocal
+from app.limiter import limiter
 from app.models.models import User
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -21,6 +22,7 @@ HTTP_TIMEOUT = 10.0
 
 
 @router.get("/google")
+@limiter.limit("20/hour")
 async def google_login(request: Request):
     if not settings.google_client_id or not settings.google_client_secret:
         raise HTTPException(

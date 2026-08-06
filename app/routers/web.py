@@ -7,6 +7,7 @@ import datetime
 from datetime import date
 
 from app.database import get_db
+from app.limiter import limiter
 from app.services import car_service, routing_service
 from app.models import Location
 from app.schemas import LocationForm
@@ -88,6 +89,7 @@ async def itineraire_quota(request: Request, voiture_id: int):
 
 
 @router.post("/voitures/{voiture_id}/reserver", response_class=HTMLResponse)
+@limiter.limit("10/hour")
 async def voiture_reserver(
     request: Request,
     voiture_id: int,
