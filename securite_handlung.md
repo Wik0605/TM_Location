@@ -29,7 +29,31 @@ Historique des fixes appliqués sur les vulnérabilités identifiées dans `secu
 
 ---
 
+### Fix #2 — Rate limit sur `/admin/login` (commit `29d2690`)
+
+**Vuln traitée** : `securite.md` §3.1 — aucune limite au login admin, brute force possible.
+
+**Changements** :
+- `requirements.txt` : ajout `slowapi>=0.1.10`.
+- `app/limiter.py` (nouveau) : instance `Limiter` partagée, clé = IP client (`get_remote_address`).
+- `app/main.py` : enregistrement du limiter (`app.state.limiter`) et du handler `RateLimitExceeded`.
+- `app/routers/admin_auth.py` :
+  - `@limiter.limit("5/15minutes")` sur `POST /admin/login`.
+  - Handler `login_rate_limit_handler` qui renvoie la page de login avec message "Trop de tentatives, réessayez dans quelques minutes" et status `429`.
+
+**Résultat** :
+- 5 tentatives max par IP toutes les 15 min sur le login admin.
+- Vérifié via `TestClient` : les 5 premières tentatives renvoient `200`, la 6ᵉ et suivantes `429`.
+
+**Diff net** : 4 fichiers, +29 / −2 lignes.
+
+---
+
 ## À venir
 
-Voir `securite.md` §5 — plan de correction priorisé. Prochain fix prévu :
-- 🔴 Rate limit sur `/admin/login` via `slowapi`
+Voir `securite.md` §5 — plan de correction priorisé. Prochains fixes :
+- 🔴 Changer `ADMIN_PASSWORD` dans `.env` (à faire par l'utilisateur)
+- 🔴 Crasher si secrets == valeurs par défaut en prod (`config.py`)
+- 🟡 Rotation session au login (`session.clear()`)
+- 🟡 `max_age` SessionMiddleware en dev
+- 🟡 Vérif historique Git pour `.env`
