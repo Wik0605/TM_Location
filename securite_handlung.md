@@ -15,8 +15,9 @@ Historique des fixes appliqués sur les vulnérabilités identifiées dans `secu
 | 7 | Vérif historique `.env` (rien commité) | — | §3.6 | ✅ |
 | 8 | Durcissement OAuth Google (state, email_verified, erreurs) | `0c0e62a` | §6 | ✅ |
 | 9 | Middleware security headers (X-Frame, nosniff, HSTS, ...) | `b998cf7` | hors `securite.md` | ✅ |
+| 10 | Rate limit sur `/reserver` (10/h) et `/auth/google` (20/h) | `4bb4061` | hors `securite.md` | ✅ |
 
-**8/9 fixes techniques appliqués.** Reste 1 action manuelle : changer `ADMIN_PASSWORD` dans `.env` (voir "Statut final" en bas).
+**9/10 fixes techniques appliqués.** Reste 1 action manuelle : changer `ADMIN_PASSWORD` dans `.env` (voir "Statut final" en bas).
 
 ---
 
@@ -161,6 +162,22 @@ git log --all --full-history --oneline -- .env
 - HSTS bien absent en dev ✅
 
 **Diff net** : 1 fichier, +23 lignes.
+
+---
+
+### Fix #10 — Rate limit `/reserver` et `/auth/google` (commit `4bb4061`)
+
+**Contexte** : hors `securite.md`, extension du rate limit `slowapi` déjà en place.
+
+**Changements** :
+- `app/routers/web.py` : `@limiter.limit("10/hour")` sur `POST /voitures/{id}/reserver` (protège contre le spam de réservations depuis une même IP).
+- `app/routers/auth.py` : `@limiter.limit("20/hour")` sur `GET /auth/google` (protège contre le flood du flow OAuth).
+- `app/routers/admin_auth.py` : le handler `login_rate_limit_handler` devient contextuel — page HTML de login pour `/admin/login`, réponse texte `429` générique pour les autres endpoints.
+
+**Résultat** (testé via `TestClient`) :
+- `/auth/google` : 20 tentatives → `307`, la 21ᵉ → `429` avec body "Trop de requêtes..." ✅
+
+**Diff net** : 3 fichiers, +16 / −6 lignes.
 
 ---
 
