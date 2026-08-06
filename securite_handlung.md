@@ -19,8 +19,9 @@ Historique des fixes appliqués sur les vulnérabilités identifiées dans `secu
 | 11 | Validation waypoints (bounding box, max 10, timeout) | déjà fait | `CARTE.md §3.2` | ✅ |
 | 12 | Limite de taille upload image (8 MB, 40 Mpixels) | `d9e2539` | hors `securite.md` | ✅ |
 | 13 | Logs des évènements sensibles (login, rate limit, OAuth) | `4a8751d` | hors `securite.md` | ✅ |
+| 14 | Protection CSRF sur les routes POST | `9fa38c0` | hors `securite.md` | ✅ |
 
-**12/13 fixes techniques appliqués.** Reste 1 action manuelle : changer `ADMIN_PASSWORD` dans `.env` (voir "Statut final" en bas).
+**13/14 fixes techniques appliqués.** Reste 1 action manuelle : changer `ADMIN_PASSWORD` dans `.env` (voir "Statut final" en bas).
 
 ---
 
@@ -236,6 +237,35 @@ WARNING security oauth_state_mismatch ip=testclient
 ```
 
 **Diff net** : 3 fichiers, +30 lignes.
+
+---
+
+### Fix #14 — Protection CSRF sur les routes POST (commit `9fa38c0`)
+
+**Contexte** : hors `securite.md`. Sans CSRF, un site tiers pouvait forcer le navigateur d'un admin connecté à envoyer une requête POST vers `/admin/*` avec ses cookies de session, causant des actions non voulues (suppression de voiture, changement de statut...).
+
+**Approche** : implémentation maison, pas de dépendance externe (~40 lignes).
+
+**Nouveaux fichiers** :
+- `app/csrf.py` :
+  - `get_or_create_csrf_token(request)` : génère un token `secrets.token_urlsafe(32)` en session s'il n'existe pas.
+  - `csrf_input(request)` : helper Jinja qui produit `<input type="hidden" name="csrf_token" value="...">`.
+  - `require_csrf(request)` : dependency FastAPI qui skip les méthodes safe (GET/HEAD/OPTIONS), puis vérifie le champ `csrf_token` du form OU l'en-tête `X-CSRF-Token` (HTMX). `compare_digest` pour éviter timing attack.
+- `app/templating.py` : `Jinja2Templates` centralisé avec les globals `csrf_input` et `csrf_token` enregistrés une seule fois (évite la duplication dans les 4 routers).
+
+**Application** :
+- `POST /admin/login` : dependency `require_csrf` + `{{ csrf_input(request) }}` dans `login.html`.
+- `POST /voitures/{id}/reserver` : dependency + input dans `voiture_detail.html`.
+- Tous les `POST /admin/*` (cars, rentals) : dependency posée sur le router. Pour HTMX, `hx-headers='{"X-CSRF-Token": "{{ csrf_token(request) }}"}'` sur `<body>` de `base_admin.html` → toutes les requêtes HTMX admin l'héritent automatiquement, sans toucher chaque `hx-post` individuel.
+
+**Résultat** (testé via `TestClient`, 5 scénarios) :
+- POST /admin/login sans token → `403` ✅
+- POST /admin/login avec token valide → `200` ✅
+- POST /admin/login avec token pourri → `403` ✅
+- POST /voitures/1/reserver sans token → `403` ✅
+- GET /admin/login pose bien un token en session ✅
+
+**Diff net** : 9 fichiers, +66 / −11 lignes.
 
 ---
 
