@@ -18,8 +18,9 @@ Historique des fixes appliqués sur les vulnérabilités identifiées dans `secu
 | 10 | Rate limit sur `/reserver` (10/h) et `/auth/google` (20/h) | `4bb4061` | hors `securite.md` | ✅ |
 | 11 | Validation waypoints (bounding box, max 10, timeout) | déjà fait | `CARTE.md §3.2` | ✅ |
 | 12 | Limite de taille upload image (8 MB, 40 Mpixels) | `d9e2539` | hors `securite.md` | ✅ |
+| 13 | Logs des évènements sensibles (login, rate limit, OAuth) | `4a8751d` | hors `securite.md` | ✅ |
 
-**11/12 fixes techniques appliqués.** Reste 1 action manuelle : changer `ADMIN_PASSWORD` dans `.env` (voir "Statut final" en bas).
+**12/13 fixes techniques appliqués.** Reste 1 action manuelle : changer `ADMIN_PASSWORD` dans `.env` (voir "Statut final" en bas).
 
 ---
 
@@ -209,6 +210,32 @@ Preuves :
 - `add_voiture_images` : passe par le lecteur borné, skip silencieux si trop gros (comme pour les non-images).
 
 **Diff net** : 1 fichier, +15 / −1 lignes.
+
+---
+
+### Fix #13 — Logs des évènements sensibles (commit `4a8751d`)
+
+**Contexte** : hors `securite.md`. Sans logs, impossible de détecter une attaque en cours ni d'auditer après coup qui s'est connecté.
+
+**Changements** :
+- `app/main.py` : `logging.basicConfig(level=INFO, format=...)` — aucun handler n'était configuré avant, les warnings partaient nulle part.
+- `app/routers/admin_auth.py` :
+  - Logger `security` créé.
+  - Helper `_client_ip(request)` qui gère `X-Forwarded-For` (pour le futur proxy en prod).
+  - Log `admin_login_success` (INFO) et `admin_login_failure` (WARNING) avec `user=` et `ip=`.
+  - Log `rate_limit_exceeded` (WARNING) avec `path=` et `ip=` dans le handler d'erreur.
+- `app/routers/auth.py` :
+  - Log `oauth_state_mismatch` (WARNING) → détecte les tentatives CSRF sur le callback Google.
+  - Log `oauth_email_not_verified` (WARNING) → détecte les tentatives d'inscription avec email non vérifié.
+
+**Résultat** (testé via `TestClient`) :
+```
+WARNING security admin_login_failure user=attacker ip=testclient
+WARNING security admin_login_failure user=tafita ip=testclient
+WARNING security oauth_state_mismatch ip=testclient
+```
+
+**Diff net** : 3 fichiers, +30 lignes.
 
 ---
 
