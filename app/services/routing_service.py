@@ -1,9 +1,11 @@
 import math
 import uuid
 import time
+from datetime import date
 from typing import Optional, List, Tuple
 
 import httpx
+from fastapi import Request
 
 
 MADAGASCAR_LAT = (-25.7, -11.9)
@@ -11,12 +13,27 @@ MADAGASCAR_LON = (43.2, 50.5)
 MAX_WAYPOINTS = 10
 TOKEN_TTL_SECONDS = 15 * 60
 HTTP_TIMEOUT = 5.0
+QUOTA_ANON_PAR_JOUR = 7
 
 _cache_tokens: dict[str, dict] = {}
 
 
 class RoutingError(Exception):
     pass
+
+
+def verifier_quota(request: Request) -> bool:
+    if request.session.get("user_id"):
+        return True
+    today = str(date.today())
+    if request.session.get("itinerary_date") != today:
+        request.session["itinerary_date"] = today
+        request.session["itinerary_count"] = 0
+    count = request.session.get("itinerary_count", 0)
+    if count >= QUOTA_ANON_PAR_JOUR:
+        return False
+    request.session["itinerary_count"] = count + 1
+    return True
 
 
 def _valider_waypoints(waypoints: List[Tuple[float, float]]) -> None:

@@ -3,7 +3,6 @@ from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse,
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import ValidationError
 import datetime
-from datetime import date
 
 from app.csrf import require_csrf
 from app.database import get_db
@@ -75,17 +74,7 @@ async def voiture_itineraire(request: Request, voiture_id: int, db: AsyncSession
 @router.post("/voitures/{voiture_id}/itineraire/quota")
 async def itineraire_quota(request: Request, voiture_id: int):
     from fastapi.responses import JSONResponse
-    if request.session.get("user_id"):
-        return JSONResponse({"allowed": True})
-    today = str(date.today())
-    if request.session.get("itinerary_date") != today:
-        request.session["itinerary_date"] = today
-        request.session["itinerary_count"] = 0
-    count = request.session.get("itinerary_count", 0)
-    if count >= 7:
-        return JSONResponse({"allowed": False})
-    request.session["itinerary_count"] = count + 1
-    return JSONResponse({"allowed": True})
+    return JSONResponse({"allowed": routing_service.verifier_quota(request)})
 
 
 @router.post("/voitures/{voiture_id}/reserver", response_class=HTMLResponse)

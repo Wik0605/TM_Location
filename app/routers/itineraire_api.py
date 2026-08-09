@@ -1,6 +1,3 @@
-from datetime import date
-from typing import List
-
 from fastapi import APIRouter, Request, HTTPException
 from pydantic import BaseModel, Field, conlist
 
@@ -19,27 +16,13 @@ class WaypointsPayload(BaseModel):
     ) = Field(..., description="Liste de [lat, lon]")
 
 
-def _verifier_quota(request: Request) -> bool:
-    if request.session.get("user_id"):
-        return True
-    today = str(date.today())
-    if request.session.get("itinerary_date") != today:
-        request.session["itinerary_date"] = today
-        request.session["itinerary_count"] = 0
-    count = request.session.get("itinerary_count", 0)
-    if count >= 7:
-        return False
-    request.session["itinerary_count"] = count + 1
-    return True
-
-
 @router.post("/voitures/{voiture_id}/itineraire/calculer")
 async def calculer_itineraire(
     voiture_id: int,
     payload: WaypointsPayload,
     request: Request,
 ):
-    if not _verifier_quota(request):
+    if not routing_service.verifier_quota(request):
         raise HTTPException(status_code=429, detail="Quota journalier atteint.")
 
     waypoints = [(lat, lon) for lat, lon in payload.waypoints]
