@@ -34,10 +34,6 @@ export function initMap() {
     });
     new LocateControl().addTo(map);
 
-    const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        maxZoom: 19,
-    });
     const esriImagery = L.tileLayer(
         'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
         {
@@ -56,14 +52,7 @@ export function initMap() {
         }
     );
     const satelliteLayer = L.layerGroup([esriImagery, osmLabels]);
-    osmLayer.addTo(map);
-
-    L.control
-        .layers({ Plan: osmLayer, Satellite: satelliteLayer }, null, {
-            position: 'topright',
-            collapsed: false,
-        })
-        .addTo(map);
+    satelliteLayer.addTo(map);
 
     state.map = map;
     state.markersLayer = L.layerGroup().addTo(map);
