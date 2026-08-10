@@ -12,6 +12,7 @@ export function initMap() {
             duration: 1000,
         },
         zoomControl: false,
+        attributionControl: false,
         tap: true,
         tapTolerance: 15,
     }).setView([-18.91, 47.52], 15);
