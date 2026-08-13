@@ -1,0 +1,139 @@
+## Étape 1 — Comprendre en local (1 semaine)
+
+ - Installer PostgreSQL + PostGIS sur ton Mac
+ - Télécharger madagascar-latest.osm.pbf
+ - Extraire Tana avec osmium extract --bbox
+ 47.4,-19.0,47.6,-18.8
+ - Importer avec osm2pgsql
+ - Faire des requêtes SQL : "combien de restaurants dans Tana
+ ?" (SELECT count(*) FROM planet_osm_point WHERE
+ amenity='restaurant')
+ - But : sentir la donnée dans tes doigts.
+
+ Étape 2 — Générer des tuiles en local (1 semaine)
+ - Installer tilemaker
+ - Générer un .pmtiles de Tana
+ - Ouvrir avec https://pmtiles.io pour visualiser
+ - Modifier un style MapLibre pour changer les couleurs
+ - But : comprendre le pipeline PBF → tuiles → rendu.
+
+ Étape 3 — Louer un VPS et servir (1 semaine)
+ - VPS Hetzner CX22
+ - Nginx + fichier .pmtiles + certificat Let's Encrypt
+ - Charger dans un HTML de test avec MapLibre
+ - But : servir tes propres tuiles sur un vrai domaine.
+
+ Étape 4 — Intégrer à TM_Location (2 semaines)
+ - Migrer Leaflet → MapLibre dans static/js/itineraire/map.js
+ - Remplacer les URL Esri par ton domaine
+ - Garder Esri en fallback pendant 3 mois
+ - But : mettre en prod sans casser l'app.
+
+ Étape 5 — Ajouter les POI métier (ouvert)
+ - Table business_places
+ - Endpoint FastAPI /api/pois?bbox=...
+ - Interface admin pour ajouter/modifier
+ - But : la valeur ajoutée que personne d'autre n'aura.
+
+ ---
+ 6. Ressources à lire (ordre pédagogique)
+
+ 1. Switch2OSM — https://switch2osm.org/ — Le tutoriel de
+ référence, écrit par les gens qui font OSM
+ 2. Tilemaker — https://github.com/systemed/tilemaker — Lire
+ le README
+ 3. MapLibre — https://maplibre.org/maplibre-gl-js/docs/ — Le
+ remplaçant open-source de Mapbox
+ 4. PMTiles — https://protomaps.com/docs/pmtiles — Format de
+ tuiles moderne
+ 5. Geofabrik —
+ https://download.geofabrik.de/africa/madagascar.html — Ta
+ source de données
+
+ Un seul livre si tu veux : "OpenStreetMap: Using and
+ Enhancing the Free Map of the World" (Ramm, gratuit en PDF).
+
+ ---
+ 7. Ce que ce plan ne fait pas
+
+ - Il ne modifie aucun fichier de l'app
+ - Il ne propose pas de code à copier
+ - Il n'engage pas de dépense
+ - Il ne remplace pas le doc Recherche_migration.md (qui reste
+  valide pour la recherche /api/search)
+
+ Quand tu voudras passer à l'action, on écrira un vrai plan
+ d'implémentation, étape par étape, avec le code adapté à
+ TM_Location.
+
+ ---
+ 8. Question à te poser avant d'aller plus loin
+
+ - Est-ce urgent ? Non. Tant que Esri et Photon tiennent,
+ l'app fonctionne.
+ - Combien d'utilisateurs actifs ? En-dessous de 500/mois, ce
+ n'est pas rentable en temps.
+ - Quel gain réel ? Le vrai gain = les POI métier. Le fond de
+ carte, c'est du confort.
+     │ Étape 4 — Intégrer à TM_Location (2 semaines)          │
+     │ - Migrer Leaflet → MapLibre dans                       │
+     │ static/js/itineraire/map.js                            │
+     │ - Remplacer les URL Esri par ton domaine               │
+     │ - Garder Esri en fallback pendant 3 mois               │
+     │ - But : mettre en prod sans casser l'app.              │
+     │                                                        │
+     │ Étape 5 — Ajouter les POI métier (ouvert)              │
+     │ - Table business_places                                │
+     │ - Endpoint FastAPI /api/pois?bbox=...                  │
+     │ - Interface admin pour ajouter/modifier                │
+     │ - But : la valeur ajoutée que personne d'autre n'aura. │
+     │                                                        │
+     │ ---                                                    │
+     │ 6. Ressources à lire (ordre pédagogique)               │
+     │                                                        │
+     │ 1. Switch2OSM — https://switch2osm.org/ — Le tutoriel  │
+     │ de référence, écrit par les gens qui font OSM          │
+     │ 2. Tilemaker — https://github.com/systemed/tilemaker — │
+     │  Lire le README                                        │
+     │ 3. MapLibre —                                          │
+     │ https://maplibre.org/maplibre-gl-js/docs/ — Le         │
+     │ remplaçant open-source de Mapbox                       │
+     │ 4. PMTiles — https://protomaps.com/docs/pmtiles —      │
+     │ Format de tuiles moderne                               │
+     │ 5. Geofabrik —                                         │
+     │ https://download.geofabrik.de/africa/madagascar.html — │
+     │  Ta source de données                                  │
+     │                                                        │
+     │ Un seul livre si tu veux : "OpenStreetMap: Using and   │
+     │ Enhancing the Free Map of the World" (Ramm, gratuit en │
+     │  PDF).                                                 │
+     │                                                        │
+     │ ---                                                    │
+     │ 7. Ce que ce plan ne fait pas                          │
+     │                                                        │
+     │ - Il ne modifie aucun fichier de l'app                 │
+     │ - Il ne propose pas de code à copier                   │
+     │ - Il n'engage pas de dépense                           │
+     │ - Il ne remplace pas le doc Recherche_migration.md     │
+     │ (qui reste valide pour la recherche /api/search)       │
+     │                                                        │
+     │ Quand tu voudras passer à l'action, on écrira un vrai  │
+     │ plan d'implémentation, étape par étape, avec le code   │
+     │ adapté à TM_Location.                                  │
+     │                                                        │
+     │ ---                                                    │
+     │ 8. Question à te poser avant d'aller plus loin         │
+     │                                                        │
+     │ - Est-ce urgent ? Non. Tant que Esri et Photon         │
+     │ tiennent, l'app fonctionne.                            │
+     │ - Combien d'utilisateurs actifs ? En-dessous de        │
+     │ 500/mois, ce n'est pas rentable en temps.              │
+     │ - Quel gain réel ? Le vrai gain = les POI métier. Le   │
+     │ fond de carte, c'est du confort.                       │
+     │                                                        │
+     │ Recommandation personnelle : fais d'abord la migration │
+     │  recherche (Recherche_migration.md), tu apprendras 80  │
+     │ % du stack (PostGIS, osm2pgsql, PBF) sans avoir besoin │
+     │  de louer un VPS. Le tile-server viendra naturellement │
+     │  après.                                                │
+     ╰────────────────────────────────────────────────────────╯
