@@ -52,8 +52,9 @@ export function initMap() {
             pane: 'shadowPane',
         }
     );
-    const satelliteLayer = L.layerGroup([esriImagery, osmLabels]);
-    satelliteLayer.addTo(map);
+
+    esriImagery.addTo(map);
+    osmLabels.addTo(map);
 
     state.map = map;
     state.markersLayer = L.layerGroup().addTo(map);
