@@ -78,7 +78,6 @@ function showResults(distanceKm, isFallback) {
             : 'Location';
     if (costEl) costEl.textContent = `${Math.round(locationCost).toLocaleString('fr-FR')} Ar`;
 
-    document.getElementById('res-distance').textContent = distanceKm.toFixed(1);
     document.getElementById('res-fuel-cost').textContent = Math.round(fuelCost).toLocaleString('fr-FR');
     document.getElementById('res-total-cost').textContent = Math.round(total).toLocaleString('fr-FR');
     const fallbackNote = document.querySelector('#results-card .fallback-note');
