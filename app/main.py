@@ -37,6 +37,8 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s %(name)s %(message)s",
 )
 
+logger = logging.getLogger(__name__)
+
 STATIC_DIR = Path(__file__).parent.parent / "static"
 
 STATIC_CACHE_MAX_AGE = 60 * 60 * 24 * 7  # 7 jours
@@ -80,12 +82,12 @@ async def lifespan(app: FastAPI):
     'async with' et 'yield' : tout ce qui est AVANT yield s'exécute au démarrage,
     tout ce qui est APRÈS yield s'exécute à l'arrêt.
     """
-    print("Démarrage de TM_Location...")
+    logger.info("Démarrage de TM_Location...")
     await init_db()
     await seed_initial_data()
-    print("Application prête !")
+    logger.info("Application prête !")
     yield
-    print("Arrêt de TM_Location...")
+    logger.info("Arrêt de TM_Location...")
     await engine.dispose()
 
 
@@ -98,11 +100,11 @@ async def seed_initial_data():
     async with AsyncSessionLocal() as session:
         existing = await session.execute(select(City))
         if not existing.scalars().first():
-            print("Insertion des villes initiales...")
+            logger.info("Insertion des villes initiales...")
             for city_data in get_initial_cities():
                 session.add(City(**city_data))
             await session.commit()
-            print("Villes insérées !")
+            logger.info("Villes insérées !")
 
 
 app = FastAPI(

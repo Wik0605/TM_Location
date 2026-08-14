@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     admin_password: str = "admin"
     google_client_id: str = ""
     google_client_secret: str = ""
+    google_redirect_uri: str = "http://localhost:8000/auth/google/callback"
     environment: str = "development"
     allowed_origins: str = "http://localhost:8000,http://127.0.0.1:8000"
 

@@ -19,7 +19,6 @@ security_logger = logging.getLogger("security")
 GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
 GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
-REDIRECT_URI = "http://localhost:8000/auth/google/callback"
 SCOPES = "openid email profile"
 HTTP_TIMEOUT = 10.0
 
@@ -41,7 +40,7 @@ async def google_login(request: Request):
 
     params = urlencode({
         "client_id": settings.google_client_id,
-        "redirect_uri": REDIRECT_URI,
+        "redirect_uri": settings.google_redirect_uri,
         "response_type": "code",
         "scope": SCOPES,
         "access_type": "offline",
@@ -67,7 +66,7 @@ async def google_callback(request: Request, code: str = "", state: str = ""):
                 "code": code,
                 "client_id": settings.google_client_id,
                 "client_secret": settings.google_client_secret,
-                "redirect_uri": REDIRECT_URI,
+                "redirect_uri": settings.google_redirect_uri,
                 "grant_type": "authorization_code",
             })
             token_response.raise_for_status()
