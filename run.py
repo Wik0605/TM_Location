@@ -1,22 +1,19 @@
 """
-Point d'entrée de l'application
+Point d'entree de developpement local.
 
-Ce script lance le serveur de développement Uvicorn.
-
-Pourquoi un fichier run.py séparé ?
-- Plus facile à lancer : python run.py
-- Configuration centralisée
-- Peut ajouter des options (debug, reload, etc.)
-
-Pour lancer en production, utiliser plutôt :
-    uvicorn app.main:app --host 0.0.0.0 --port 8000
-
-Pour le développement avec rechargement automatique :
-    python run.py
-
-Ou directement :
-    uvicorn app.main:app --reload
+Charge .env.dev si present (bac a sable local), sinon .env par defaut.
+En production, Railway fournit ses propres variables d'environnement.
 """
+
+from pathlib import Path
+from dotenv import load_dotenv
+
+_ROOT = Path(__file__).parent
+_DEV_ENV = _ROOT / ".env.dev"
+
+if _DEV_ENV.exists():
+    load_dotenv(_DEV_ENV, override=True)
+    print(f"[dev] variables chargees depuis {_DEV_ENV.name}")
 
 import uvicorn
 from app.main import app
