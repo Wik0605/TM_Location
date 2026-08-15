@@ -293,3 +293,16 @@ class RentalStatusForm(BaseModel):
     @classmethod
     def as_form(cls, status: str = Form(...)) -> "RentalStatusForm":
         return cls(status=status)
+
+
+class RentalDeleteForm(BaseModel):
+    username: str
+    password: str
+
+    @classmethod
+    def as_form(
+        cls,
+        username: str = Form(...),
+        password: str = Form(...),
+    ) -> "RentalDeleteForm":
+        return cls(username=username, password=password)

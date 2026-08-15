@@ -3,6 +3,62 @@
 
 {% block title %}Réservations{% endblock %}
 
+{% macro rental_row(rental) %}
+<tr id="rental-{{ rental.id }}" class="hover:bg-gray-50 transition-colors">
+    <td class="px-4 py-4 text-gray-400 text-sm">#{{ rental.id }}</td>
+    <td class="px-4 py-4">
+        <p class="font-semibold text-gray-900 text-sm">{{ rental.client_nom }}</p>
+        <p class="text-xs text-gray-400">{{ rental.client_telephone }}</p>
+    </td>
+    <td class="px-4 py-4 text-sm text-gray-700">
+        {% if rental.voiture %}{{ rental.voiture.marque }} {{ rental.voiture.modele }}{% else %}—{% endif %}
+    </td>
+    <td class="px-4 py-4 text-sm text-gray-600">
+        {% if rental.type_location %}{{ rental.type_location.nom }}{% else %}—{% endif %}
+    </td>
+    <td class="px-4 py-4 text-sm text-gray-600">
+        {{ rental.date_debut.strftime("%d/%m/%Y") }}
+    </td>
+    <td class="px-4 py-4 text-sm">
+        {% if rental.itineraire_distance_km %}
+        <div class="text-xs space-y-0.5">
+            <p class="font-semibold text-indigo-700">📍 {{ "%.1f"|format(rental.itineraire_distance_km) }} km</p>
+            {% if rental.itineraire_depart %}<p class="text-gray-500">🟢 {{ rental.itineraire_depart }}</p>{% endif %}
+            {% if rental.itineraire_arrivee %}<p class="text-gray-500">🔴 {{ rental.itineraire_arrivee }}</p>{% endif %}
+        </div>
+        {% else %}
+        <span class="text-gray-300 text-xs">—</span>
+        {% endif %}
+    </td>
+    <td class="px-4 py-4">
+        <form hx-post="/admin/reservations/{{ rental.id }}/status"
+              hx-target="#rental-{{ rental.id }}"
+              hx-swap="outerHTML">
+            <select name="status" onchange="this.form.requestSubmit()"
+                class="text-xs border border-gray-200 rounded-lg px-2 py-1.5 font-medium cursor-pointer
+                    {% if rental.statut == 'confirmée' %}bg-blue-50 text-blue-700
+                    {% elif rental.statut == 'en_cours' %}bg-emerald-50 text-emerald-700
+                    {% elif rental.statut == 'terminée' %}bg-gray-50 text-gray-600
+                    {% else %}bg-red-50 text-red-600{% endif %}">
+                <option value="confirmée" {% if rental.statut == 'confirmée' %}selected{% endif %}>Confirmée</option>
+                <option value="en_cours" {% if rental.statut == 'en_cours' %}selected{% endif %}>En cours</option>
+                <option value="terminée" {% if rental.statut == 'terminée' %}selected{% endif %}>Terminée</option>
+                <option value="annulée" {% if rental.statut == 'annulée' %}selected{% endif %}>Annulée</option>
+            </select>
+        </form>
+    </td>
+    <td class="px-4 py-4 text-right text-sm font-bold text-gray-800">{{ "{:,.0f}".format(rental.prix_total) }} Ar</td>
+    <td class="px-4 py-4 text-center">
+        <button type="button"
+                class="js-delete-rental inline-flex items-center px-3 py-1.5 text-xs font-bold text-red-600 bg-red-800 hover:bg-red-700 rounded-lg shadow-sm transition-colors"
+                data-rental-id="{{ rental.id }}"
+                data-rental-nom="{{ rental.client_nom }}">
+            Supprimer
+        </button>
+    </td>
+</tr>
+{% endmacro %}
+
 {% block content %}
 <h1 class="text-2xl font-bold text-gray-900 mb-8">Réservations</h1>
 
@@ -18,15 +74,87 @@
                 <th class="px-4 py-3 text-left">Plan de voyage</th>
                 <th class="px-4 py-3 text-left">Statut</th>
                 <th class="px-4 py-3 text-right">Total</th>
+                <th class="px-4 py-3 text-center">Actions</th>
             </tr>
         </thead>
         <tbody class="divide-y divide-gray-50">
             {% for rental in rentals %}
-                {% include "admin/partials/_rental_row.html" %}
+                {{ rental_row(rental) }}
             {% else %}
-            <tr><td colspan="8" class="px-6 py-10 text-center text-gray-400">Aucune réservation pour le moment</td></tr>
+            <tr><td colspan="9" class="px-6 py-10 text-center text-gray-400">Aucune réservation pour le moment</td></tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
+
+<div id="delete-modal" class="fixed inset-0 bg-black/50 hidden z-50 items-center justify-center p-4">
+    <div class="bg-white rounded-xl w-full max-w-md p-6 shadow-xl">
+        <h2 class="text-lg font-bold text-gray-900 mb-1">Supprimer la réservation</h2>
+        <p class="text-sm text-gray-500 mb-4" id="delete-modal-subtitle"></p>
+        <div id="delete-modal-body"></div>
+    </div>
+</div>
+
+<script>
+    function ouvrirSuppression(id, nom) {
+        document.getElementById('delete-modal-subtitle').textContent =
+            'Client : ' + nom + '. Confirmez avec vos identifiants admin.';
+        const modal = document.getElementById('delete-modal');
+        const body = document.getElementById('delete-modal-body');
+        body.innerHTML = document.getElementById('delete-modal-template').innerHTML
+            .replaceAll('__ID__', id);
+        htmx.process(body);
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+    function fermerSuppression() {
+        const modal = document.getElementById('delete-modal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+    document.body.addEventListener('click', function (evt) {
+        const btn = evt.target.closest('.js-delete-rental');
+        if (!btn) return;
+        ouvrirSuppression(btn.dataset.rentalId, btn.dataset.rentalNom || '');
+    });
+    document.body.addEventListener('rentalDeleted', function (evt) {
+        const id = evt.detail.value;
+        const row = document.getElementById('rental-' + id);
+        if (row) row.remove();
+        fermerSuppression();
+    });
+    document.body.addEventListener('htmx:responseError', function (evt) {
+        const err = document.getElementById('delete-modal-error');
+        if (!err) return;
+        const status = evt.detail.xhr.status;
+        let msg = 'Erreur ' + status + '. Réessayez.';
+        if (status === 429) msg = 'Trop de tentatives. Réessayez dans quelques minutes.';
+        else if (status === 403) msg = 'Session expirée. Reconnectez-vous.';
+        err.innerHTML = '<div class="px-3 py-2 mb-3 rounded-lg bg-red-50 text-red-700 text-sm">' + msg + '</div>';
+    });
+</script>
+
+<template id="delete-modal-template">
+    <form hx-post="/admin/reservations/__ID__/delete"
+          hx-target="#delete-modal-error"
+          hx-swap="innerHTML">
+        <div id="delete-modal-error"></div>
+        <label class="block text-xs font-medium text-gray-600 mb-1">Nom d'utilisateur</label>
+        <input type="text" name="username" required autocomplete="off"
+               class="w-full mb-3 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
+        <label class="block text-xs font-medium text-gray-600 mb-1">Mot de passe</label>
+        <input type="password" name="password" required autocomplete="off"
+               class="w-full mb-4 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
+        <div class="flex flex-col-reverse sm:flex-row justify-end items-stretch sm:items-center gap-3 mt-2">
+            <button type="button" onclick="fermerSuppression()"
+                    class="px-5 py-3 text-sm font-medium text-black-700 bg-white-100 hover:bg-gray-200 rounded-lg transition-colors">
+                Annuler
+            </button>
+            <button type="submit"
+                    class="px-5 py-3 text-sm font-medium text-red-700 bg-red-100 hover:bg-gray-200 rounded-lg transition-colors">
+                Supprimer définitivement
+            </button>
+        </div>
+    </form>
+</template>
 {% endblock %}

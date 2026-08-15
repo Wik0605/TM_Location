@@ -1,12 +1,16 @@
+import secrets
+
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import HTMLResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import settings
 from app.csrf import require_csrf
 from app.database import get_db
+from app.limiter import limiter
 from app.services import admin_service
-from app.routers.admin_auth import require_admin
-from app.schemas import RentalStatusForm
+from app.routers.admin_auth import require_admin, _client_ip, security_logger
+from app.schemas import RentalStatusForm, RentalDeleteForm
 from app.templating import templates
 
 router = APIRouter(
@@ -44,7 +48,36 @@ async def update_location_status(
     db: AsyncSession = Depends(get_db),
 ):
     loc = await admin_service.update_location_statut(db, location_id, form.status.value)
-    return templates.TemplateResponse("admin/partials/_rental_row.html", {
-        "request": request,
-        "rental": loc,
-    })
+    template = templates.env.get_template("admin/reservations.html")
+    return HTMLResponse(template.module.rental_row(loc))
+
+
+@router.post("/reservations/{location_id}/delete", response_class=HTMLResponse)
+@limiter.limit("3/15minutes")
+async def delete_reservation(
+    request: Request,
+    location_id: int,
+    form: RentalDeleteForm = Depends(RentalDeleteForm.as_form),
+    db: AsyncSession = Depends(get_db),
+):
+    ip = _client_ip(request)
+    ok_user = secrets.compare_digest(form.username, settings.admin_username)
+    ok_pass = secrets.compare_digest(form.password, settings.admin_password)
+    if not (ok_user and ok_pass):
+        security_logger.warning(
+            "admin_delete_failure location=%s user=%s ip=%s",
+            location_id, form.username, ip,
+        )
+        return HTMLResponse(
+            '<div class="px-3 py-2 mb-3 rounded-lg bg-red-50 text-red-700 text-sm">'
+            'Identifiants incorrects.</div>'
+        )
+
+    await admin_service.delete_location(db, location_id)
+    security_logger.info(
+        "admin_delete_success location=%s user=%s ip=%s",
+        location_id, form.username, ip,
+    )
+    response = HTMLResponse("")
+    response.headers["HX-Trigger"] = f'{{"rentalDeleted": {location_id}}}'
+    return response

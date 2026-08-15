@@ -114,6 +114,16 @@ async def update_location_statut(db: AsyncSession, location_id: int, statut: str
     return loc
 
 
+async def delete_location(db: AsyncSession, location_id: int) -> bool:
+    result = await db.execute(select(Location).where(Location.id == location_id))
+    loc = result.scalar_one_or_none()
+    if not loc:
+        return False
+    await db.delete(loc)
+    await db.commit()
+    return True
+
+
 async def get_dashboard_stats(db: AsyncSession) -> dict:
     total_locations = (await db.execute(select(func.count(Location.id)))).scalar() or 0
     total_voitures = (await db.execute(select(func.count(Voiture.id)))).scalar() or 0
