@@ -34,24 +34,17 @@
             <div class="grid grid-cols-2 gap-3">
                 <label class="block">
                     <span class="block text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)] mb-1">Départ</span>
-                    <input type="date" name="depart"
+                    <input type="date" name="depart" value="{{ depart }}"
                            class="w-full text-sm font-semibold text-ink bg-transparent border-0 border-b border-[color:var(--color-border-strong)] focus:border-primary focus:ring-0 pb-1 px-0">
                 </label>
                 <label class="block">
                     <span class="block text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)] mb-1">Retour</span>
-                    <input type="date" name="retour"
+                    <input type="date" name="retour" value="{{ retour }}"
                            class="w-full text-sm font-semibold text-ink bg-transparent border-0 border-b border-[color:var(--color-border-strong)] focus:border-primary focus:ring-0 pb-1 px-0">
                 </label>
             </div>
-            <label class="block">
-                <span class="block text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)] mb-1">Type de véhicule</span>
-                <select name="type"
-                        class="w-full text-sm font-semibold text-ink bg-transparent border-0 border-b border-[color:var(--color-border-strong)] focus:border-primary focus:ring-0 pb-1 px-0">
-                    <option value="">Tous les véhicules</option>
-                    <option value="suv">SUV / 4x4</option>
-                    <option value="citadine">Citadine</option>
-                    <option value="pickup">Pick-up</option>
-                </select>
+           
+                
             </label>
             <button type="submit"
                     class="w-full bg-primary hover:bg-primary-dark text-white font-bold text-sm py-3.5 rounded-2xl uppercase tracking-widest transition-all shadow-lg">
@@ -65,20 +58,21 @@
 <section class="px-5 pt-10 max-w-md mx-auto">
     <div class="flex items-baseline justify-between mb-5">
         <h2 class="font-display text-xl font-black text-ink tracking-tight">
-            Nos véhicules vedettes
+            Nos véhicules 
         </h2>
         <a href="/voitures" class="text-[11px] font-bold uppercase tracking-widest text-primary hover:text-primary-dark">
             Voir tout →
         </a>
     </div>
 
-    {% if voitures %}
+    {% if voitures_dispo %}
+    {% set query_dates = ('?depart=' ~ depart ~ '&retour=' ~ retour) if depart else '' %}
     <div class="space-y-4">
-        {% for voiture in voitures %}
+        {% for voiture, is_available in voitures_dispo %}
         {% set first_photo = voiture.images[0].url if voiture.images else None %}
         {% set prix_min = voiture.types_location | map(attribute='prix') | min if voiture.types_location else None %}
-        <a href="/voitures/{{ voiture.id }}"
-           class="block bg-white rounded-3xl overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_28px_rgba(0,0,0,0.10)] hover:-translate-y-1 transition-all border border-[color:var(--color-border)]">
+        <a href="/voitures/{{ voiture.id }}{{ query_dates }}"
+           class="block bg-white rounded-3xl overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_28px_rgba(0,0,0,0.10)] hover:-translate-y-1 transition-all border border-[color:var(--color-border)] {% if not is_available %}opacity-70{% endif %}">
 
             <!-- Image + badges -->
             <div class="relative h-[120px] bg-[color:var(--color-primary-tint)] overflow-hidden">
@@ -91,9 +85,15 @@
                 </div>
                 {% endif %}
 
+                {% if is_available %}
                 <span class="absolute top-3 left-3 bg-success text-white text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full">
                     Disponible
                 </span>
+                {% else %}
+                <span class="absolute top-3 left-3 bg-red-600 text-white text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full">
+                    Non disponible
+                </span>
+                {% endif %}
                 <span class="absolute top-3 right-3 bg-ink text-white text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full">
                     {{ voiture.places }} places
                 </span>

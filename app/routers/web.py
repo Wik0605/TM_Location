@@ -29,21 +29,42 @@ def _traduire_erreur(exc: ValidationError) -> str:
     return "Erreur de saisie, veuillez vérifier les informations du formulaire."
 
 
+def _parse_date(value: str | None) -> datetime.date | None:
+    if not value:
+        return None
+    try:
+        return datetime.date.fromisoformat(value)
+    except ValueError:
+        return None
+
+
 @router.get("/", response_class=HTMLResponse)
 async def home(request: Request, db: AsyncSession = Depends(get_db)):
-    voitures = await car_service.get_available_voitures(db, limit=6)
+    depart = _parse_date(request.query_params.get("depart"))
+    retour = _parse_date(request.query_params.get("retour"))
+    voitures_dispo = await car_service.get_voitures_avec_disponibilite(
+        db, depart, retour, limit=6
+    )
     return templates.TemplateResponse("index.html", {
         "request": request,
-        "voitures": voitures,
+        "voitures_dispo": voitures_dispo,
+        "depart": depart.isoformat() if depart else "",
+        "retour": retour.isoformat() if retour else "",
     })
 
 
 @router.get("/voitures", response_class=HTMLResponse)
 async def voitures_list(request: Request, db: AsyncSession = Depends(get_db)):
-    voitures = await car_service.get_available_voitures(db, order_by_marque=True)
+    depart = _parse_date(request.query_params.get("depart"))
+    retour = _parse_date(request.query_params.get("retour"))
+    voitures_dispo = await car_service.get_voitures_avec_disponibilite(
+        db, depart, retour, order_by_marque=True
+    )
     return templates.TemplateResponse("voitures.html", {
         "request": request,
-        "voitures": voitures,
+        "voitures_dispo": voitures_dispo,
+        "depart": depart.isoformat() if depart else "",
+        "retour": retour.isoformat() if retour else "",
     })
 
 
@@ -52,9 +73,13 @@ async def voiture_detail(request: Request, voiture_id: int, db: AsyncSession = D
     voiture = await car_service.get_voiture_by_id(db, voiture_id)
     if not voiture:
         return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
+    depart = _parse_date(request.query_params.get("depart"))
+    retour = _parse_date(request.query_params.get("retour"))
     return templates.TemplateResponse("voiture_detail.html", {
         "request": request,
         "voiture": voiture,
+        "depart": depart.isoformat() if depart else "",
+        "retour": retour.isoformat() if retour else "",
     })
 
 
@@ -96,6 +121,7 @@ async def voiture_reserver(
             client_telephone=form_data.get("client_telephone", ""),
             client_email=form_data.get("client_email") or None,
             date_debut=form_data.get("date_debut", ""),
+            date_fin=form_data.get("date_fin") or None,
             notes=form_data.get("notes") or None,
             itinerary_distance_km=None,
             itinerary_start_name=form_data.get("itinerary_start_name") or None,
@@ -108,6 +134,18 @@ async def voiture_reserver(
             "voiture": voiture,
             "error": _traduire_erreur(e),
         }, status_code=400)
+
+    disponible = await car_service.voiture_est_disponible(
+        db, voiture.id, form.date_debut, form.date_fin
+    )
+    if not disponible:
+        return templates.TemplateResponse("voiture_detail.html", {
+            "request": request,
+            "voiture": voiture,
+            "depart": form.date_debut.isoformat(),
+            "retour": form.date_fin.isoformat() if form.date_fin else "",
+            "erreur_disponibilite": True,
+        }, status_code=409)
 
     loc, type_location = await reservation_service.creer_reservation(
         db, voiture, form, form_data.get("itinerary_token")

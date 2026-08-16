@@ -1,9 +1,10 @@
+from datetime import date, datetime, time
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, and_
 from sqlalchemy.orm import selectinload
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
-from app.models import Voiture, TypeLocation
+from app.models import Voiture, TypeLocation, Location
 
 
 async def get_available_voitures(
@@ -24,6 +25,50 @@ async def get_available_voitures(
         query = query.limit(limit)
     result = await db.execute(query)
     return result.scalars().all()
+
+
+async def _ids_voitures_reservees(
+    db: AsyncSession, debut: datetime, fin: datetime
+) -> set[int]:
+    stmt = select(Location.voiture_id).where(
+        and_(
+            Location.statut != "annulée",
+            Location.date_debut <= fin,
+            Location.date_fin >= debut,
+        )
+    )
+    result = await db.execute(stmt)
+    return {row for row in result.scalars().all()}
+
+
+async def get_voitures_avec_disponibilite(
+    db: AsyncSession,
+    date_debut: Optional[date] = None,
+    date_fin: Optional[date] = None,
+    limit: Optional[int] = None,
+    order_by_marque: bool = False,
+) -> List[Tuple[Voiture, bool]]:
+    voitures = await get_available_voitures(db, limit=limit, order_by_marque=order_by_marque)
+    if not date_debut:
+        return [(v, True) for v in voitures]
+    fin = date_fin or date_debut
+    debut_dt = datetime.combine(date_debut, time.min)
+    fin_dt = datetime.combine(fin, time.max)
+    reserves = await _ids_voitures_reservees(db, debut_dt, fin_dt)
+    return [(v, v.id not in reserves) for v in voitures]
+
+
+async def voiture_est_disponible(
+    db: AsyncSession,
+    voiture_id: int,
+    date_debut: date,
+    date_fin: Optional[date] = None,
+) -> bool:
+    fin = date_fin or date_debut
+    debut_dt = datetime.combine(date_debut, time.min)
+    fin_dt = datetime.combine(fin, time.max)
+    reserves = await _ids_voitures_reservees(db, debut_dt, fin_dt)
+    return voiture_id not in reserves
 
 
 async def get_voiture_by_id(db: AsyncSession, voiture_id: int) -> Optional[Voiture]:

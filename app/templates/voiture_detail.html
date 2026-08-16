@@ -114,6 +114,12 @@
         </div>
         {% endif %}
 
+        {% if erreur_disponibilite %}
+        <div class="bg-red-50 border-l-4 border-red-600 text-red-700 px-3 py-3 text-xs rounded-lg mb-3 font-semibold">
+            🚫 Voiture non disponible à cette date. Merci de choisir d'autres dates.
+        </div>
+        {% endif %}
+
         <form action="/voitures/{{ voiture.id }}/reserver" method="POST" class="space-y-3" id="form-reserver">
             {{ csrf_input(request) }}
             <input type="hidden" name="type_location_id" id="hidden-type-location-id"
@@ -136,11 +142,18 @@
                     <input type="email" name="client_email" placeholder="jean@email.mg"
                            class="w-full text-sm text-ink bg-[color:var(--color-neutral-soft)] border-0 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-primary focus:bg-white transition-all">
                 </label>
-                <label class="block">
-                    <span class="block text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)] mb-1">Date souhaitée</span>
-                    <input type="date" name="date_debut" required
-                           class="w-full text-sm text-ink bg-[color:var(--color-neutral-soft)] border-0 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-primary focus:bg-white transition-all">
-                </label>
+                <div class="grid grid-cols-2 gap-3">
+                    <label class="block">
+                        <span class="block text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)] mb-1">Date départ</span>
+                        <input type="date" name="date_debut" required value="{{ depart or '' }}"
+                               class="w-full text-sm text-ink bg-[color:var(--color-neutral-soft)] border-0 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-primary focus:bg-white transition-all">
+                    </label>
+                    <label class="block">
+                        <span class="block text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)] mb-1">Date retour</span>
+                        <input type="date" name="date_fin" value="{{ retour or '' }}"
+                               class="w-full text-sm text-ink bg-[color:var(--color-neutral-soft)] border-0 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-primary focus:bg-white transition-all">
+                    </label>
+                </div>
             </div>
 
             <!-- CTA principal ambre : calculateur d'itinéraire -->

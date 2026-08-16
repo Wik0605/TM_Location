@@ -159,6 +159,7 @@ class LocationForm(BaseModel):
     client_telephone: str = Field(..., pattern=PHONE_REGEX)
     client_email: Optional[str] = Field(None, pattern=EMAIL_REGEX, max_length=200)
     date_debut: date
+    date_fin: Optional[date] = None
     notes: Optional[str] = Field(None, max_length=1000)
     itinerary_distance_km: Optional[float] = Field(None, ge=0, le=100000)
     itinerary_start_name: Optional[str] = Field(None, max_length=250)
@@ -170,6 +171,16 @@ class LocationForm(BaseModel):
     def _future_or_today(cls, v: date) -> date:
         if v < date.today():
             raise ValueError("La date de départ ne peut pas être dans le passé.")
+        return v
+
+    @field_validator("date_fin")
+    @classmethod
+    def _fin_apres_debut(cls, v, info):
+        if v is None:
+            return v
+        debut = info.data.get("date_debut")
+        if debut and v < debut:
+            raise ValueError("La date de retour doit être postérieure à la date de départ.")
         return v
 
     @field_validator("client_email", mode="before")
@@ -187,6 +198,7 @@ class LocationForm(BaseModel):
         client_telephone: str = Form(...),
         client_email: Optional[str] = Form(None),
         date_debut: str = Form(...),
+        date_fin: Optional[str] = Form(None),
         notes: Optional[str] = Form(None),
         itinerary_distance_km: Optional[float] = Form(None),
         itinerary_start_name: Optional[str] = Form(None),
@@ -199,6 +211,7 @@ class LocationForm(BaseModel):
             client_telephone=client_telephone,
             client_email=client_email,
             date_debut=date_debut,
+            date_fin=date_fin or None,
             notes=notes,
             itinerary_distance_km=itinerary_distance_km,
             itinerary_start_name=itinerary_start_name,

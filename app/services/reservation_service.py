@@ -33,6 +33,9 @@ async def creer_reservation(
         client_telephone=form.client_telephone,
         client_email=form.client_email,
         date_debut=datetime.datetime.combine(form.date_debut, datetime.time.min),
+        date_fin=datetime.datetime.combine(
+            form.date_fin or form.date_debut, datetime.time.max
+        ),
         prix_total=prix_total,
         statut="confirmée",
         notes=form.notes,

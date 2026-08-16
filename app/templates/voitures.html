@@ -34,13 +34,14 @@
     </div>
 
     <!-- Grille compacte cards -->
-    {% if voitures %}
+    {% if voitures_dispo %}
+    {% set query_dates = ('?depart=' ~ depart ~ '&retour=' ~ retour) if depart else '' %}
     <div class="grid grid-cols-2 gap-3">
-        {% for voiture in voitures %}
+        {% for voiture, is_available in voitures_dispo %}
         {% set first_photo = voiture.images[0].url if voiture.images else None %}
         {% set prix_min = voiture.types_location | map(attribute='prix') | min if voiture.types_location else None %}
-        <a href="/voitures/{{ voiture.id }}"
-           class="block bg-white rounded-2xl overflow-hidden shadow-[0_2px_10px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_28px_rgba(0,0,0,0.10)] hover:-translate-y-1 transition-all border border-[color:var(--color-border)]">
+        <a href="/voitures/{{ voiture.id }}{{ query_dates }}"
+           class="block bg-white rounded-2xl overflow-hidden shadow-[0_2px_10px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_28px_rgba(0,0,0,0.10)] hover:-translate-y-1 transition-all border border-[color:var(--color-border)] {% if not is_available %}opacity-70{% endif %}">
 
             <!-- Image 110px -->
             <div class="relative h-[110px] bg-[color:var(--color-primary-tint)] overflow-hidden">
@@ -61,7 +62,15 @@
                 <span class="absolute top-2 left-2 bg-ink text-white text-[8.5px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full">
                     {{ voiture.places }}pl
                 </span>
-                <span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-success ring-2 ring-white"></span>
+                {% if is_available %}
+                <span class="absolute top-2 right-2 bg-success text-white text-[8.5px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full">
+                    Disponible
+                </span>
+                {% else %}
+                <span class="absolute top-2 right-2 bg-red-600 text-white text-[8.5px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full">
+                    Non disponible
+                </span>
+                {% endif %}
             </div>
 
             <!-- Infos compactes -->
