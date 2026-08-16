@@ -310,3 +310,81 @@ Puis vérifier :
 - [ ] Réservation côté client (form public `/voitures/{id}/reserver`)
 - [ ] OAuth Google `/auth/google` (nécessite les vraies clés dans `.env`)
 - [ ] Tests d'attaque de la migration carte (voir mémoire projet — pas encore fait)
+
+
+ 14/14 fixes réellement présents dans le code. Aucune
+  régression, aucune incohérence.
+
+  #: 1
+  Fix: require_admin centralisé
+  Statut: ✅
+  Preuve principale: admin_auth.py:28 + dependencies sur
+    routers
+  ────────────────────────────────────────
+  #: 2
+  Fix: Rate limit login (5/15min)
+  Statut: ✅
+  Preuve principale: admin_auth.py:41
+  ────────────────────────────────────────
+  #: 3
+  Fix: Refus prod si secrets défaut
+  Statut: ✅
+  Preuve principale: config.py:24-45
+  ────────────────────────────────────────
+  #: 4
+  Fix: Rotation session
+  Statut: ✅
+  Preuve principale: admin_auth.py:51
+  ────────────────────────────────────────
+  #: 5
+  Fix: SessionMiddleware dev durci
+  Statut: ✅
+  Preuve principale: main.py:146-150
+  ────────────────────────────────────────
+  #: 6
+  Fix: OAuth Google durci
+  Statut: ✅
+  Preuve principale: auth.py (state, email_verified, timeout,
+    502/503)
+  ────────────────────────────────────────
+  #: 7
+  Fix: Security headers
+  Statut: ✅
+  Preuve principale: main.py:47-65
+  ────────────────────────────────────────
+  #: 8
+  Fix: Rate limit /reserver + /auth/google
+  Statut: ✅
+  Preuve principale: web.py:80, auth.py:27
+  ────────────────────────────────────────
+  #: 9
+  Fix: Validation waypoints
+  Statut: ✅
+  Preuve principale: routing_service.py:11-48
+  ────────────────────────────────────────
+  #: 10
+  Fix: Limite upload 8 MB
+  Statut: ✅
+  Preuve principale: admin_cars.py:23-44
+  ────────────────────────────────────────
+  #: 11
+  Fix: Logs sécurité
+  Statut: ✅
+  Preuve principale: main.py:35-38 + loggers security
+  ────────────────────────────────────────
+  #: 12
+  Fix: CSRF
+  Statut: ✅
+  Preuve principale: csrf.py, templating.py,
+  base_admin.html:45
+
+  Bonus trouvé (non documenté) : quota itinéraire anonyme
+  7/jour dans routing_service.py:25-36.
+
+  Reste à faire (inchangé) :
+  - 🔴 Changer ADMIN_PASSWORD dans .env (action manuelle)
+  - 🟡 CSP stricte (bloquée par onclick="" inline dans
+  templates)
+  
+  Le fichier securite_handlung.md est fidèle à la réalité du 
+  code. Aucune action de correction nécessaire côté code.

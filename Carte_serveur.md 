@@ -137,3 +137,153 @@
      │  de louer un VPS. Le tile-server viendra naturellement │
      │  après.                                                │
      ╰────────────────────────────────────────────────────────╯
+
+
+ Voici les technos à maîtriser pour exécuter le plan
+  Carte_serveur.md, groupées par étape :
+
+  1. Données géographiques (base)
+
+  - PostgreSQL — base de données relationnelle
+  - PostGIS — extension géospatiale de PostgreSQL (requêtes sur
+   des coordonnées, polygones…)
+  - OSM (OpenStreetMap) — comprendre le format .osm.pbf et le
+  modèle de données (nodes, ways, relations, tags)
+  - osmium — outil CLI pour extraire une zone (bbox) d'un
+  fichier PBF
+  - osm2pgsql — importer un PBF dans PostGIS
+
+  2. Génération de tuiles
+
+  - Tilemaker — convertit un .pbf en tuiles vectorielles
+  - PMTiles — format de tuiles en un seul fichier (servi par
+  simple HTTP)
+  - MapLibre Style Spec — le JSON qui décrit comment styler les
+   tuiles (couleurs, polices, zoom)
+
+  3. Serveur / déploiement
+
+  - Linux (Ubuntu/Debian) — ligne de commande, SSH,
+  permissions, systemd
+  - Nginx — servir les fichiers .pmtiles en HTTP avec support
+  des range requests
+  - Let's Encrypt / certbot — HTTPS gratuit
+  - DNS — configurer un sous-domaine (ex. tiles.tm-location.mg)
+  - VPS (Hetzner) — provisioning, firewall (ufw), monitoring de
+   base
+
+  4. Frontend
+
+  - MapLibre GL JS — remplaçant open-source de Mapbox/Leaflet,
+  gère les tuiles vectorielles
+  - JavaScript moderne (ES modules, fetch) — déjà utilisé dans
+  static/js/itineraire/map.js
+  - Différence tuiles raster vs vectorielles (Leaflet fait
+  surtout du raster, MapLibre du vectoriel)
+
+  5. Intégration TM_Location
+
+  - FastAPI (déjà maîtrisé) — endpoint /api/pois?bbox=...
+  - SQLAlchemy + PostGIS — modéliser business_places avec une
+  colonne geometry(Point, 4326)
+  - GeoJSON — format d'échange entre backend et MapLibre
+
+  ---
+  Priorité selon le plan : commence par PostgreSQL + PostGIS + 
+  osm2pgsql (étape 1). C'est 80 % de la valeur pédagogique, et
+  ça sert aussi pour la migration recherche
+  (Recherche_migration.md). Le reste (tilemaker, MapLibre, VPS)
+   vient seulement si tu décides d'aller au bout.
+
+
+ Voici les technos à maîtriser pour exécuter le plan
+  Carte_serveur.md, groupées par étape :
+
+  1. Données géographiques (base)
+
+  - PostgreSQL — base de données relationnelle
+  - PostGIS — extension géospatiale de PostgreSQL (requêtes sur
+   des coordonnées, polygones…)
+  - OSM (OpenStreetMap) — comprendre le format .osm.pbf et le
+  modèle de données (nodes, ways, relations, tags)
+  - osmium — outil CLI pour extraire une zone (bbox) d'un
+  fichier PBF
+  - osm2pgsql — importer un PBF dans PostGIS
+
+  2. Génération de tuiles
+
+  - Tilemaker — convertit un .pbf en tuiles vectorielles
+  - PMTiles — format de tuiles en un seul fichier (servi par
+  simple HTTP)
+  - MapLibre Style Spec — le JSON qui décrit comment styler les
+   tuiles (couleurs, polices, zoom)
+
+  3. Serveur / déploiement
+
+  - Linux (Ubuntu/Debian) — ligne de commande, SSH,
+  permissions, systemd
+  - Nginx — servir les fichiers .pmtiles en HTTP avec support
+  des range requests
+  - Let's Encrypt / certbot — HTTPS gratuit
+  - DNS — configurer un sous-domaine (ex. tiles.tm-location.mg)
+  - VPS (Hetzner) — provisioning, firewall (ufw), monitoring de
+   base
+
+  4. Frontend
+
+  - MapLibre GL JS — remplaçant open-source de Mapbox/Leaflet,
+  gère les tuiles vectorielles
+  - JavaScript moderne (ES modules, fetch) — déjà utilisé dans
+  static/js/itineraire/map.js
+  - Différence tuiles raster vs vectorielles (Leaflet fait
+  surtout du raster, MapLibre du vectoriel)
+
+  5. Intégration TM_Location
+
+  - FastAPI (déjà maîtrisé) — endpoint /api/pois?bbox=...
+  - SQLAlchemy + PostGIS — modéliser business_places avec une
+  colonne geometry(Point, 4326)
+  - GeoJSON — format d'échange entre backend et MapLibre
+
+  ---
+  Priorité selon le plan : commence par PostgreSQL + PostGIS + 
+  osm2pgsql (étape 1). C'est 80 % de la valeur pédagogique, et
+  ça sert aussi pour la migration recherche
+  (Recherche_migration.md). Le reste (tilemaker, MapLibre, VPS)
+   vient seulement si tu décides d'aller au bout.
+
+Le plan réaliste solo + moi
+
+  Phase: 1. PostgreSQL + PostGIS en local
+  Durée: 1 semaine
+  Ce que tu apprends: SQL géospatial, index GIST
+  ────────────────────────────────────────
+  Phase: 2. Import OSM Madagascar en local
+  Durée: 1 semaine
+  Ce que tu apprends: osmium, osm2pgsql, format PBF
+  ────────────────────────────────────────
+  Phase: 3. Endpoint /api/search local (remplace Photon)
+  Durée: 2 semaines
+  Ce que tu apprends: Recherche full-text + géo dans FastAPI
+  ────────────────────────────────────────
+  Phase: 4. Déploiement sur VPS Hetzner
+  Durée: 1 semaine
+  Ce que tu apprends: Linux, Nginx, systemd, SSH
+  ────────────────────────────────────────
+  Phase: 5. Fallback Photon → local en douceur
+  Durée: 1 semaine
+  Ce que tu apprends: Feature flag, monitoring
+  ────────────────────────────────────────
+  Phase: 6. Génération tuiles PMTiles
+  Durée: 2 semaines
+  Ce que tu apprends: Tilemaker, MapLibre style
+  ────────────────────────────────────────
+  Phase: 7. Migration Leaflet → MapLibre
+  Durée: 2 semaines
+  Ce que tu apprends: JS vectoriel
+  ────────────────────────────────────────
+  Phase: 8. Bascule production + Esri en fallback
+  Durée: 1 semaine
+  Ce que tu apprends: Rollback, cache Cloudflare
+
+  Total : ~11 semaines à temps partiel (2-3h/jour).

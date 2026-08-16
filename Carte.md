@@ -130,3 +130,6 @@ L'architecture actuelle est solide et sécurisée. Les prochaines évolutions so
 **Question de priorisation** : facturation au km dans les 6 prochains mois ?
 - Oui → prioriser durcissement back (cache Redis, validation, rate limit)
 - Non → garder en note, avancer sur OAuth / Mobile Money (impact business immédiat)
+
+
+ 
