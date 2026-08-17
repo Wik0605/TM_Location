@@ -69,6 +69,16 @@ function showResults(distanceKm, isFallback) {
     const PRIX_LITRE = isNaN(fuelPriceAttr) || fuelPriceAttr === 0 ? 4900 : fuelPriceAttr;
     const fuelCost = (distanceKm / 100) * conso * PRIX_LITRE + 30000;
     const total = locationCost + fuelCost;
+    const rentalLabel = selectedOption?.value
+        ? selectedOption.text.split('—')[0].trim()
+        : 'Location';
+    updateDevisPrint({
+        distanceKm,
+        rentalLabel,
+        locationCost,
+        fuelCost,
+        total,
+    });
 
     const labelEl = document.getElementById('res-rental-label');
     const costEl = document.getElementById('res-rental-cost');
@@ -91,6 +101,78 @@ function showResults(distanceKm, isFallback) {
     if (stickyCta) {
         stickyCta.style.display = 'block';
         document.body.classList.add('has-sticky-cta');
+    }
+}
+
+function textOfBadge(id) {
+    const el = document.getElementById(id);
+    if (!el || el.offsetParent === null) return '';
+    return (el.textContent || '').replace(/[✕\s]+$/g, '').trim();
+}
+
+function collectWaypointNames() {
+    const names = [];
+    document.querySelectorAll('.waypoint-badge').forEach((badge) => {
+        if (badge.style.display === 'none') return;
+        const nameEl = badge.querySelector('.waypoint-badge-name');
+        const txt = (nameEl?.textContent || '').trim();
+        if (txt) names.push(txt);
+    });
+    return names;
+}
+
+function formatDateTime(value) {
+    if (!value) return '—';
+    const d = new Date(value);
+    if (isNaN(d)) return '—';
+    return d.toLocaleString('fr-FR', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit',
+    });
+}
+
+function updateDevisPrint({ distanceKm, rentalLabel, locationCost, fuelCost, total }) {
+    const set = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+    };
+    const nowFmt = new Date().toLocaleDateString('fr-FR', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+    });
+    const start = textOfBadge('start-badge-name') || 'Non renseigné';
+    const end = textOfBadge('end-badge-name') || 'Non renseigné';
+    const waypoints = collectWaypointNames();
+    const carName = document.querySelector('h1.font-display')?.textContent?.trim() || '';
+
+    set('devis-print-date', nowFmt);
+    set('devis-print-start', start);
+    set('devis-print-end', end);
+    set('devis-print-waypoints', waypoints.length ? waypoints.join(' → ') : 'Aucune');
+    set('devis-print-distance', `${distanceKm.toFixed(1)} km`);
+    set('devis-print-dt-start', formatDateTime(dtStart?.value));
+    set('devis-print-dt-end', formatDateTime(dtEnd?.value));
+    set('devis-print-duration', document.getElementById('duration-display')?.textContent || '—');
+    set('devis-print-rental', rentalLabel);
+    set('devis-print-rental-label', rentalLabel);
+    set('devis-print-rental-cost', `${Math.round(locationCost).toLocaleString('fr-FR')} Ar`);
+    set('devis-print-fuel-cost', `${Math.round(fuelCost).toLocaleString('fr-FR')} Ar`);
+    set('devis-print-total', Math.round(total).toLocaleString('fr-FR'));
+
+    const wa = document.getElementById('devis-whatsapp-btn');
+    if (wa) {
+        const totalFmt = Math.round(total).toLocaleString('fr-FR');
+        const lines = [
+            `Devis TM Location — ${nowFmt}`,
+            `Véhicule : ${carName}`,
+            `Itinéraire : ${start}${waypoints.length ? ' → ' + waypoints.join(' → ') : ''} → ${end}`,
+            `Distance : ${distanceKm.toFixed(1)} km`,
+            `Période : ${formatDateTime(dtStart?.value)} → ${formatDateTime(dtEnd?.value)}`,
+            `Forfait : ${rentalLabel}`,
+            `Total estimé : ${totalFmt} Ar`,
+            ``,
+            `Devis indicatif, valable 7 jours.`,
+        ];
+        wa.href = `https://wa.me/?text=${encodeURIComponent(lines.join('\n'))}`;
     }
 }
 
@@ -208,6 +290,11 @@ export function initResults() {
         hideStickyIfIncomplete();
         scheduleCalculation();
     });
+
+    const printBtn = document.getElementById('devis-print-btn');
+    if (printBtn) {
+        printBtn.addEventListener('click', () => window.print());
+    }
 
     restoreDraft();
 }

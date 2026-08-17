@@ -3,6 +3,7 @@
 {% block title %}Réservation confirmée{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="/static/css/print-devis.css" />
 <section class="max-w-md mx-auto px-5 pt-8 pb-8">
 
     <!-- Icône check + titre -->
@@ -103,10 +104,28 @@
         </div>
     </div>
 
-    <!-- Actions -->
-    <div class="mt-6 space-y-2">
+    <!-- Actions devis -->
+    <div class="mt-6 grid grid-cols-2 gap-2">
+        <button type="button" onclick="window.print()"
+                class="flex items-center justify-center gap-2 bg-ink text-white py-3.5 rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-primary transition-all">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Télécharger
+        </button>
+        {% set wa_msg = 'Réservation TM Location #' ~ ('%06d' % (location.id or 0)) ~ '\n' ~
+            'Véhicule : ' ~ voiture.nom ~ '\n' ~
+            'Client : ' ~ location.client_nom ~ '\n' ~
+            'Date : ' ~ location.date_debut.strftime('%d/%m/%Y') ~ '\n' ~
+            (('Forfait : ' ~ type_location.nom ~ '\n' ~ 'Total : ' ~ ('{:,}'.format(type_location.prix)|replace(',', ' ')) ~ ' Ar') if type_location else 'Total : Sur demande') %}
+        <a href="https://wa.me/?text={{ wa_msg|urlencode }}"
+           class="flex items-center justify-center gap-2 bg-success text-white py-3.5 rounded-2xl font-bold text-xs uppercase tracking-widest hover:opacity-90 transition-all">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.9-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm0 18.15h-.01a8.23 8.23 0 0 1-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.19 8.19 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.24-8.23 2.2 0 4.27.86 5.83 2.42a8.18 8.18 0 0 1 2.41 5.83c0 4.54-3.7 8.22-8.22 8.22z"/></svg>
+            WhatsApp
+        </a>
+    </div>
+
+    <div class="mt-3 space-y-2">
         <a href="/"
-           class="block w-full text-center bg-ink hover:bg-primary text-white py-3.5 rounded-2xl font-bold text-sm uppercase tracking-widest transition-all shadow-md">
+           class="block w-full text-center bg-[color:var(--color-neutral-soft)] hover:bg-[color:var(--color-border-strong)] text-ink py-3.5 rounded-2xl font-bold text-sm uppercase tracking-widest transition-all">
             Nouvelle réservation
         </a>
         <a href="/voitures"
@@ -116,4 +135,51 @@
     </div>
 
 </section>
+
+<!-- Bloc devis imprimable (caché à l'écran) -->
+<div class="devis-print" aria-hidden="true">
+    <div class="devis-header">
+        <div class="devis-brand">TM <span class="brand-accent">Location</span></div>
+        <div class="devis-meta">
+            <div><strong>Confirmation de réservation</strong></div>
+            <div>Réf. #{{ "%06d"|format(location.id if location.id else 0) }}</div>
+        </div>
+    </div>
+
+    <h2>Véhicule</h2>
+    <table>
+        <tr><td class="label">Modèle</td><td class="value">{{ voiture.nom }}</td></tr>
+        {% if type_location %}
+        <tr><td class="label">Forfait</td><td class="value">{{ type_location.nom }}</td></tr>
+        {% endif %}
+    </table>
+
+    <h2>Client</h2>
+    <table>
+        <tr><td class="label">Nom</td><td class="value">{{ location.client_nom }}</td></tr>
+        <tr><td class="label">Téléphone</td><td class="value">{{ location.client_telephone }}</td></tr>
+    </table>
+
+    <h2>Réservation</h2>
+    <table>
+        <tr><td class="label">Date</td><td class="value">{{ location.date_debut.strftime('%d/%m/%Y') }}</td></tr>
+        <tr><td class="label">Statut</td><td class="value">{{ location.statut }}</td></tr>
+    </table>
+
+    {% if type_location %}
+    <div class="devis-total">
+        <span class="label">Total estimé</span>
+        <span class="amount">{{ "{:,}".format(type_location.prix).replace(",", " ") }} Ar</span>
+    </div>
+    {% endif %}
+
+    <div class="devis-mentions">
+        Ce document confirme l'enregistrement de votre demande de réservation. Notre équipe
+        vous contactera pour finaliser les modalités. Les montants sont donnés à titre indicatif
+        et peuvent être ajustés selon les conditions réelles de la location.
+    </div>
+    <div class="devis-footer">
+        TM Location — Antananarivo, Madagascar
+    </div>
+</div>
 {% endblock %}
