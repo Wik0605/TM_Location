@@ -54,29 +54,11 @@ export function initMap() {
     );
     const esriCarto = L.layerGroup([esriImagery, osmLabels]);
 
-    const stadiaSat = L.tileLayer(
-        'https://tiles.stadiamaps.com/tiles/alidade_satellite/{z}/{x}/{y}{r}.jpg',
-        {
-            attribution:
-                '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-            maxZoom: 20,
-        }
-    );
-    const stadiaLabels = L.tileLayer(
-        'https://tiles.stadiamaps.com/tiles/stamen_toner_labels/{z}/{x}/{y}{r}.png',
-        {
-            attribution: '&copy; Stadia Maps &copy; Stamen Design &copy; OpenStreetMap',
-            maxZoom: 20,
-            pane: 'shadowPane',
-        }
-    );
-    const stadia = L.layerGroup([stadiaSat, stadiaLabels]);
-
     esriCarto.addTo(map);
 
     L.control
         .layers(
-            { 'Esri + CARTO': esriCarto, Stadia: stadia },
+            { 'Esri + CARTO': esriCarto },
             null,
             { position: 'topright', collapsed: false }
         )
