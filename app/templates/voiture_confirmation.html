@@ -106,7 +106,7 @@
 
     <!-- Actions devis -->
     <div class="mt-6 grid grid-cols-2 gap-2">
-        <button type="button" onclick="window.print()"
+        <button type="button" id="devis-print-btn"
                 class="flex items-center justify-center gap-2 bg-ink text-white py-3.5 rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-primary transition-all">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Télécharger
@@ -137,7 +137,7 @@
 </section>
 
 <!-- Bloc devis imprimable (caché à l'écran) -->
-<div class="devis-print" aria-hidden="true">
+<div class="devis-print" id="devis-print" aria-hidden="true">
     <div class="devis-header">
         <div class="devis-brand">TM <span class="brand-accent">Location</span></div>
         <div class="devis-meta">
@@ -182,4 +182,17 @@
         TM Location — Antananarivo, Madagascar
     </div>
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script type="module">
+    import { telechargerDevisPDF } from '/static/js/devis-pdf.js';
+    const btn = document.getElementById('devis-print-btn');
+    if (btn) {
+        btn.addEventListener('click', () => {
+            const devis = document.getElementById('devis-print');
+            telechargerDevisPDF(devis, `devis-reservation-{{ "%06d"|format(location.id if location.id else 0) }}.pdf`);
+        });
+    }
+</script>
 {% endblock %}

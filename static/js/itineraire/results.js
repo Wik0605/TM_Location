@@ -1,6 +1,7 @@
 import { state, events } from './state.js';
 import { getCoord, getWaypointCoords } from './pick.js';
 import { calcBackend } from './routing.js';
+import { telechargerDevisPDF } from '../devis-pdf.js';
 
 let dtStart, dtEnd, durationDisplay, rentalSelect, chipsContainer, quotaModal;
 let calcTimer = null;
@@ -293,7 +294,11 @@ export function initResults() {
 
     const printBtn = document.getElementById('devis-print-btn');
     if (printBtn) {
-        printBtn.addEventListener('click', () => window.print());
+        printBtn.addEventListener('click', () => {
+            const devis = document.getElementById('devis-print');
+            const dateStr = new Date().toISOString().slice(0, 10);
+            telechargerDevisPDF(devis, `devis-${dateStr}.pdf`);
+        });
     }
 
     restoreDraft();
