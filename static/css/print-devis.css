@@ -1,9 +1,116 @@
-/* Feuille de style dédiée aux devis imprimables (Télécharger PDF).
-   - Hors impression : le bloc .devis-print est caché.
+/* Feuille de style dédiée aux devis imprimables et à la capture PDF.
+   - Hors impression : le bloc .devis-print est caché à l'écran.
+   - Les styles visuels s'appliquent toujours pour que html2canvas capture le rendu.
    - À l'impression : seul .devis-print est visible, tout le reste est masqué. */
 
 .devis-print {
     display: none;
+    color: #0A0A0A;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 12pt;
+    line-height: 1.5;
+    padding: 8pt 4pt;
+}
+
+.devis-print .devis-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    border-bottom: 2px solid #0A0A0A;
+    padding-bottom: 8pt;
+    margin-bottom: 14pt;
+}
+
+.devis-print .devis-brand {
+    font-family: 'Outfit', system-ui, sans-serif;
+    font-weight: 900;
+    font-size: 20pt;
+    letter-spacing: -0.02em;
+}
+
+.devis-print .devis-brand .brand-accent {
+    color: #B45309;
+}
+
+.devis-print .devis-meta {
+    font-size: 10pt;
+    text-align: right;
+}
+
+.devis-print h2 {
+    font-family: 'Outfit', system-ui, sans-serif;
+    font-weight: 800;
+    font-size: 14pt;
+    margin: 16pt 0 6pt;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.devis-print table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 4pt;
+}
+
+.devis-print table td {
+    padding: 5pt 0;
+    border-bottom: 1px solid #E5E5E5;
+    vertical-align: top;
+}
+
+.devis-print table td.label {
+    color: #555;
+    width: 42%;
+    text-transform: uppercase;
+    font-size: 9pt;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+}
+
+.devis-print table td.value {
+    font-weight: 600;
+}
+
+.devis-print .devis-total {
+    margin-top: 14pt;
+    padding: 10pt 12pt;
+    background: #FFF7ED;
+    border: 1px solid #FDBA74;
+    border-radius: 6pt;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.devis-print .devis-total .label {
+    font-family: 'Outfit', system-ui, sans-serif;
+    font-weight: 900;
+    font-size: 13pt;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.devis-print .devis-total .amount {
+    font-family: 'Outfit', system-ui, sans-serif;
+    font-weight: 900;
+    font-size: 18pt;
+    color: #B45309;
+}
+
+.devis-print .devis-mentions {
+    margin-top: 18pt;
+    padding-top: 8pt;
+    border-top: 1px solid #E5E5E5;
+    font-size: 9pt;
+    color: #555;
+    line-height: 1.5;
+}
+
+.devis-print .devis-footer {
+    margin-top: 12pt;
+    text-align: center;
+    font-size: 8.5pt;
+    color: #777;
 }
 
 @media print {
@@ -27,110 +134,5 @@
         left: 0;
         top: 0;
         width: 100%;
-        color: #0A0A0A;
-        font-family: 'Inter', system-ui, sans-serif;
-        font-size: 12pt;
-        line-height: 1.5;
-    }
-
-    .devis-print .devis-header {
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        border-bottom: 2px solid #0A0A0A;
-        padding-bottom: 8pt;
-        margin-bottom: 14pt;
-    }
-
-    .devis-print .devis-brand {
-        font-family: 'Outfit', system-ui, sans-serif;
-        font-weight: 900;
-        font-size: 20pt;
-        letter-spacing: -0.02em;
-    }
-
-    .devis-print .devis-brand .brand-accent {
-        color: #B45309;
-    }
-
-    .devis-print .devis-meta {
-        font-size: 10pt;
-        text-align: right;
-    }
-
-    .devis-print h2 {
-        font-family: 'Outfit', system-ui, sans-serif;
-        font-weight: 800;
-        font-size: 14pt;
-        margin: 16pt 0 6pt;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-    }
-
-    .devis-print table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 4pt;
-    }
-
-    .devis-print table td {
-        padding: 5pt 0;
-        border-bottom: 1px solid #E5E5E5;
-        vertical-align: top;
-    }
-
-    .devis-print table td.label {
-        color: #555;
-        width: 42%;
-        text-transform: uppercase;
-        font-size: 9pt;
-        letter-spacing: 0.08em;
-        font-weight: 700;
-    }
-
-    .devis-print table td.value {
-        font-weight: 600;
-    }
-
-    .devis-print .devis-total {
-        margin-top: 14pt;
-        padding: 10pt 12pt;
-        background: #FFF7ED;
-        border: 1px solid #FDBA74;
-        border-radius: 6pt;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .devis-print .devis-total .label {
-        font-family: 'Outfit', system-ui, sans-serif;
-        font-weight: 900;
-        font-size: 13pt;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-    }
-
-    .devis-print .devis-total .amount {
-        font-family: 'Outfit', system-ui, sans-serif;
-        font-weight: 900;
-        font-size: 18pt;
-        color: #B45309;
-    }
-
-    .devis-print .devis-mentions {
-        margin-top: 18pt;
-        padding-top: 8pt;
-        border-top: 1px solid #E5E5E5;
-        font-size: 9pt;
-        color: #555;
-        line-height: 1.5;
-    }
-
-    .devis-print .devis-footer {
-        margin-top: 12pt;
-        text-align: center;
-        font-size: 8.5pt;
-        color: #777;
     }
 }
