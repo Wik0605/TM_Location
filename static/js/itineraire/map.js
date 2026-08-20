@@ -56,14 +56,6 @@ export function initMap() {
 
     esriCarto.addTo(map);
 
-    L.control
-        .layers(
-            { 'Esri + CARTO': esriCarto },
-            null,
-            { position: 'topright', collapsed: false }
-        )
-        .addTo(map);
-
     state.map = map;
     state.markersLayer = L.layerGroup().addTo(map);
     return map;
