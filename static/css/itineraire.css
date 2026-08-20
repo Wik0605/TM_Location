@@ -458,3 +458,21 @@ body.has-sticky-cta { padding-bottom: 88px; }
         font-size: 0.82rem;
     }
 }
+
+#datetime-start,
+#datetime-end {
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: 100%;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+@media (max-width: 360px) {
+    #datetime-start,
+    #datetime-end {
+        font-size: 0.8125rem;
+        padding-left: 0.625rem;
+        padding-right: 0.625rem;
+    }
+}
