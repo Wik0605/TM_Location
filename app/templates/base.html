@@ -198,6 +198,30 @@
         }
     </script>
 
+    <!-- Analytics maison : ping léger uniquement pour installs / sessions PWA -->
+    <script>
+        (function () {
+            var API = '/api/analytics/event';
+            function send(type) {
+                try {
+                    var blob = new Blob([JSON.stringify({ type: type })], { type: 'application/json' });
+                    if (navigator.sendBeacon) navigator.sendBeacon(API, blob);
+                    else fetch(API, { method: 'POST', body: blob, keepalive: true }).catch(function () { });
+                } catch (e) { /* silencieux */ }
+            }
+            window.addEventListener('appinstalled', function () {
+                if (localStorage.getItem('tm_pwa_installed')) return;
+                localStorage.setItem('tm_pwa_installed', '1');
+                send('pwa_installed');
+            });
+            if (window.matchMedia('(display-mode: standalone)').matches
+                && !sessionStorage.getItem('tm_standalone_sent')) {
+                sessionStorage.setItem('tm_standalone_sent', '1');
+                send('pwa_standalone_session');
+            }
+        })();
+    </script>
+
     <!-- Scripts additionnels -->
     {% block scripts %}{% endblock %}
 </body>

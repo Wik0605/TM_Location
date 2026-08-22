@@ -1,0 +1,183 @@
+{% extends "admin/base_admin.html" %}
+{% set active = "stats" %}
+{% block title %}Statistiques{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-8">
+
+    <header class="flex items-center justify-between">
+        <div>
+            <p class="text-xs uppercase tracking-[0.25em] text-neutral-500">Analytics</p>
+            <h1 class="font-display text-2xl lg:text-3xl font-black">App Statistiques</h1>
+        </div>
+    </header>
+
+    <!-- Cartes overview -->
+    <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
+        {% macro card(label, value, sub) %}
+        <div class="bg-white rounded-2xl border border-neutral-200 p-4 lg:p-5 shadow-sm">
+            <p class="text-[10px] uppercase tracking-[0.2em] text-neutral-500 font-semibold">{{ label }}</p>
+            <p class="mt-2 font-display text-2xl lg:text-3xl font-black text-ink">{{ value }}</p>
+            {% if sub %}<p class="text-xs text-neutral-500 mt-1">{{ sub }}</p>{% endif %}
+        </div>
+        {% endmacro %}
+
+        {{ card("Installs PWA", overview.installs, "total") }}
+        {{ card("Sessions app (7j)", overview.standalone_7, overview.standalone_30 ~ " sur 30j") }}
+        {{ card("Devis (7j)", overview.devis_7, overview.devis_30 ~ " sur 30j") }}
+        {{ card("Réservations (7j)", overview.reservations_7, overview.reservations_30 ~ " sur 30j") }}
+    </section>
+
+    <!-- Taux de conversion -->
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="bg-gradient-to-br from-amber-50 to-white rounded-2xl border border-amber-200 p-5">
+            <p class="text-xs uppercase tracking-[0.2em] text-amber-700 font-semibold">Conversion 7 jours</p>
+            <p class="mt-2 font-display text-4xl font-black text-amber-700">{{ overview.conversion_7 }}%</p>
+            <p class="text-xs text-neutral-500 mt-1">devis → réservation</p>
+        </div>
+        <div class="bg-gradient-to-br from-amber-50 to-white rounded-2xl border border-amber-200 p-5">
+            <p class="text-xs uppercase tracking-[0.2em] text-amber-700 font-semibold">Conversion 30 jours</p>
+            <p class="mt-2 font-display text-4xl font-black text-amber-700">{{ overview.conversion_30 }}%</p>
+            <p class="text-xs text-neutral-500 mt-1">devis → réservation</p>
+        </div>
+    </section>
+
+    <!-- Graphique 30 jours -->
+    <section class="bg-white rounded-2xl border border-neutral-200 p-5 shadow-sm">
+        <h2 class="font-display font-bold text-lg mb-4">Devis vs Réservations (30 jours)</h2>
+        {% if daily %}
+        {% set max_val = daily | map(attribute='devis') | max %}
+        {% set max_resa = daily | map(attribute='reservations') | max %}
+        {% set peak = [max_val, max_resa, 1] | max %}
+        <div class="flex items-end gap-1 h-40 overflow-x-auto">
+            {% for d in daily %}
+            <div class="flex flex-col items-center gap-0.5 min-w-[16px]" title="{{ d.date }} : {{ d.devis }} devis, {{ d.reservations }} résas">
+                <div class="w-3 bg-amber-500/40 rounded-t" style="height: {{ (d.devis / peak * 140) | round(0) }}px"></div>
+                <div class="w-3 bg-amber-700 rounded-t" style="height: {{ (d.reservations / peak * 140) | round(0) }}px"></div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="flex gap-4 mt-3 text-xs text-neutral-600">
+            <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-amber-500/40"></span> Devis</span>
+            <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-amber-700"></span> Réservations</span>
+        </div>
+        {% else %}
+        <p class="text-sm text-neutral-500">Aucune donnée sur les 30 derniers jours.</p>
+        {% endif %}
+    </section>
+
+    <!-- Zones -->
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {% macro zones_block(title, rows) %}
+        <div class="bg-white rounded-2xl border border-neutral-200 p-5 shadow-sm">
+            <h2 class="font-display font-bold text-lg mb-3">{{ title }}</h2>
+            {% if rows %}
+            {% set top_count = rows[0].count %}
+            <ul class="space-y-2">
+                {% for r in rows %}
+                <li>
+                    <div class="flex justify-between text-sm">
+                        <span class="font-medium text-ink">{{ r.nom }}</span>
+                        <span class="text-neutral-500">{{ r.count }}</span>
+                    </div>
+                    <div class="h-1.5 bg-neutral-100 rounded-full mt-1 overflow-hidden">
+                        <div class="h-full bg-amber-600 rounded-full" style="width: {{ (r.count / top_count * 100) | round(0) }}%"></div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-sm text-neutral-500">Pas encore de données.</p>
+            {% endif %}
+        </div>
+        {% endmacro %}
+
+        {{ zones_block("Top zones de départ (réservations)", top_depart) }}
+        {{ zones_block("Top zones d'arrivée (réservations)", top_arrivee) }}
+    </section>
+
+    <!-- Heures -->
+    <section class="bg-white rounded-2xl border border-neutral-200 p-5 shadow-sm">
+        <h2 class="font-display font-bold text-lg mb-3">Activité par heure (heure locale MG)</h2>
+        {% set peak_h = (hours | map(attribute='count') | max) or 1 %}
+        <div class="flex items-end gap-1 h-24">
+            {% for h in hours %}
+            <div class="flex-1 flex flex-col items-center gap-1">
+                <div class="w-full bg-amber-600 rounded-t" style="height: {{ (h.count / peak_h * 80) | round(0) }}px" title="{{ h.hour }}h : {{ h.count }}"></div>
+                <span class="text-[9px] text-neutral-400">{{ h.hour }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Referers + Types -->
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="bg-white rounded-2xl border border-neutral-200 p-5 shadow-sm">
+            <h2 class="font-display font-bold text-lg mb-3">Sources de trafic</h2>
+            {% if referers %}
+            <ul class="space-y-1.5 text-sm">
+                {% for r in referers %}
+                <li class="flex justify-between">
+                    <span class="text-ink">{{ r.host }}</span>
+                    <span class="text-neutral-500">{{ r.count }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-sm text-neutral-500">Aucune donnée.</p>
+            {% endif %}
+        </div>
+
+        <div class="bg-white rounded-2xl border border-neutral-200 p-5 shadow-sm">
+            <h2 class="font-display font-bold text-lg mb-3">Types de location réservés</h2>
+            {% if types_breakdown %}
+            <ul class="space-y-1.5 text-sm">
+                {% for t in types_breakdown %}
+                <li class="flex justify-between">
+                    <span class="text-ink">{{ t.nom }}</span>
+                    <span class="text-neutral-500">
+                        {{ t.count }} · {{ "{:,.0f}".format(t.revenu).replace(",", " ") }} Ar
+                    </span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-sm text-neutral-500">Aucune réservation avec type enregistrée.</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Carte des trajets -->
+    <section class="bg-white rounded-2xl border border-neutral-200 p-5 shadow-sm">
+        <h2 class="font-display font-bold text-lg mb-3">Carte des trajets (200 derniers)</h2>
+        <div id="trajets-map" style="height: 420px; border-radius: 12px;"></div>
+        <p class="text-xs text-neutral-500 mt-2">
+            <span class="inline-block w-3 h-1 bg-amber-500 align-middle"></span> Devis
+            &nbsp;
+            <span class="inline-block w-3 h-1 bg-amber-800 align-middle"></span> Réservations
+        </p>
+    </section>
+
+</div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    if (typeof L === 'undefined') {
+        setTimeout(arguments.callee, 100);
+        return;
+    }
+    var trajets = {{ trajets_json | safe }};
+    var map = L.map('trajets-map').setView([-18.9056, 47.5267], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap', maxZoom: 18,
+    }).addTo(map);
+    trajets.forEach(function (t) {
+        var color = t.t === 'resa' ? '#92400e' : '#d97706';
+        var weight = t.t === 'resa' ? 2 : 1;
+        L.polyline([t.d, t.a], { color: color, weight: weight, opacity: 0.7 }).addTo(map);
+    });
+});
+</script>
+{% endblock %}

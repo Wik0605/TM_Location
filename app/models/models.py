@@ -162,6 +162,37 @@ class Location(Base):
         return f"<Location(id={self.id}, client='{self.client_nom}', statut='{self.statut}')>"
 
 
+class AnalyticsEvent(Base):
+    """Événements analytics maison (léger, sans dépendance externe)."""
+    __tablename__ = "analytics_events"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    event_type: Mapped[str] = mapped_column(String(40), nullable=False, index=True)
+    session_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True, index=True)
+
+    depart_lat: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    depart_lon: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    arrivee_lat: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    arrivee_lon: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    depart_nom: Mapped[Optional[str]] = mapped_column(String(120), nullable=True)
+    arrivee_nom: Mapped[Optional[str]] = mapped_column(String(120), nullable=True)
+    distance_km: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+
+    voiture_id: Mapped[Optional[int]] = mapped_column(ForeignKey("voitures.id"), nullable=True)
+    type_location_id: Mapped[Optional[int]] = mapped_column(ForeignKey("types_location.id"), nullable=True)
+    prix: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+
+    referer_host: Mapped[Optional[str]] = mapped_column(String(120), nullable=True)
+    hour_local: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+
+    location_id: Mapped[Optional[int]] = mapped_column(ForeignKey("locations.id"), nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
+
+    def __repr__(self):
+        return f"<AnalyticsEvent(id={self.id}, type='{self.event_type}')>"
+
+
 class User(Base):
     """Client connecté via Google OAuth."""
     __tablename__ = "users"

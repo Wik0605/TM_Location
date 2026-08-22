@@ -31,6 +31,8 @@ from app.routers.admin_cars import router as admin_cars_router
 from app.routers.admin_rentals import router as admin_rentals_router
 from app.routers.auth import router as auth_router
 from app.routers.itineraire_api import router as itineraire_api_router
+from app.routers.analytics_api import router as analytics_api_router
+from app.routers.admin_stats import router as admin_stats_router
 
 logging.basicConfig(
     level=logging.INFO,
@@ -166,6 +168,8 @@ app.include_router(admin_cars_router)
 app.include_router(admin_rentals_router)
 app.include_router(auth_router)
 app.include_router(itineraire_api_router)
+app.include_router(analytics_api_router)
+app.include_router(admin_stats_router)
 
 
 @app.get("/health")

@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Request, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Request, Response, HTTPException
 from pydantic import BaseModel, Field, conlist
 
-from app.services import routing_service
+from app.services import analytics_service, routing_service
 from app.services.routing_service import RoutingError
 
 
@@ -21,6 +21,8 @@ async def calculer_itineraire(
     voiture_id: int,
     payload: WaypointsPayload,
     request: Request,
+    response: Response,
+    background: BackgroundTasks,
 ):
     if not routing_service.verifier_quota(request):
         raise HTTPException(status_code=429, detail="Quota journalier atteint.")
@@ -36,6 +38,21 @@ async def calculer_itineraire(
         distance_km=result["distance_km"],
         waypoints=waypoints,
         voiture_id=voiture_id,
+    )
+
+    session_id = analytics_service.get_or_create_session_id(request, response)
+    ctx = analytics_service.extraire_contexte(request)
+    depart = waypoints[0]
+    arrivee = waypoints[-1]
+    background.add_task(
+        analytics_service.enregistrer_devis,
+        session_id,
+        ctx["referer_host"],
+        ctx["hour_local"],
+        voiture_id,
+        depart[0], depart[1],
+        arrivee[0], arrivee[1],
+        result["distance_km"],
     )
 
     return {

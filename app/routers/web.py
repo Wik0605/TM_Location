@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Depends
+from fastapi import APIRouter, BackgroundTasks, Request, Depends
 from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import ValidationError
@@ -7,7 +7,7 @@ import datetime
 from app.csrf import require_csrf
 from app.database import get_db
 from app.limiter import limiter
-from app.services import car_service, routing_service, reservation_service
+from app.services import analytics_service, car_service, routing_service, reservation_service
 from app.schemas import LocationForm
 from app.templating import templates
 
@@ -106,6 +106,7 @@ async def itineraire_quota(request: Request, voiture_id: int):
 async def voiture_reserver(
     request: Request,
     voiture_id: int,
+    background: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
     _csrf: None = Depends(require_csrf),
 ):
@@ -149,6 +150,15 @@ async def voiture_reserver(
 
     loc, type_location = await reservation_service.creer_reservation(
         db, voiture, form, form_data.get("itinerary_token")
+    )
+
+    ctx = analytics_service.extraire_contexte(request)
+    background.add_task(
+        analytics_service.enregistrer_reservation,
+        ctx["session_id"],
+        ctx["referer_host"],
+        ctx["hour_local"],
+        loc,
     )
 
     return templates.TemplateResponse("voiture_confirmation.html", {
