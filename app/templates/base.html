@@ -7,6 +7,16 @@
     <meta name="description" content="{% block description %}Location de voitures à Madagascar avec ou sans chauffeur. Réservez votre véhicule à Antananarivo et dans toute l'île.{% endblock %}">
     <title>{% block title %}TM Location{% endblock %} - Location de voitures</title>
 
+    <!-- PWA -->
+    <meta name="theme-color" content="#D97706">
+    <link rel="manifest" href="/static/manifest.webmanifest">
+    <link rel="icon" type="image/svg+xml" href="/static/icons/icon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="/static/icons/icon-192.png">
+    <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="TM Location">
+
     <!-- Google Fonts : Outfit (titres) + Inter (corps) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -178,6 +188,15 @@
             </div>
         </div>
     </footer>
+
+    <!-- Enregistrement du service worker (PWA) -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(() => { });
+            });
+        }
+    </script>
 
     <!-- Scripts additionnels -->
     {% block scripts %}{% endblock %}

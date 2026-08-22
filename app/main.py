@@ -17,7 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.gzip import GZipMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.sessions import SessionMiddleware
-from starlette.responses import Response
+from starlette.responses import Response, FileResponse
 from pathlib import Path
 
 from slowapi.errors import RateLimitExceeded
@@ -171,3 +171,12 @@ app.include_router(itineraire_api_router)
 @app.get("/health")
 async def health_check():
     return {"status": "healthy", "version": "0.1.0"}
+
+
+@app.get("/sw.js", include_in_schema=False)
+async def service_worker():
+    return FileResponse(
+        STATIC_DIR / "sw.js",
+        media_type="application/javascript",
+        headers={"Cache-Control": "no-cache"},
+    )

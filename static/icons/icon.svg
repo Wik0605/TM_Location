@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="112" ry="112" fill="#D97706"/>
+
+  <!-- Lettre T (style Outfit Black, tracés vectoriels) -->
+  <path fill="#0F172A" d="M 86 150 H 226 V 198 H 178 V 372 H 134 V 198 H 86 Z"/>
+
+  <!-- Lettre M (style Outfit Black, tracés vectoriels) -->
+  <path fill="#0F172A" d="M 246 150 H 290 L 336 262 L 382 150 H 426 V 372 H 382 V 236 L 352 306 H 320 L 290 236 V 372 H 246 Z"/>
+</svg>
