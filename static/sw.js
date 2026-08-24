@@ -1,4 +1,4 @@
-const CACHE = 'tm-location-v1';
+const CACHE = 'tm-location-v2';
 const PRECACHE = [
   '/',
   '/static/css/theme.css',
@@ -41,12 +41,15 @@ self.addEventListener('fetch', (event) => {
 
   if (url.pathname.startsWith('/static/')) {
     event.respondWith(
-      caches.match(req).then((cached) =>
-        cached ||
-        fetch(req).then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((cache) => cache.put(req, copy));
-          return res;
+      caches.open(CACHE).then((cache) =>
+        cache.match(req).then((cached) => {
+          const networkFetch = fetch(req)
+            .then((res) => {
+              if (res && res.status === 200) cache.put(req, res.clone());
+              return res;
+            })
+            .catch(() => cached);
+          return cached || networkFetch;
         })
       )
     );
