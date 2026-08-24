@@ -169,6 +169,55 @@
     fill: var(--color-primary);
 }
 
+/* Bouton crédits carte + panneau dépliable */
+.attr-wrap {
+    position: relative;
+}
+.attr-btn {
+    width: 28px;
+    height: 28px;
+    background: white;
+    border: none;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0.85;
+}
+.attr-btn:hover { opacity: 1; }
+.attr-btn svg {
+    width: 16px;
+    height: 16px;
+    fill: var(--color-neutral-strong);
+}
+.attr-panel {
+    display: none;
+    position: absolute;
+    bottom: 34px;
+    left: 0;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+    padding: 8px 10px;
+    font-size: 10px;
+    line-height: 1.5;
+    color: var(--color-neutral-strong);
+    white-space: nowrap;
+    max-width: 78vw;
+    white-space: normal;
+    min-width: 200px;
+}
+.attr-panel.open { display: block; }
+.attr-panel a,
+.attr-panel span {
+    display: block;
+    color: var(--color-neutral-strong);
+    text-decoration: none;
+}
+.attr-panel a:hover { text-decoration: underline; color: var(--color-primary); }
+
 /* ── Recherche de lieu (autocomplete Nominatim) ── */
 .place-search {
     position: relative;

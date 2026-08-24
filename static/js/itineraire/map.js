@@ -35,6 +35,32 @@ export function initMap() {
     });
     new LocateControl().addTo(map);
 
+    const AttributionControl = L.Control.extend({
+        options: { position: 'bottomleft' },
+        onAdd() {
+            const wrap = L.DomUtil.create('div', 'attr-wrap');
+            const btn = L.DomUtil.create('button', 'attr-btn', wrap);
+            btn.title = 'Crédits carte';
+            btn.setAttribute('aria-label', 'Crédits carte');
+            btn.innerHTML =
+                '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 15h-2v-6h2zm0-8h-2V7h2z"/></svg>';
+            const panel = L.DomUtil.create('div', 'attr-panel', wrap);
+            panel.innerHTML =
+                '<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">&copy; OpenStreetMap contributors</a>' +
+                '<a href="https://carto.com/attributions" target="_blank" rel="noopener">&copy; CARTO</a>' +
+                '<span>Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics</span>';
+            L.DomEvent.disableClickPropagation(wrap);
+            L.DomEvent.disableScrollPropagation(wrap);
+            L.DomEvent.on(btn, 'click', (e) => {
+                L.DomEvent.stopPropagation(e);
+                panel.classList.toggle('open');
+            });
+            map.on('click', () => panel.classList.remove('open'));
+            return wrap;
+        },
+    });
+    new AttributionControl().addTo(map);
+
     const esriImagery = L.tileLayer(
         'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
         {
