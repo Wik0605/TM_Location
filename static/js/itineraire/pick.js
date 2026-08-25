@@ -62,18 +62,16 @@ export function reverseGeocode(lat, lng, el) {
     geocodeControllers.set(el, controller);
 
     fetch(
-        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=fr`,
+        `/api/reverse-geocode?lat=${lat}&lon=${lng}`,
         { signal: controller.signal },
     )
         .then((r) => r.json())
         .then((data) => {
-            el.textContent = data.display_name
-                ? data.display_name.split(',').slice(0, 2).join(', ')
-                : `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+            el.textContent = data.name || 'Lieu sélectionné';
         })
         .catch((err) => {
             if (err.name === 'AbortError') return;
-            el.textContent = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+            el.textContent = 'Lieu sélectionné';
         });
 }
 
