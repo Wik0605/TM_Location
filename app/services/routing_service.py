@@ -1,11 +1,12 @@
 import math
-import uuid
-import time
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 from typing import Optional, List, Tuple
 
 import httpx
+import jwt
 from fastapi import Request
+
+from app.config import settings
 
 
 MADAGASCAR_LAT = (-25.7, -11.9)
@@ -14,8 +15,7 @@ MAX_WAYPOINTS = 10
 TOKEN_TTL_SECONDS = 15 * 60
 HTTP_TIMEOUT = 5.0
 QUOTA_ANON_PAR_JOUR = 7
-
-_cache_tokens: dict[str, dict] = {}
+JWT_ALGORITHM = "HS256"
 
 
 class RoutingError(Exception):
@@ -153,30 +153,20 @@ async def calculer_itineraire(waypoints: List[Tuple[float, float]]) -> dict:
     return _fallback_haversine(waypoints)
 
 
-def _purger_tokens_expires() -> None:
-    now = time.time()
-    expired = [t for t, d in _cache_tokens.items() if d["expire_at"] < now]
-    for t in expired:
-        del _cache_tokens[t]
-
-
 def emettre_token(distance_km: float, waypoints, voiture_id: int) -> str:
-    _purger_tokens_expires()
-    token = uuid.uuid4().hex
-    _cache_tokens[token] = {
+    payload = {
         "distance_km": distance_km,
-        "waypoints": waypoints,
+        "waypoints": [[lat, lon] for lat, lon in waypoints],
         "voiture_id": voiture_id,
-        "expire_at": time.time() + TOKEN_TTL_SECONDS,
+        "exp": datetime.now(timezone.utc) + timedelta(seconds=TOKEN_TTL_SECONDS),
     }
-    return token
+    return jwt.encode(payload, settings.secret_key, algorithm=JWT_ALGORITHM)
 
 
 def lire_token(token: str) -> Optional[dict]:
-    data = _cache_tokens.get(token)
-    if not data:
+    try:
+        data = jwt.decode(token, settings.secret_key, algorithms=[JWT_ALGORITHM])
+    except jwt.PyJWTError:
         return None
-    if data["expire_at"] < time.time():
-        del _cache_tokens[token]
-        return None
+    data["waypoints"] = [tuple(pt) for pt in data["waypoints"]]
     return data
