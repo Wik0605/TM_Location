@@ -144,13 +144,15 @@
                 </label>
                 <div class="grid grid-cols-2 gap-3">
                     <label class="block">
-                        <span class="block text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)] mb-1">Date départ</span>
-                        <input type="date" name="date_debut" required value="{{ depart or '' }}"
+                        <span class="block text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)] mb-1">Début (date & heure)</span>
+                        <input type="datetime-local" name="date_debut" required
+                               value="{{ (depart ~ 'T08:00') if depart else '' }}"
                                class="w-full text-sm text-ink bg-[color:var(--color-neutral-soft)] border-0 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-primary focus:bg-white transition-all">
                     </label>
                     <label class="block">
-                        <span class="block text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)] mb-1">Date retour</span>
-                        <input type="date" name="date_fin" value="{{ retour or '' }}"
+                        <span class="block text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)] mb-1">Fin (date & heure)</span>
+                        <input type="datetime-local" name="date_fin"
+                               value="{{ (retour ~ 'T14:00') if retour else '' }}"
                                class="w-full text-sm text-ink bg-[color:var(--color-neutral-soft)] border-0 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-primary focus:bg-white transition-all">
                     </label>
                 </div>

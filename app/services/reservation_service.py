@@ -1,10 +1,9 @@
-import datetime
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import Location
 from app.schemas import LocationForm
 from app.services import routing_service
+from app.services.type_location_rules import valider_type_location
 
 
 class ReservationError(Exception):
@@ -32,6 +31,13 @@ async def creer_reservation(
     )
     if type_location is None:
         raise ReservationError("Formule de location invalide pour cette voiture.")
+
+    date_fin = form.date_fin or form.date_debut
+    try:
+        valider_type_location(type_location.nom, form.date_debut, date_fin)
+    except ValueError as exc:
+        raise ReservationError(str(exc)) from exc
+
     prix_total = float(type_location.prix)
 
     loc = Location(
@@ -40,10 +46,8 @@ async def creer_reservation(
         client_nom=form.client_nom,
         client_telephone=form.client_telephone,
         client_email=form.client_email,
-        date_debut=datetime.datetime.combine(form.date_debut, datetime.time.min),
-        date_fin=datetime.datetime.combine(
-            form.date_fin or form.date_debut, datetime.time.max
-        ),
+        date_debut=form.date_debut,
+        date_fin=date_fin,
         prix_total=prix_total,
         statut="confirmée",
         notes=form.notes,
