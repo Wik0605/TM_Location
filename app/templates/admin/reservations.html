@@ -30,6 +30,17 @@
         <span class="text-gray-300 text-xs">—</span>
         {% endif %}
     </td>
+    <td class="px-4 py-4 text-xs">
+        {% if rental.itineraire_source == 'brouter' %}
+            <span class="inline-flex items-center px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 font-medium">BRouter</span>
+        {% elif rental.itineraire_source == 'osrm' %}
+            <span class="inline-flex items-center px-2 py-1 rounded-full bg-amber-50 text-amber-700 font-medium">OSRM</span>
+        {% elif rental.itineraire_source == 'haversine' %}
+            <span class="inline-flex items-center px-2 py-1 rounded-full bg-red-50 text-red-700 font-medium" title="Approximation (routeurs indisponibles)">Haversine</span>
+        {% else %}
+            <span class="text-gray-300">—</span>
+        {% endif %}
+    </td>
     <td class="px-4 py-4">
         <form hx-post="/admin/reservations/{{ rental.id }}/status"
               hx-target="#rental-{{ rental.id }}"
@@ -72,6 +83,7 @@
                 <th class="px-4 py-3 text-left">Formule</th>
                 <th class="px-4 py-3 text-left">Dates</th>
                 <th class="px-4 py-3 text-left">Plan de voyage</th>
+                <th class="px-4 py-3 text-left">Source calcul</th>
                 <th class="px-4 py-3 text-left">Statut</th>
                 <th class="px-4 py-3 text-right">Total</th>
                 <th class="px-4 py-3 text-center">Actions</th>
@@ -81,7 +93,7 @@
             {% for rental in rentals %}
                 {{ rental_row(rental) }}
             {% else %}
-            <tr><td colspan="9" class="px-6 py-10 text-center text-gray-400">Aucune réservation pour le moment</td></tr>
+            <tr><td colspan="10" class="px-6 py-10 text-center text-gray-400">Aucune réservation pour le moment</td></tr>
             {% endfor %}
         </tbody>
     </table>

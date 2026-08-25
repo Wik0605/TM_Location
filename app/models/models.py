@@ -152,6 +152,7 @@ class Location(Base):
     itineraire_depart: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     itineraire_arrivee: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     itineraire_etapes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    itineraire_source: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

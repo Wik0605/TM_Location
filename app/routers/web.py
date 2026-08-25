@@ -95,12 +95,6 @@ async def voiture_itineraire(request: Request, voiture_id: int, db: AsyncSession
     })
 
 
-@router.post("/voitures/{voiture_id}/itineraire/quota")
-async def itineraire_quota(request: Request, voiture_id: int):
-    from fastapi.responses import JSONResponse
-    return JSONResponse({"allowed": routing_service.verifier_quota(request)})
-
-
 @router.post("/voitures/{voiture_id}/reserver", response_class=HTMLResponse)
 @limiter.limit("10/hour")
 async def voiture_reserver(

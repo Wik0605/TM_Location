@@ -1,3 +1,4 @@
+import logging
 import math
 from datetime import date, datetime, timedelta, timezone
 from typing import Optional, List, Tuple
@@ -8,6 +9,8 @@ from fastapi import Request
 
 from app.config import settings
 
+logger = logging.getLogger(__name__)
+
 
 MADAGASCAR_LAT = (-25.7, -11.9)
 MADAGASCAR_LON = (43.2, 50.5)
@@ -16,6 +19,7 @@ TOKEN_TTL_SECONDS = 15 * 60
 HTTP_TIMEOUT = 5.0
 QUOTA_ANON_PAR_JOUR = 7
 JWT_ALGORITHM = "HS256"
+MIN_DISTANCE_KM = 0.1
 
 
 class RoutingError(Exception):
@@ -46,6 +50,11 @@ def _valider_waypoints(waypoints: List[Tuple[float, float]]) -> None:
             raise RoutingError("Latitude hors de Madagascar.")
         if not (MADAGASCAR_LON[0] <= lon <= MADAGASCAR_LON[1]):
             raise RoutingError("Longitude hors de Madagascar.")
+    for i in range(len(waypoints) - 1):
+        if _haversine_km(waypoints[i], waypoints[i + 1]) < MIN_DISTANCE_KM:
+            raise RoutingError(
+                f"Points consecutifs trop proches (min {int(MIN_DISTANCE_KM * 1000)} m)."
+            )
 
 
 def _haversine_km(a: Tuple[float, float], b: Tuple[float, float]) -> float:
@@ -146,18 +155,26 @@ async def calculer_itineraire(waypoints: List[Tuple[float, float]]) -> dict:
     async with httpx.AsyncClient() as client:
         result = await _appeler_brouter(waypoints, client)
         if result:
+            logger.info("itineraire_calcul source=brouter points=%d distance_km=%.2f",
+                        len(waypoints), result["distance_km"])
             return result
         result = await _appeler_osrm(waypoints, client)
         if result:
+            logger.warning("itineraire_calcul source=osrm points=%d distance_km=%.2f fallback_from=brouter",
+                           len(waypoints), result["distance_km"])
             return result
-    return _fallback_haversine(waypoints)
+    result = _fallback_haversine(waypoints)
+    logger.error("itineraire_calcul source=haversine points=%d distance_km=%.2f fallback_from=osrm",
+                 len(waypoints), result["distance_km"])
+    return result
 
 
-def emettre_token(distance_km: float, waypoints, voiture_id: int) -> str:
+def emettre_token(distance_km: float, waypoints, voiture_id: int, source: str) -> str:
     payload = {
         "distance_km": distance_km,
         "waypoints": [[lat, lon] for lat, lon in waypoints],
         "voiture_id": voiture_id,
+        "source": source,
         "exp": datetime.now(timezone.utc) + timedelta(seconds=TOKEN_TTL_SECONDS),
     }
     return jwt.encode(payload, settings.secret_key, algorithm=JWT_ALGORITHM)

@@ -13,6 +13,7 @@ async def creer_reservation(
     form: LocationForm,
     itinerary_token: str | None,
 ):
+    itinerary_source: str | None = None
     if itinerary_token:
         token_data = routing_service.lire_token(itinerary_token)
         if token_data and token_data["voiture_id"] == voiture.id:
@@ -20,6 +21,7 @@ async def creer_reservation(
             form.itinerary_waypoints = ";".join(
                 f"{lat},{lon}" for lat, lon in token_data["waypoints"]
             )
+            itinerary_source = token_data.get("source")
 
     type_location = next(
         (t for t in voiture.types_location if t.id == form.type_location_id), None
@@ -43,6 +45,7 @@ async def creer_reservation(
         itineraire_depart=form.itinerary_start_name,
         itineraire_arrivee=form.itinerary_end_name,
         itineraire_etapes=form.itinerary_waypoints,
+        itineraire_source=itinerary_source,
     )
     db.add(loc)
     await db.commit()

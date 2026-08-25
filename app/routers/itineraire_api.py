@@ -1,6 +1,7 @@
 from fastapi import APIRouter, BackgroundTasks, Request, Response, HTTPException
 from pydantic import BaseModel, Field, conlist
 
+from app.limiter import limiter
 from app.services import analytics_service, routing_service
 from app.services.routing_service import RoutingError
 
@@ -17,10 +18,11 @@ class WaypointsPayload(BaseModel):
 
 
 @router.post("/voitures/{voiture_id}/itineraire/calculer")
+@limiter.limit("30/minute")
 async def calculer_itineraire(
+    request: Request,
     voiture_id: int,
     payload: WaypointsPayload,
-    request: Request,
     response: Response,
     background: BackgroundTasks,
 ):
@@ -38,6 +40,7 @@ async def calculer_itineraire(
         distance_km=result["distance_km"],
         waypoints=waypoints,
         voiture_id=voiture_id,
+        source=result["source"],
     )
 
     session_id = analytics_service.get_or_create_session_id(request, response)
