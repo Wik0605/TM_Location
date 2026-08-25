@@ -46,11 +46,24 @@ STATIC_DIR = Path(__file__).parent.parent / "static"
 STATIC_CACHE_MAX_AGE = 60 * 60 * 24 * 7  # 7 jours
 
 
+CSP_POLICY = (
+    "default-src 'self'; "
+    "script-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com; "
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; "
+    "font-src 'self' https://fonts.gstatic.com; "
+    "img-src 'self' data: blob: https:; "
+    "connect-src 'self' https://photon.komoot.io; "
+    "frame-ancestors 'none'; "
+    "base-uri 'self'; "
+    "form-action 'self'"
+)
+
 SECURITY_HEADERS = {
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
     "Referrer-Policy": "strict-origin-when-cross-origin",
     "Permissions-Policy": "geolocation=(self), microphone=(), camera=()",
+    "Content-Security-Policy": CSP_POLICY,
 }
 
 

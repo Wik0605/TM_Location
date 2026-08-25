@@ -22,12 +22,16 @@ IMAGE_MAX_WIDTH = 1280
 IMAGE_WEBP_QUALITY = 82
 IMAGE_MAX_BYTES = 8 * 1024 * 1024
 IMAGE_MAX_PIXELS = 40_000_000
+ALLOWED_MIME = {"image/jpeg", "image/png", "image/webp"}
+ALLOWED_FORMATS = {"JPEG", "PNG", "WEBP"}
 
 Image.MAX_IMAGE_PIXELS = IMAGE_MAX_PIXELS
 
 
 def _save_optimized_image(raw: bytes, dest: Path) -> None:
     with Image.open(io.BytesIO(raw)) as im:
+        if im.format not in ALLOWED_FORMATS:
+            raise ValueError(f"Format image non autorise: {im.format}")
         im = im.convert("RGB") if im.mode in ("RGBA", "P") else im
         if im.width > IMAGE_MAX_WIDTH:
             ratio = IMAGE_MAX_WIDTH / im.width
@@ -129,7 +133,7 @@ async def add_voiture_images(
     upload_dir.mkdir(exist_ok=True)
 
     for file in files:
-        if not file.content_type or not file.content_type.startswith("image/"):
+        if file.content_type not in ALLOWED_MIME:
             continue
         raw = await _lire_upload_limite(file)
         if raw is None:
