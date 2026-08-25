@@ -16,8 +16,21 @@
     <td class="px-4 py-4 text-sm text-gray-600">
         {% if rental.type_location %}{{ rental.type_location.nom }}{% else %}—{% endif %}
     </td>
-    <td class="px-4 py-4 text-sm text-gray-600">
-        {{ rental.date_debut.strftime("%d/%m/%Y") }}
+    <td class="px-4 py-4 text-xs text-gray-700 whitespace-nowrap">
+        <p class="font-medium">{{ rental.date_debut.strftime("%d/%m/%Y") }}</p>
+        <p class="text-gray-500">{{ rental.date_debut.strftime("%H:%M") }}</p>
+    </td>
+    <td class="px-4 py-4 text-xs text-gray-600 font-mono whitespace-nowrap">
+        {% if rental.depart_coords %}{{ rental.depart_coords }}{% else %}<span class="text-gray-300">—</span>{% endif %}
+    </td>
+    <td class="px-4 py-4 text-xs text-gray-700 whitespace-nowrap">
+        {% if rental.date_fin %}
+        <p class="font-medium">{{ rental.date_fin.strftime("%d/%m/%Y") }}</p>
+        <p class="text-gray-500">{{ rental.date_fin.strftime("%H:%M") }}</p>
+        {% else %}<span class="text-gray-300">—</span>{% endif %}
+    </td>
+    <td class="px-4 py-4 text-xs text-gray-600 font-mono whitespace-nowrap">
+        {% if rental.arrivee_coords %}{{ rental.arrivee_coords }}{% else %}<span class="text-gray-300">—</span>{% endif %}
     </td>
     <td class="px-4 py-4 text-sm">
         {% if rental.itineraire_distance_km %}
@@ -74,14 +87,17 @@
 <h1 class="text-2xl font-bold text-gray-900 mb-8">Réservations</h1>
 
 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
-    <table class="w-full text-sm min-w-[900px]">
+    <table class="w-full text-sm min-w-[1200px]">
         <thead class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
             <tr>
                 <th class="px-4 py-3 text-left">#</th>
                 <th class="px-4 py-3 text-left">Client</th>
                 <th class="px-4 py-3 text-left">Véhicule</th>
                 <th class="px-4 py-3 text-left">Formule</th>
-                <th class="px-4 py-3 text-left">Dates</th>
+                <th class="px-4 py-3 text-left">Début</th>
+                <th class="px-4 py-3 text-left">Coords départ</th>
+                <th class="px-4 py-3 text-left">Fin</th>
+                <th class="px-4 py-3 text-left">Coords arrivée</th>
                 <th class="px-4 py-3 text-left">Plan de voyage</th>
                 <th class="px-4 py-3 text-left">Source calcul</th>
                 <th class="px-4 py-3 text-left">Statut</th>
@@ -93,7 +109,7 @@
             {% for rental in rentals %}
                 {{ rental_row(rental) }}
             {% else %}
-            <tr><td colspan="10" class="px-6 py-10 text-center text-gray-400">Aucune réservation pour le moment</td></tr>
+            <tr><td colspan="13" class="px-6 py-10 text-center text-gray-400">Aucune réservation pour le moment</td></tr>
             {% endfor %}
         </tbody>
     </table>

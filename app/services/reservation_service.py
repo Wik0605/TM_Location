@@ -17,13 +17,19 @@ async def creer_reservation(
     itinerary_token: str | None,
 ):
     itinerary_source: str | None = None
+    depart_coords: str | None = None
+    arrivee_coords: str | None = None
     if itinerary_token:
         token_data = routing_service.lire_token(itinerary_token)
         if token_data and token_data["voiture_id"] == voiture.id:
             form.itinerary_distance_km = token_data["distance_km"]
+            waypoints = token_data["waypoints"]
             form.itinerary_waypoints = ";".join(
-                f"{lat},{lon}" for lat, lon in token_data["waypoints"]
+                f"{lat},{lon}" for lat, lon in waypoints
             )
+            if waypoints:
+                depart_coords = f"{waypoints[0][0]},{waypoints[0][1]}"
+                arrivee_coords = f"{waypoints[-1][0]},{waypoints[-1][1]}"
             itinerary_source = token_data.get("source")
 
     type_location = next(
@@ -56,6 +62,8 @@ async def creer_reservation(
         itineraire_arrivee=form.itinerary_end_name,
         itineraire_etapes=form.itinerary_waypoints,
         itineraire_source=itinerary_source,
+        depart_coords=depart_coords,
+        arrivee_coords=arrivee_coords,
     )
     db.add(loc)
     await db.commit()

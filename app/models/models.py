@@ -151,6 +151,8 @@ class Location(Base):
     itineraire_distance_km: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     itineraire_depart: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     itineraire_arrivee: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    depart_coords: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    arrivee_coords: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     itineraire_etapes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     itineraire_source: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
