@@ -32,6 +32,16 @@
     <td class="px-4 py-4 text-xs text-gray-600 font-mono whitespace-nowrap">
         {% if rental.arrivee_coords %}{{ rental.arrivee_coords }}{% else %}<span class="text-gray-300">—</span>{% endif %}
     </td>
+    <td class="px-4 py-4 text-xs text-gray-700 whitespace-nowrap font-medium">
+        {% if rental.duree_minutes %}
+            {% set d = rental.duree_minutes // 1440 %}
+            {% set h = (rental.duree_minutes % 1440) // 60 %}
+            {% set m = rental.duree_minutes % 60 %}
+            {% if d > 0 %}{{ d }} j{% if h %} {{ h }} h{% endif %}
+            {% elif h > 0 %}{{ h }} h{% if m %} {{ m }} min{% endif %}
+            {% else %}{{ m }} min{% endif %}
+        {% else %}<span class="text-gray-300">—</span>{% endif %}
+    </td>
     <td class="px-4 py-4 text-sm">
         {% if rental.itineraire_distance_km %}
         <div class="text-xs space-y-0.5">
@@ -98,6 +108,7 @@
                 <th class="px-4 py-3 text-left">Coords départ</th>
                 <th class="px-4 py-3 text-left">Fin</th>
                 <th class="px-4 py-3 text-left">Coords arrivée</th>
+                <th class="px-4 py-3 text-left">Durée</th>
                 <th class="px-4 py-3 text-left">Plan de voyage</th>
                 <th class="px-4 py-3 text-left">Source calcul</th>
                 <th class="px-4 py-3 text-left">Statut</th>
@@ -109,7 +120,7 @@
             {% for rental in rentals %}
                 {{ rental_row(rental) }}
             {% else %}
-            <tr><td colspan="13" class="px-6 py-10 text-center text-gray-400">Aucune réservation pour le moment</td></tr>
+            <tr><td colspan="14" class="px-6 py-10 text-center text-gray-400">Aucune réservation pour le moment</td></tr>
             {% endfor %}
         </tbody>
     </table>

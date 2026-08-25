@@ -45,6 +45,7 @@ async def creer_reservation(
         raise ReservationError(str(exc)) from exc
 
     prix_total = float(type_location.prix)
+    duree_minutes = int((date_fin - form.date_debut).total_seconds() / 60)
 
     loc = Location(
         voiture_id=voiture.id,
@@ -54,6 +55,7 @@ async def creer_reservation(
         client_email=form.client_email,
         date_debut=form.date_debut,
         date_fin=date_fin,
+        duree_minutes=duree_minutes,
         prix_total=prix_total,
         statut="confirmée",
         notes=form.notes,

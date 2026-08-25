@@ -145,6 +145,7 @@ class Location(Base):
     client_email: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     date_debut: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     date_fin: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    duree_minutes: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     prix_total: Mapped[float] = mapped_column(Float, nullable=False)
     statut: Mapped[str] = mapped_column(String(20), default="confirmée")
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
