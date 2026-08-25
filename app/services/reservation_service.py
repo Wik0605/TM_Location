@@ -7,6 +7,10 @@ from app.schemas import LocationForm
 from app.services import routing_service
 
 
+class ReservationError(Exception):
+    pass
+
+
 async def creer_reservation(
     db: AsyncSession,
     voiture,
@@ -26,7 +30,9 @@ async def creer_reservation(
     type_location = next(
         (t for t in voiture.types_location if t.id == form.type_location_id), None
     )
-    prix_total = float(type_location.prix) if type_location else 0.0
+    if type_location is None:
+        raise ReservationError("Formule de location invalide pour cette voiture.")
+    prix_total = float(type_location.prix)
 
     loc = Location(
         voiture_id=voiture.id,

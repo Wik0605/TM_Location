@@ -142,9 +142,16 @@ async def voiture_reserver(
             "erreur_disponibilite": True,
         }, status_code=409)
 
-    loc, type_location = await reservation_service.creer_reservation(
-        db, voiture, form, form_data.get("itinerary_token")
-    )
+    try:
+        loc, type_location = await reservation_service.creer_reservation(
+            db, voiture, form, form_data.get("itinerary_token")
+        )
+    except reservation_service.ReservationError as e:
+        return templates.TemplateResponse("voiture_detail.html", {
+            "request": request,
+            "voiture": voiture,
+            "error": str(e),
+        }, status_code=400)
 
     ctx = analytics_service.extraire_contexte(request)
     background.add_task(
