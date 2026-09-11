@@ -21,8 +21,8 @@ RULES = [
     {
         "keywords": ["demi", "1/2"],
         "libelle": "1/2 journée",
-        "heure_debut_min": 6,
-        "heure_debut_max": 12,
+        "heure_debut_min": 1,
+        "heure_debut_max": 6,
         "duree_h": 6,
     },
     {
