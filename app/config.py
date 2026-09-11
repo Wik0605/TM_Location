@@ -10,6 +10,9 @@ class Settings(BaseSettings):
     google_client_id: str = ""
     google_client_secret: str = ""
     google_redirect_uri: str = "http://localhost:8000/auth/google/callback"
+    facebook_client_id: str = ""
+    facebook_client_secret: str = ""
+    facebook_redirect_uri: str = "http://localhost:8000/auth/facebook/callback"
     environment: str = "development"
     allowed_origins: str = "http://localhost:8000,http://127.0.0.1:8000"
 

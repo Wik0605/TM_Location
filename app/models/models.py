@@ -198,11 +198,12 @@ class AnalyticsEvent(Base):
 
 
 class User(Base):
-    """Client connecté via Google OAuth."""
+    """Client connecté via OAuth (Google, Facebook)."""
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    google_id: Mapped[str] = mapped_column(String(100), nullable=False, unique=True, index=True)
+    google_id: Mapped[Optional[str]] = mapped_column(String(100), nullable=True, unique=True, index=True)
+    facebook_id: Mapped[Optional[str]] = mapped_column(String(100), nullable=True, unique=True, index=True)
     email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
     name: Mapped[str] = mapped_column(String(150), nullable=False)
     picture: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
