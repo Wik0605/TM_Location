@@ -2,7 +2,6 @@
 Modèles de données SQLAlchemy
 
 Tables actives :
-- City : Quartiers de départ/arrivée (Antananarivo)
 - Voiture : Véhicules disponibles à la location
 - VoitureImage : Photos d'un véhicule
 - TypeLocation : Tarifs propres à chaque voiture (ex: "Mariage — 500 000 Ar")
@@ -15,20 +14,6 @@ from typing import Optional
 from sqlalchemy import String, Integer, Float, DateTime, ForeignKey, Text, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base
-
-
-class City(Base):
-    """Quartiers disponibles pour la sélection départ/arrivée."""
-    __tablename__ = "cities"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
-    latitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    longitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-
-    def __repr__(self):
-        return f"<City(id={self.id}, name='{self.name}')>"
 
 
 class Voiture(Base):
@@ -211,20 +196,5 @@ class User(Base):
 
     def __repr__(self):
         return f"<User(id={self.id}, email='{self.email}')>"
-
-
-# =============================================================================
-# DONNÉES INITIALES
-# =============================================================================
-
-def get_initial_cities() -> list[dict]:
-    return [
-        {"name": "Analakely", "latitude": -18.9056, "longitude": 47.5267},
-        {"name": "Anosy", "latitude": -18.9142, "longitude": 47.5217},
-        {"name": "Ivandry", "latitude": -18.8683, "longitude": 47.5250},
-        {"name": "Andraharo", "latitude": -18.8708, "longitude": 47.5083},
-        {"name": "Tanjombato", "latitude": -18.9567, "longitude": 47.5222},
-        {"name": "Ambohipo", "latitude": -18.9225, "longitude": 47.5500},
-    ]
 
 

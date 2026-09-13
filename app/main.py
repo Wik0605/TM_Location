@@ -99,27 +99,10 @@ async def lifespan(app: FastAPI):
     """
     logger.info("Démarrage de TM_Location...")
     await init_db()
-    await seed_initial_data()
     logger.info("Application prête !")
     yield
     logger.info("Arrêt de TM_Location...")
     await engine.dispose()
-
-
-async def seed_initial_data():
-    """Insère les villes initiales si la DB est vide."""
-    from sqlalchemy import select
-    from app.database import AsyncSessionLocal
-    from app.models import City, get_initial_cities
-
-    async with AsyncSessionLocal() as session:
-        existing = await session.execute(select(City))
-        if not existing.scalars().first():
-            logger.info("Insertion des villes initiales...")
-            for city_data in get_initial_cities():
-                session.add(City(**city_data))
-            await session.commit()
-            logger.info("Villes insérées !")
 
 
 app = FastAPI(
