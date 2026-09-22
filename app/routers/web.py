@@ -68,11 +68,21 @@ async def voitures_list(request: Request, db: AsyncSession = Depends(get_db)):
     })
 
 
-@router.get("/voitures/{voiture_id}", response_class=HTMLResponse)
-async def voiture_detail(request: Request, voiture_id: int, db: AsyncSession = Depends(get_db)):
-    voiture = await car_service.get_voiture_by_id(db, voiture_id)
+async def _resoudre_voiture(db: AsyncSession, key: str):
+    if key.isdigit():
+        voiture = await car_service.get_voiture_by_id(db, int(key))
+        return voiture, True
+    voiture = await car_service.get_voiture_by_slug(db, key)
+    return voiture, False
+
+
+@router.get("/voitures/{key}", response_class=HTMLResponse)
+async def voiture_detail(request: Request, key: str, db: AsyncSession = Depends(get_db)):
+    voiture, par_id = await _resoudre_voiture(db, key)
     if not voiture:
         return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
+    if par_id:
+        return RedirectResponse(f"/voitures/{voiture.slug}", status_code=301)
     depart = _parse_date(request.query_params.get("depart"))
     retour = _parse_date(request.query_params.get("retour"))
     return templates.TemplateResponse("voiture_detail.html", {
@@ -83,11 +93,13 @@ async def voiture_detail(request: Request, voiture_id: int, db: AsyncSession = D
     })
 
 
-@router.get("/voitures/{voiture_id}/itineraire", response_class=HTMLResponse)
-async def voiture_itineraire(request: Request, voiture_id: int, db: AsyncSession = Depends(get_db)):
-    voiture = await car_service.get_voiture_by_id(db, voiture_id)
+@router.get("/voitures/{key}/itineraire", response_class=HTMLResponse)
+async def voiture_itineraire(request: Request, key: str, db: AsyncSession = Depends(get_db)):
+    voiture, par_id = await _resoudre_voiture(db, key)
     if not voiture:
         return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
+    if par_id:
+        return RedirectResponse(f"/voitures/{voiture.slug}/itineraire", status_code=301)
     return templates.TemplateResponse("itineraire.html", {
         "request": request,
         "car": voiture,
@@ -95,16 +107,16 @@ async def voiture_itineraire(request: Request, voiture_id: int, db: AsyncSession
     })
 
 
-@router.post("/voitures/{voiture_id}/reserver", response_class=HTMLResponse)
+@router.post("/voitures/{key}/reserver", response_class=HTMLResponse)
 @limiter.limit("10/hour")
 async def voiture_reserver(
     request: Request,
-    voiture_id: int,
+    key: str,
     background: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
     _csrf: None = Depends(require_csrf),
 ):
-    voiture = await car_service.get_voiture_by_id(db, voiture_id)
+    voiture, _ = await _resoudre_voiture(db, key)
     if not voiture:
         return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
 
@@ -194,8 +206,8 @@ async def sitemap_xml(request: Request, db: AsyncSession = Depends(get_db)):
 
     urls = [f"{base}/", f"{base}/voitures"]
     for v in voitures:
-        urls.append(f"{base}/voitures/{v.id}")
-        urls.append(f"{base}/voitures/{v.id}/itineraire")
+        urls.append(f"{base}/voitures/{v.slug}")
+        urls.append(f"{base}/voitures/{v.slug}/itineraire")
 
     body = ['<?xml version="1.0" encoding="UTF-8"?>',
             '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
