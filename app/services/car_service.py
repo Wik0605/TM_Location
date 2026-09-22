@@ -78,3 +78,12 @@ async def get_voiture_by_id(db: AsyncSession, voiture_id: int) -> Optional[Voitu
         .options(selectinload(Voiture.images), selectinload(Voiture.types_location))
     )
     return result.scalar_one_or_none()
+
+
+async def get_voiture_by_slug(db: AsyncSession, slug: str) -> Optional[Voiture]:
+    result = await db.execute(
+        select(Voiture)
+        .where(Voiture.slug == slug)
+        .options(selectinload(Voiture.images), selectinload(Voiture.types_location))
+    )
+    return result.scalar_one_or_none()
