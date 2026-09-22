@@ -18,6 +18,7 @@ Pourquoi SQLite en développement ?
 
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
+from sqlmodel import SQLModel
 from pathlib import Path
 
 # Chemin vers la base de données SQLite
@@ -77,8 +78,10 @@ async def init_db():
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
     """
+    # Import des modeles SQLModel pour peupler SQLModel.metadata
+    from app.models import voiture, reservation, user, analytics  # noqa: F401
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+        await conn.run_sync(SQLModel.metadata.create_all)
 
 
 async def get_db():

@@ -20,12 +20,17 @@ import sys
 import os
 sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), '..')))
 
-from app.database import Base, DATABASE_URL
-from app import models
+from sqlmodel import SQLModel
+from app.database import DATABASE_URL
 
-# add your model's MetaData object here
-# for 'autogenerate' support
-target_metadata = Base.metadata
+# Import des nouveaux modeles SQLModel (source unique)
+# Chaque import enregistre la classe dans SQLModel.metadata
+from app.models import voiture as _voiture  # noqa: F401
+from app.models import reservation as _reservation  # noqa: F401
+from app.models import user as _user  # noqa: F401
+from app.models import analytics as _analytics  # noqa: F401
+
+target_metadata = SQLModel.metadata
 
 config.set_main_option("sqlalchemy.url", DATABASE_URL)
 
