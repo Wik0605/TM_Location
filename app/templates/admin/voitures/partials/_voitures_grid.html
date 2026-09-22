@@ -1,7 +1,7 @@
 {% if voitures %}
 <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
     {% for voiture in voitures %}
-        {% include "admin/partials/_voiture_card.html" %}
+        {% include "admin/voitures/partials/_voiture_card.html" %}
     {% endfor %}
 </div>
 {% else %}

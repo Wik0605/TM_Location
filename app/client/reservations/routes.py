@@ -30,7 +30,7 @@ async def voiture_reserver(
 ):
     voiture, _ = await car_service.resoudre_voiture(db, key)
     if not voiture:
-        return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
+        return templates.TemplateResponse("client/pages/404.html", {"request": request}, status_code=404)
 
     form_data = await request.form()
     try:
@@ -48,7 +48,7 @@ async def voiture_reserver(
             itinerary_waypoints=None,
         )
     except ValidationError as e:
-        return templates.TemplateResponse("voiture_detail.html", {
+        return templates.TemplateResponse("client/voitures/voiture_detail.html", {
             "request": request,
             "voiture": voiture,
             "error": _traduire_erreur(e),
@@ -58,7 +58,7 @@ async def voiture_reserver(
         db, voiture.id, form.date_debut, form.date_fin
     )
     if not disponible:
-        return templates.TemplateResponse("voiture_detail.html", {
+        return templates.TemplateResponse("client/voitures/voiture_detail.html", {
             "request": request,
             "voiture": voiture,
             "depart": form.date_debut.isoformat(),
@@ -71,7 +71,7 @@ async def voiture_reserver(
             db, voiture, form, form_data.get("itinerary_token")
         )
     except reservation_service.ReservationError as e:
-        return templates.TemplateResponse("voiture_detail.html", {
+        return templates.TemplateResponse("client/voitures/voiture_detail.html", {
             "request": request,
             "voiture": voiture,
             "error": str(e),
@@ -86,7 +86,7 @@ async def voiture_reserver(
         loc,
     )
 
-    return templates.TemplateResponse("voiture_confirmation.html", {
+    return templates.TemplateResponse("client/reservations/voiture_confirmation.html", {
         "request": request,
         "location": loc,
         "voiture": voiture,

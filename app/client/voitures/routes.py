@@ -28,7 +28,7 @@ async def voitures_list(request: Request, db: AsyncSession = Depends(get_db)):
     voitures_dispo = await service.get_voitures_avec_disponibilite(
         db, depart, retour, order_by_marque=True
     )
-    return templates.TemplateResponse("voitures.html", {
+    return templates.TemplateResponse("client/voitures/voitures.html", {
         "request": request,
         "voitures_dispo": voitures_dispo,
         "depart": depart.isoformat() if depart else "",
@@ -40,12 +40,12 @@ async def voitures_list(request: Request, db: AsyncSession = Depends(get_db)):
 async def voiture_detail(request: Request, key: str, db: AsyncSession = Depends(get_db)):
     voiture, par_id = await service.resoudre_voiture(db, key)
     if not voiture:
-        return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
+        return templates.TemplateResponse("client/pages/404.html", {"request": request}, status_code=404)
     if par_id:
         return RedirectResponse(f"/voitures/{voiture.slug}", status_code=301)
     depart = _parse_date(request.query_params.get("depart"))
     retour = _parse_date(request.query_params.get("retour"))
-    return templates.TemplateResponse("voiture_detail.html", {
+    return templates.TemplateResponse("client/voitures/voiture_detail.html", {
         "request": request,
         "voiture": voiture,
         "depart": depart.isoformat() if depart else "",
@@ -57,10 +57,10 @@ async def voiture_detail(request: Request, key: str, db: AsyncSession = Depends(
 async def voiture_itineraire(request: Request, key: str, db: AsyncSession = Depends(get_db)):
     voiture, par_id = await service.resoudre_voiture(db, key)
     if not voiture:
-        return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
+        return templates.TemplateResponse("client/pages/404.html", {"request": request}, status_code=404)
     if par_id:
         return RedirectResponse(f"/voitures/{voiture.slug}/itineraire", status_code=301)
-    return templates.TemplateResponse("itineraire.html", {
+    return templates.TemplateResponse("client/voitures/itineraire.html", {
         "request": request,
         "car": voiture,
         "rental_types": voiture.types_location,

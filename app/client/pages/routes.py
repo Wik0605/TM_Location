@@ -28,7 +28,7 @@ async def home(request: Request, db: AsyncSession = Depends(get_db)):
     voitures_dispo = await car_service.get_voitures_avec_disponibilite(
         db, depart, retour, limit=6
     )
-    return templates.TemplateResponse("index.html", {
+    return templates.TemplateResponse("client/pages/index.html", {
         "request": request,
         "voitures_dispo": voitures_dispo,
         "depart": depart.isoformat() if depart else "",
@@ -38,7 +38,7 @@ async def home(request: Request, db: AsyncSession = Depends(get_db)):
 
 @router.get("/profile", response_class=HTMLResponse)
 async def profile_page(request: Request):
-    return templates.TemplateResponse("profile.html", {"request": request})
+    return templates.TemplateResponse("client/pages/profile.html", {"request": request})
 
 
 @router.get("/robots.txt", response_class=PlainTextResponse)

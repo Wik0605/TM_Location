@@ -79,7 +79,7 @@
             <p class="text-sm font-semibold text-gray-700 mb-2">Photos</p>
             <div id="voiture-images-{{ voiture.id }}">
                 {% with voiture=voiture %}
-                    {% include "admin/partials/_voiture_images.html" %}
+                    {% include "admin/voitures/partials/_voiture_images.html" %}
                 {% endwith %}
             </div>
             <form hx-post="/admin/voitures/{{ voiture.id }}/images"
@@ -102,7 +102,7 @@
             <p class="text-sm font-semibold text-gray-700 mb-2">Tarifs</p>
             <div id="types-location-{{ voiture.id }}">
                 {% with voiture=voiture %}
-                    {% include "admin/partials/_types_location_list.html" %}
+                    {% include "admin/voitures/partials/_types_location_list.html" %}
                 {% endwith %}
             </div>
 

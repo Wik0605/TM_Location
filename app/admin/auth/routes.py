@@ -31,7 +31,7 @@ router = APIRouter(prefix="/admin", tags=["admin-auth"])
 async def admin_login_page(request: Request):
     if request.session.get(ADMIN_SESSION_KEY):
         return RedirectResponse("/admin", status_code=302)
-    return templates.TemplateResponse("admin/login.html", {"request": request})
+    return templates.TemplateResponse("admin/auth/login.html", {"request": request})
 
 
 @router.post("/login")
@@ -52,7 +52,7 @@ async def admin_login(
     security_logger.warning(
         "admin_login_failure user=%s ip=%s", form.username, ip
     )
-    return templates.TemplateResponse("admin/login.html", {
+    return templates.TemplateResponse("admin/auth/login.html", {
         "request": request,
         "error": "Identifiant ou mot de passe incorrect.",
     })
@@ -70,7 +70,7 @@ async def login_rate_limit_handler(request: Request, exc: RateLimitExceeded):
     )
     if request.url.path == "/admin/login":
         return templates.TemplateResponse(
-            "admin/login.html",
+            "admin/auth/login.html",
             {
                 "request": request,
                 "error": "Trop de tentatives. Réessayez dans quelques minutes.",

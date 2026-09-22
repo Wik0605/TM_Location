@@ -25,7 +25,7 @@ router = APIRouter(
 async def admin_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
     stats = await service.get_dashboard_stats(db)
     recent_locations = await service.get_all_locations(db)
-    return templates.TemplateResponse("admin/dashboard.html", {
+    return templates.TemplateResponse("admin/reservations/dashboard.html", {
         "request": request,
         "stats": stats,
         "recent_rentals": recent_locations[:5],
@@ -35,7 +35,7 @@ async def admin_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
 @router.get("/reservations", response_class=HTMLResponse)
 async def admin_reservations(request: Request, db: AsyncSession = Depends(get_db)):
     locations = await service.get_all_locations(db)
-    return templates.TemplateResponse("admin/reservations.html", {
+    return templates.TemplateResponse("admin/reservations/reservations.html", {
         "request": request,
         "rentals": locations,
     })
@@ -49,7 +49,7 @@ async def update_location_status(
     db: AsyncSession = Depends(get_db),
 ):
     loc = await service.update_location_statut(db, location_id, form.status.value)
-    template = templates.env.get_template("admin/reservations.html")
+    template = templates.env.get_template("admin/reservations/reservations.html")
     return HTMLResponse(template.module.rental_row(loc))
 
 

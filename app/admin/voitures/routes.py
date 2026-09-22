@@ -34,7 +34,7 @@ router = APIRouter(
 @router.get("/voitures", response_class=HTMLResponse)
 async def admin_voitures(request: Request, db: AsyncSession = Depends(get_db)):
     voitures = await service.get_all_voitures(db)
-    return templates.TemplateResponse("admin/voitures.html", {
+    return templates.TemplateResponse("admin/voitures/voitures.html", {
         "request": request,
         "voitures": voitures,
         "active": "voitures",
@@ -58,7 +58,7 @@ async def create_voiture(
     }
     await service.create_voiture(db, data)
     voitures = await service.get_all_voitures(db)
-    return templates.TemplateResponse("admin/partials/_voitures_grid.html", {
+    return templates.TemplateResponse("admin/voitures/partials/_voitures_grid.html", {
         "request": request,
         "voitures": voitures,
     })
@@ -72,7 +72,7 @@ async def delete_voiture(
 ):
     await service.delete_voiture(db, voiture_id)
     voitures = await service.get_all_voitures(db)
-    return templates.TemplateResponse("admin/partials/_voitures_grid.html", {
+    return templates.TemplateResponse("admin/voitures/partials/_voitures_grid.html", {
         "request": request,
         "voitures": voitures,
     })
@@ -94,7 +94,7 @@ async def edit_voiture(
     }
     data = {k: v for k, v in data.items() if v is not None}
     voiture = await service.update_voiture(db, voiture_id, data)
-    return templates.TemplateResponse("admin/partials/_voiture_card.html", {
+    return templates.TemplateResponse("admin/voitures/partials/_voiture_card.html", {
         "request": request,
         "voiture": voiture,
         "success": True,
@@ -127,7 +127,7 @@ async def add_voiture_images(
         await service.add_voiture_image(db, voiture_id, url)
 
     voiture = await service.get_voiture_by_id(db, voiture_id)
-    return templates.TemplateResponse("admin/partials/_voiture_images.html", {
+    return templates.TemplateResponse("admin/voitures/partials/_voiture_images.html", {
         "request": request,
         "voiture": voiture,
     })
@@ -142,7 +142,7 @@ async def delete_voiture_image(
 ):
     await service.delete_voiture_image(db, image_id)
     voiture = await service.get_voiture_by_id(db, voiture_id)
-    return templates.TemplateResponse("admin/partials/_voiture_images.html", {
+    return templates.TemplateResponse("admin/voitures/partials/_voiture_images.html", {
         "request": request,
         "voiture": voiture,
     })
@@ -157,7 +157,7 @@ async def add_type_location(
 ):
     await service.add_type_location(db, voiture_id, form.nom, form.prix)
     voiture = await service.get_voiture_by_id(db, voiture_id)
-    return templates.TemplateResponse("admin/partials/_types_location_list.html", {
+    return templates.TemplateResponse("admin/voitures/partials/_types_location_list.html", {
         "request": request,
         "voiture": voiture,
     })
@@ -172,7 +172,7 @@ async def delete_type_location(
 ):
     await service.delete_type_location(db, type_id)
     voiture = await service.get_voiture_by_id(db, voiture_id)
-    return templates.TemplateResponse("admin/partials/_types_location_list.html", {
+    return templates.TemplateResponse("admin/voitures/partials/_types_location_list.html", {
         "request": request,
         "voiture": voiture,
     })

@@ -28,7 +28,7 @@ async def admin_stats(request: Request, db: AsyncSession = Depends(get_db)):
     types_breakdown = await service.get_types_location_breakdown(db)
     trajets = await service.get_recent_trajets(db)
 
-    return templates.TemplateResponse("admin/stats.html", {
+    return templates.TemplateResponse("admin/stats/stats.html", {
         "request": request,
         "overview": overview,
         "daily": daily,
