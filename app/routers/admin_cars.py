@@ -12,7 +12,7 @@ from app.csrf import require_csrf
 from app.database import get_db
 from app.models import Voiture
 from app.services import admin_service
-from app.routers.admin_auth import require_admin
+from app.shared.security import require_admin
 from app.schemas import VoitureCreateForm, VoitureUpdateForm, TypeLocationForm
 from app.templating import templates
 from app.utils.slug import slugify, unique_slug

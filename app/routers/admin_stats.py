@@ -7,7 +7,7 @@ from fastapi.responses import HTMLResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.routers.admin_auth import require_admin
+from app.shared.security import require_admin
 from app.services import analytics_admin_service
 from app.templating import templates
 

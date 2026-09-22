@@ -1,14 +1,15 @@
 import logging
 import secrets
 
-from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import APIRouter, Depends, Request
+from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
 from slowapi.errors import RateLimitExceeded
 
 from app.config import settings
-from app.csrf import require_csrf
 from app.limiter import limiter
 from app.schemas import AdminLoginForm
+from app.shared.deps import require_csrf
+from app.shared.security import ADMIN_SESSION_KEY
 from app.templating import templates
 
 LOGIN_RATE_LIMIT = "5/15minutes"
@@ -22,17 +23,13 @@ def _client_ip(request: Request) -> str:
         return fwd.split(",")[0].strip()
     return request.client.host if request.client else "unknown"
 
+
 router = APIRouter(prefix="/admin", tags=["admin-auth"])
-
-
-def require_admin(request: Request) -> None:
-    if not request.session.get("admin_logged_in"):
-        raise HTTPException(status_code=302, headers={"Location": "/admin/login"})
 
 
 @router.get("/login", response_class=HTMLResponse)
 async def admin_login_page(request: Request):
-    if request.session.get("admin_logged_in"):
+    if request.session.get(ADMIN_SESSION_KEY):
         return RedirectResponse("/admin", status_code=302)
     return templates.TemplateResponse("admin/login.html", {"request": request})
 
@@ -49,7 +46,7 @@ async def admin_login(
     ip = _client_ip(request)
     if ok_user and ok_pass:
         request.session.clear()
-        request.session["admin_logged_in"] = True
+        request.session[ADMIN_SESSION_KEY] = True
         security_logger.info("admin_login_success user=%s ip=%s", form.username, ip)
         return RedirectResponse("/admin", status_code=302)
     security_logger.warning(
@@ -80,7 +77,6 @@ async def login_rate_limit_handler(request: Request, exc: RateLimitExceeded):
             },
             status_code=429,
         )
-    from fastapi.responses import PlainTextResponse
     return PlainTextResponse(
         "Trop de requêtes. Réessayez dans quelques minutes.",
         status_code=429,

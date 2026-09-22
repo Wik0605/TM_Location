@@ -9,7 +9,8 @@ from app.csrf import require_csrf
 from app.database import get_db
 from app.limiter import limiter
 from app.services import admin_service
-from app.routers.admin_auth import require_admin, _client_ip, security_logger
+from app.admin.auth.routes import _client_ip, security_logger
+from app.shared.security import require_admin
 from app.schemas import RentalStatusForm, RentalDeleteForm
 from app.templating import templates
 
