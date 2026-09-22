@@ -2,6 +2,18 @@
 
 {% block title %}{{ voiture.nom }}{% endblock %}
 
+{% block description %}{{ voiture.description[:160] }}{% endblock %}
+
+{% block head_extra %}
+<link rel="canonical" href="{{ request.base_url }}voitures/{{ voiture.slug }}">
+<meta property="og:type" content="product">
+<meta property="og:title" content="{{ voiture.nom }} — TM Location">
+<meta property="og:description" content="{{ voiture.description[:160] }}">
+{% if voiture.images %}
+<meta property="og:image" content="{{ request.base_url }}{{ voiture.images[0].url.lstrip('/') }}">
+{% endif %}
+{% endblock %}
+
 {% block content %}
 {% set photos = (voiture.images | map(attribute='url') | list) %}
 
@@ -120,7 +132,7 @@
         </div>
         {% endif %}
 
-        <form action="/voitures/{{ voiture.id }}/reserver" method="POST" class="space-y-3" id="form-reserver">
+        <form action="/voitures/{{ voiture.slug }}/reserver" method="POST" class="space-y-3" id="form-reserver">
             {{ csrf_input(request) }}
             <input type="hidden" name="type_location_id" id="hidden-type-location-id"
                    value="{{ voiture.types_location[0].id if voiture.types_location else '' }}">
@@ -159,7 +171,7 @@
             </div>
 
             <!-- CTA principal ambre : calculateur d'itinéraire -->
-            <a href="/voitures/{{ voiture.id }}/itineraire"
+            <a href="/voitures/{{ voiture.slug }}/itineraire"
                class="flex items-center justify-center gap-2 w-full bg-primary hover:bg-primary-dark text-white font-bold text-sm py-3.5 rounded-2xl uppercase tracking-widest transition-all shadow-lg mt-2">
                 <span>📍</span>
                 <span>Ouvrir le calculateur d'itinéraire</span>

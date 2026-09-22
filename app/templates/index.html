@@ -71,7 +71,7 @@
         {% for voiture, is_available in voitures_dispo %}
         {% set first_photo = voiture.images[0].url if voiture.images else None %}
         {% set prix_min = voiture.types_location | map(attribute='prix') | min if voiture.types_location else None %}
-        <a href="/voitures/{{ voiture.id }}{{ query_dates }}"
+        <a href="/voitures/{{ voiture.slug }}{{ query_dates }}"
            class="block bg-white rounded-3xl overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_28px_rgba(0,0,0,0.10)] hover:-translate-y-1 transition-all border border-[color:var(--color-border)] {% if not is_available %}opacity-70{% endif %}">
 
             <!-- Image + badges -->
