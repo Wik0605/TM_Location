@@ -25,7 +25,7 @@ from slowapi.errors import RateLimitExceeded
 from app.config import settings
 from app.database import init_db, engine
 from app.limiter import limiter
-from app.routers.web import router as web_router
+from app.client.pages.routes import router as web_router
 from app.admin.auth.routes import router as admin_auth_router, login_rate_limit_handler
 from app.admin.voitures.routes import router as admin_cars_router
 from app.admin.reservations.routes import router as admin_rentals_router

@@ -4,22 +4,12 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, PlainTextResponse, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database import get_db
 from app.client.voitures import service as car_service
+from app.shared.deps import get_db
 from app.templating import templates
 
-router = APIRouter(prefix="", tags=["web"])
-def _to_webp(url: str) -> str:
-    if not url:
-        return url
-    for ext in (".png", ".jpg", ".jpeg", ".PNG", ".JPG", ".JPEG"):
-        if url.endswith(ext):
-            return url[: -len(ext)] + ".webp"
-    return url
 
-
-templates.env.filters["current_year"] = lambda: datetime.datetime.now().year
-templates.env.filters["to_webp"] = _to_webp
+router = APIRouter(prefix="", tags=["client-pages"])
 
 
 def _parse_date(value: str | None) -> datetime.date | None:
