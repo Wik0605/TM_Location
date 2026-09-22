@@ -8,7 +8,8 @@ from app.csrf import require_csrf
 from app.database import get_db
 from app.limiter import limiter
 from app.client.analytics import service as analytics_service
-from app.services import car_service, routing_service, reservation_service
+from app.client.voitures import service as car_service
+from app.services import routing_service, reservation_service
 from app.schemas import LocationForm
 from app.templating import templates
 
@@ -54,60 +55,6 @@ async def home(request: Request, db: AsyncSession = Depends(get_db)):
     })
 
 
-@router.get("/voitures", response_class=HTMLResponse)
-async def voitures_list(request: Request, db: AsyncSession = Depends(get_db)):
-    depart = _parse_date(request.query_params.get("depart"))
-    retour = _parse_date(request.query_params.get("retour"))
-    voitures_dispo = await car_service.get_voitures_avec_disponibilite(
-        db, depart, retour, order_by_marque=True
-    )
-    return templates.TemplateResponse("voitures.html", {
-        "request": request,
-        "voitures_dispo": voitures_dispo,
-        "depart": depart.isoformat() if depart else "",
-        "retour": retour.isoformat() if retour else "",
-    })
-
-
-async def _resoudre_voiture(db: AsyncSession, key: str):
-    if key.isdigit():
-        voiture = await car_service.get_voiture_by_id(db, int(key))
-        return voiture, True
-    voiture = await car_service.get_voiture_by_slug(db, key)
-    return voiture, False
-
-
-@router.get("/voitures/{key}", response_class=HTMLResponse)
-async def voiture_detail(request: Request, key: str, db: AsyncSession = Depends(get_db)):
-    voiture, par_id = await _resoudre_voiture(db, key)
-    if not voiture:
-        return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
-    if par_id:
-        return RedirectResponse(f"/voitures/{voiture.slug}", status_code=301)
-    depart = _parse_date(request.query_params.get("depart"))
-    retour = _parse_date(request.query_params.get("retour"))
-    return templates.TemplateResponse("voiture_detail.html", {
-        "request": request,
-        "voiture": voiture,
-        "depart": depart.isoformat() if depart else "",
-        "retour": retour.isoformat() if retour else "",
-    })
-
-
-@router.get("/voitures/{key}/itineraire", response_class=HTMLResponse)
-async def voiture_itineraire(request: Request, key: str, db: AsyncSession = Depends(get_db)):
-    voiture, par_id = await _resoudre_voiture(db, key)
-    if not voiture:
-        return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
-    if par_id:
-        return RedirectResponse(f"/voitures/{voiture.slug}/itineraire", status_code=301)
-    return templates.TemplateResponse("itineraire.html", {
-        "request": request,
-        "car": voiture,
-        "rental_types": voiture.types_location,
-    })
-
-
 @router.post("/voitures/{key}/reserver", response_class=HTMLResponse)
 @limiter.limit("10/hour")
 async def voiture_reserver(
@@ -117,7 +64,7 @@ async def voiture_reserver(
     db: AsyncSession = Depends(get_db),
     _csrf: None = Depends(require_csrf),
 ):
-    voiture, _ = await _resoudre_voiture(db, key)
+    voiture, _ = await car_service.resoudre_voiture(db, key)
     if not voiture:
         return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
 

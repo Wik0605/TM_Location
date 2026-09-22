@@ -27,7 +27,8 @@ from app.database import init_db, engine
 from app.limiter import limiter
 from app.routers.web import router as web_router
 from app.admin.auth.routes import router as admin_auth_router, login_rate_limit_handler
-from app.routers.admin_cars import router as admin_cars_router
+from app.admin.voitures.routes import router as admin_cars_router
+from app.client.voitures.routes import router as client_voitures_router
 from app.routers.admin_rentals import router as admin_rentals_router
 from app.client.auth.routes import router as auth_router
 from app.routers.itineraire_api import router as itineraire_api_router
@@ -159,6 +160,7 @@ if STATIC_DIR.exists():
 
 
 app.include_router(web_router)
+app.include_router(client_voitures_router)
 app.include_router(admin_auth_router)
 app.include_router(admin_cars_router)
 app.include_router(admin_rentals_router)

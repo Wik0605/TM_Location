@@ -1,64 +1,39 @@
-from fastapi import APIRouter, Request, Depends, UploadFile, File
+import uuid
+from pathlib import Path
+from typing import List
+
+from fastapi import APIRouter, Depends, File, Request, UploadFile
 from fastapi.responses import HTMLResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List
-from pathlib import Path
-import io
-import uuid
 
-from PIL import Image
-
-from app.csrf import require_csrf
-from app.database import get_db
-from app.models import Voiture
-from app.services import admin_service
+from app.admin.voitures import service
+from app.models.voiture import Voiture
+from app.schemas import TypeLocationForm, VoitureCreateForm, VoitureUpdateForm
+from app.shared.deps import get_db, require_csrf
 from app.shared.security import require_admin
-from app.schemas import VoitureCreateForm, VoitureUpdateForm, TypeLocationForm
+from app.shared.utils.images import (
+    ALLOWED_MIME,
+    lire_upload_limite,
+    save_optimized_image,
+)
+from app.shared.utils.slug import slugify, unique_slug
 from app.templating import templates
-from app.utils.slug import slugify, unique_slug
 
-UPLOAD_DIR = Path(__file__).parent.parent.parent / "static" / "uploads" / "voitures"
+
+UPLOAD_DIR = Path(__file__).parent.parent.parent.parent / "static" / "uploads" / "voitures"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
-IMAGE_MAX_WIDTH = 1280
-IMAGE_WEBP_QUALITY = 82
-IMAGE_MAX_BYTES = 8 * 1024 * 1024
-IMAGE_MAX_PIXELS = 40_000_000
-ALLOWED_MIME = {"image/jpeg", "image/png", "image/webp"}
-ALLOWED_FORMATS = {"JPEG", "PNG", "WEBP"}
-
-Image.MAX_IMAGE_PIXELS = IMAGE_MAX_PIXELS
-
-
-def _save_optimized_image(raw: bytes, dest: Path) -> None:
-    with Image.open(io.BytesIO(raw)) as im:
-        if im.format not in ALLOWED_FORMATS:
-            raise ValueError(f"Format image non autorise: {im.format}")
-        im = im.convert("RGB") if im.mode in ("RGBA", "P") else im
-        if im.width > IMAGE_MAX_WIDTH:
-            ratio = IMAGE_MAX_WIDTH / im.width
-            im = im.resize(
-                (IMAGE_MAX_WIDTH, int(im.height * ratio)), Image.LANCZOS
-            )
-        im.save(dest, "WEBP", quality=IMAGE_WEBP_QUALITY, method=6)
-
-
-async def _lire_upload_limite(file: UploadFile) -> bytes | None:
-    raw = await file.read(IMAGE_MAX_BYTES + 1)
-    if len(raw) > IMAGE_MAX_BYTES:
-        return None
-    return raw
 
 router = APIRouter(
     prefix="/admin",
-    tags=["admin-cars"],
+    tags=["admin-voitures"],
     dependencies=[Depends(require_admin), Depends(require_csrf)],
 )
 
 
 @router.get("/voitures", response_class=HTMLResponse)
 async def admin_voitures(request: Request, db: AsyncSession = Depends(get_db)):
-    voitures = await admin_service.get_all_voitures(db)
+    voitures = await service.get_all_voitures(db)
     return templates.TemplateResponse("admin/voitures.html", {
         "request": request,
         "voitures": voitures,
@@ -81,8 +56,8 @@ async def create_voiture(
         "consommation_carburant": form.consommation_carburant,
         "is_available": True,
     }
-    await admin_service.create_voiture(db, data)
-    voitures = await admin_service.get_all_voitures(db)
+    await service.create_voiture(db, data)
+    voitures = await service.get_all_voitures(db)
     return templates.TemplateResponse("admin/partials/_voitures_grid.html", {
         "request": request,
         "voitures": voitures,
@@ -95,8 +70,8 @@ async def delete_voiture(
     voiture_id: int,
     db: AsyncSession = Depends(get_db),
 ):
-    await admin_service.delete_voiture(db, voiture_id)
-    voitures = await admin_service.get_all_voitures(db)
+    await service.delete_voiture(db, voiture_id)
+    voitures = await service.get_all_voitures(db)
     return templates.TemplateResponse("admin/partials/_voitures_grid.html", {
         "request": request,
         "voitures": voitures,
@@ -118,7 +93,7 @@ async def edit_voiture(
         "is_available": form.is_available == "on" if form.is_available is not None else None,
     }
     data = {k: v for k, v in data.items() if v is not None}
-    voiture = await admin_service.update_voiture(db, voiture_id, data)
+    voiture = await service.update_voiture(db, voiture_id, data)
     return templates.TemplateResponse("admin/partials/_voiture_card.html", {
         "request": request,
         "voiture": voiture,
@@ -139,19 +114,19 @@ async def add_voiture_images(
     for file in files:
         if file.content_type not in ALLOWED_MIME:
             continue
-        raw = await _lire_upload_limite(file)
+        raw = await lire_upload_limite(file)
         if raw is None:
             continue
         filename = f"{uuid.uuid4().hex}.webp"
         dest = upload_dir / filename
         try:
-            _save_optimized_image(raw, dest)
+            save_optimized_image(raw, dest)
         except Exception:
             continue
         url = f"/static/uploads/voitures/{voiture_id}/{filename}"
-        await admin_service.add_voiture_image(db, voiture_id, url)
+        await service.add_voiture_image(db, voiture_id, url)
 
-    voiture = await admin_service.get_voiture_by_id(db, voiture_id)
+    voiture = await service.get_voiture_by_id(db, voiture_id)
     return templates.TemplateResponse("admin/partials/_voiture_images.html", {
         "request": request,
         "voiture": voiture,
@@ -165,8 +140,8 @@ async def delete_voiture_image(
     image_id: int,
     db: AsyncSession = Depends(get_db),
 ):
-    await admin_service.delete_voiture_image(db, image_id)
-    voiture = await admin_service.get_voiture_by_id(db, voiture_id)
+    await service.delete_voiture_image(db, image_id)
+    voiture = await service.get_voiture_by_id(db, voiture_id)
     return templates.TemplateResponse("admin/partials/_voiture_images.html", {
         "request": request,
         "voiture": voiture,
@@ -180,8 +155,8 @@ async def add_type_location(
     form: TypeLocationForm = Depends(TypeLocationForm.as_form),
     db: AsyncSession = Depends(get_db),
 ):
-    await admin_service.add_type_location(db, voiture_id, form.nom, form.prix)
-    voiture = await admin_service.get_voiture_by_id(db, voiture_id)
+    await service.add_type_location(db, voiture_id, form.nom, form.prix)
+    voiture = await service.get_voiture_by_id(db, voiture_id)
     return templates.TemplateResponse("admin/partials/_types_location_list.html", {
         "request": request,
         "voiture": voiture,
@@ -195,8 +170,8 @@ async def delete_type_location(
     type_id: int,
     db: AsyncSession = Depends(get_db),
 ):
-    await admin_service.delete_type_location(db, type_id)
-    voiture = await admin_service.get_voiture_by_id(db, voiture_id)
+    await service.delete_type_location(db, type_id)
+    voiture = await service.get_voiture_by_id(db, voiture_id)
     return templates.TemplateResponse("admin/partials/_types_location_list.html", {
         "request": request,
         "voiture": voiture,

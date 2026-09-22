@@ -1,20 +1,22 @@
 from datetime import date, datetime, time
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
-from sqlalchemy.orm import selectinload
 from typing import List, Optional, Tuple
 
-from app.models import Voiture, TypeLocation, Location
+from sqlalchemy import and_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+
+from app.models.reservation import Location
+from app.models.voiture import Voiture
 
 
 async def get_available_voitures(
     db: AsyncSession,
     limit: Optional[int] = None,
-    order_by_marque: bool = False
+    order_by_marque: bool = False,
 ) -> List[Voiture]:
     query = (
         select(Voiture)
-        .where(Voiture.is_available == True)
+        .where(Voiture.is_available == True)  # noqa: E712
         .options(selectinload(Voiture.images), selectinload(Voiture.types_location))
     )
     if order_by_marque:
@@ -48,7 +50,9 @@ async def get_voitures_avec_disponibilite(
     limit: Optional[int] = None,
     order_by_marque: bool = False,
 ) -> List[Tuple[Voiture, bool]]:
-    voitures = await get_available_voitures(db, limit=limit, order_by_marque=order_by_marque)
+    voitures = await get_available_voitures(
+        db, limit=limit, order_by_marque=order_by_marque
+    )
     if not date_debut:
         return [(v, True) for v in voitures]
     fin = date_fin or date_debut
@@ -87,3 +91,12 @@ async def get_voiture_by_slug(db: AsyncSession, slug: str) -> Optional[Voiture]:
         .options(selectinload(Voiture.images), selectinload(Voiture.types_location))
     )
     return result.scalar_one_or_none()
+
+
+async def resoudre_voiture(db: AsyncSession, key: str):
+    """Retourne (voiture, par_id) — True si la cle etait un id numerique."""
+    if key.isdigit():
+        voiture = await get_voiture_by_id(db, int(key))
+        return voiture, True
+    voiture = await get_voiture_by_slug(db, key)
+    return voiture, False
