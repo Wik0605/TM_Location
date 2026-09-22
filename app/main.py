@@ -32,7 +32,7 @@ from app.admin.reservations.routes import router as admin_rentals_router
 from app.client.voitures.routes import router as client_voitures_router
 from app.client.reservations.routes import router as client_reservations_router
 from app.client.auth.routes import router as auth_router
-from app.routers.itineraire_api import router as itineraire_api_router
+from app.client.itineraire.routes import router as itineraire_api_router
 from app.client.analytics.routes import router as analytics_api_router
 from app.admin.stats.routes import router as admin_stats_router
 

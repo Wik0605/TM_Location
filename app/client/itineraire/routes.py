@@ -1,19 +1,18 @@
-import httpx
-from fastapi import APIRouter, BackgroundTasks, Request, Response, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Query, Request, Response
 from pydantic import BaseModel, Field, conlist
 
-from app.limiter import limiter
 from app.client.analytics import service as analytics_service
-from app.services import routing_service
-from app.services.routing_service import RoutingError
+from app.client.itineraire import service as routing_service
+from app.client.itineraire.external import reverse_geocode_nominatim
+from app.client.itineraire.service import RoutingError
+from app.limiter import limiter
 
 
 router = APIRouter(prefix="/api", tags=["itineraire-api"])
 
+
 _REVERSE_GEOCODE_CACHE: dict[tuple[float, float], str] = {}
 _REVERSE_GEOCODE_CACHE_MAX = 500
-_NOMINATIM_URL = "https://nominatim.openstreetmap.org/reverse"
-_NOMINATIM_UA = "TM_Location/1.0 (contact: rakotomalalatafita2007@gmail.com)"
 _FALLBACK_NAME = "Lieu sélectionné"
 
 
@@ -29,27 +28,7 @@ async def reverse_geocode(
     if cached is not None:
         return {"name": cached, "cached": True}
 
-    name = _FALLBACK_NAME
-    try:
-        async with httpx.AsyncClient(timeout=5.0) as client:
-            resp = await client.get(
-                _NOMINATIM_URL,
-                params={
-                    "lat": lat,
-                    "lon": lon,
-                    "format": "json",
-                    "accept-language": "fr",
-                    "zoom": 16,
-                },
-                headers={"User-Agent": _NOMINATIM_UA},
-            )
-            if resp.status_code == 200:
-                data = resp.json()
-                display = data.get("display_name")
-                if display:
-                    name = ", ".join(display.split(",")[:2]).strip()
-    except (httpx.HTTPError, ValueError, KeyError):
-        pass
+    name = await reverse_geocode_nominatim(lat, lon) or _FALLBACK_NAME
 
     if len(_REVERSE_GEOCODE_CACHE) >= _REVERSE_GEOCODE_CACHE_MAX:
         _REVERSE_GEOCODE_CACHE.clear()

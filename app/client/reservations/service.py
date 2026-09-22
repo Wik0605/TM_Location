@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.client.reservations.rules import valider_type_location
 from app.models.reservation import Location
 from app.schemas import LocationForm
-from app.services import routing_service
+from app.client.itineraire import service as routing_service
 
 
 class ReservationError(Exception):

@@ -1,12 +1,13 @@
 import logging
 import math
 from datetime import date, datetime, timedelta, timezone
-from typing import Optional, List, Tuple
+from typing import List, Optional, Tuple
 
 import httpx
 import jwt
 from fastapi import Request
 
+from app.client.itineraire.external import appeler_brouter, appeler_osrm
 from app.config import settings
 
 logger = logging.getLogger(__name__)
@@ -16,7 +17,6 @@ MADAGASCAR_LAT = (-25.7, -11.9)
 MADAGASCAR_LON = (43.2, 50.5)
 MAX_WAYPOINTS = 10
 TOKEN_TTL_SECONDS = 15 * 60
-HTTP_TIMEOUT = 5.0
 QUOTA_ANON_PAR_JOUR = 7
 JWT_ALGORITHM = "HS256"
 MIN_DISTANCE_KM = 0.1
@@ -40,23 +40,6 @@ def verifier_quota(request: Request) -> bool:
     return True
 
 
-def _valider_waypoints(waypoints: List[Tuple[float, float]]) -> None:
-    if len(waypoints) < 2:
-        raise RoutingError("Il faut au moins deux points.")
-    if len(waypoints) > MAX_WAYPOINTS:
-        raise RoutingError(f"Maximum {MAX_WAYPOINTS} points autorisés.")
-    for lat, lon in waypoints:
-        if not (MADAGASCAR_LAT[0] <= lat <= MADAGASCAR_LAT[1]):
-            raise RoutingError("Latitude hors de Madagascar.")
-        if not (MADAGASCAR_LON[0] <= lon <= MADAGASCAR_LON[1]):
-            raise RoutingError("Longitude hors de Madagascar.")
-    for i in range(len(waypoints) - 1):
-        if _haversine_km(waypoints[i], waypoints[i + 1]) < MIN_DISTANCE_KM:
-            raise RoutingError(
-                f"Points consecutifs trop proches (min {int(MIN_DISTANCE_KM * 1000)} m)."
-            )
-
-
 def _haversine_km(a: Tuple[float, float], b: Tuple[float, float]) -> float:
     lat1, lon1 = a
     lat2, lon2 = b
@@ -72,60 +55,21 @@ def _haversine_km(a: Tuple[float, float], b: Tuple[float, float]) -> float:
     return r * 2 * math.atan2(math.sqrt(s), math.sqrt(1 - s))
 
 
-async def _appeler_brouter(waypoints, client: httpx.AsyncClient) -> Optional[dict]:
-    lonlats = "|".join(f"{lon},{lat}" for lat, lon in waypoints)
-    url = "https://brouter.de/brouter"
-    params = {
-        "lonlats": lonlats,
-        "profile": "car-eco",
-        "alternativeidx": 0,
-        "format": "geojson",
-    }
-    try:
-        resp = await client.get(url, params=params, timeout=HTTP_TIMEOUT)
-        if resp.status_code != 200:
-            return None
-        geojson = resp.json()
-        feature = geojson.get("features", [None])[0]
-        if not feature:
-            return None
-        track_length = feature["properties"].get("track-length")
-        if track_length is None:
-            return None
-        return {
-            "distance_km": float(track_length) / 1000,
-            "polyline": geojson,
-            "source": "brouter",
-        }
-    except (httpx.HTTPError, ValueError, KeyError):
-        return None
-
-
-async def _appeler_osrm(waypoints, client: httpx.AsyncClient) -> Optional[dict]:
-    coords = ";".join(f"{lon},{lat}" for lat, lon in waypoints)
-    url = f"https://router.project-osrm.org/route/v1/driving/{coords}"
-    params = {"overview": "full", "geometries": "geojson"}
-    try:
-        resp = await client.get(url, params=params, timeout=HTTP_TIMEOUT)
-        if resp.status_code != 200:
-            return None
-        data = resp.json()
-        if data.get("code") != "Ok" or not data.get("routes"):
-            return None
-        route = data["routes"][0]
-        geojson = {
-            "type": "FeatureCollection",
-            "features": [
-                {"type": "Feature", "geometry": route["geometry"], "properties": {}}
-            ],
-        }
-        return {
-            "distance_km": route["distance"] / 1000,
-            "polyline": geojson,
-            "source": "osrm",
-        }
-    except (httpx.HTTPError, ValueError, KeyError):
-        return None
+def _valider_waypoints(waypoints: List[Tuple[float, float]]) -> None:
+    if len(waypoints) < 2:
+        raise RoutingError("Il faut au moins deux points.")
+    if len(waypoints) > MAX_WAYPOINTS:
+        raise RoutingError(f"Maximum {MAX_WAYPOINTS} points autorisés.")
+    for lat, lon in waypoints:
+        if not (MADAGASCAR_LAT[0] <= lat <= MADAGASCAR_LAT[1]):
+            raise RoutingError("Latitude hors de Madagascar.")
+        if not (MADAGASCAR_LON[0] <= lon <= MADAGASCAR_LON[1]):
+            raise RoutingError("Longitude hors de Madagascar.")
+    for i in range(len(waypoints) - 1):
+        if _haversine_km(waypoints[i], waypoints[i + 1]) < MIN_DISTANCE_KM:
+            raise RoutingError(
+                f"Points consecutifs trop proches (min {int(MIN_DISTANCE_KM * 1000)} m)."
+            )
 
 
 def _fallback_haversine(waypoints) -> dict:
@@ -153,12 +97,12 @@ def _fallback_haversine(waypoints) -> dict:
 async def calculer_itineraire(waypoints: List[Tuple[float, float]]) -> dict:
     _valider_waypoints(waypoints)
     async with httpx.AsyncClient() as client:
-        result = await _appeler_brouter(waypoints, client)
+        result = await appeler_brouter(waypoints, client)
         if result:
             logger.info("itineraire_calcul source=brouter points=%d distance_km=%.2f",
                         len(waypoints), result["distance_km"])
             return result
-        result = await _appeler_osrm(waypoints, client)
+        result = await appeler_osrm(waypoints, client)
         if result:
             logger.warning("itineraire_calcul source=osrm points=%d distance_km=%.2f fallback_from=brouter",
                            len(waypoints), result["distance_km"])
