@@ -22,6 +22,7 @@ class Voiture(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     nom: Mapped[str] = mapped_column(String(100), nullable=False)
+    slug: Mapped[str] = mapped_column(String(140), nullable=False, unique=True, index=True)
     description: Mapped[str] = mapped_column(Text, nullable=False)
     consommation_carburant: Mapped[float] = mapped_column(Float, default=8.0)
     places: Mapped[int] = mapped_column(Integer, default=5)
