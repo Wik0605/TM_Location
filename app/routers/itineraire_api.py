@@ -3,7 +3,8 @@ from fastapi import APIRouter, BackgroundTasks, Request, Response, HTTPException
 from pydantic import BaseModel, Field, conlist
 
 from app.limiter import limiter
-from app.services import analytics_service, routing_service
+from app.client.analytics import service as analytics_service
+from app.services import routing_service
 from app.services.routing_service import RoutingError
 
 

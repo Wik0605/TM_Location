@@ -1,11 +1,10 @@
-"""Agrégations analytics pour le dashboard admin."""
-
 from datetime import datetime, timedelta
 
-from sqlalchemy import func, select, case
+from sqlalchemy import case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import AnalyticsEvent, TypeLocation
+from app.models.analytics import AnalyticsEvent
+from app.models.voiture import TypeLocation
 
 
 def _since(days: int) -> datetime:
@@ -45,7 +44,6 @@ async def get_overview(db: AsyncSession) -> dict:
 
 
 async def get_daily_series(db: AsyncSession, days: int = 30) -> list[dict]:
-    """Retourne [{date, devis, reservations}, ...] pour les N derniers jours."""
     since = _since(days)
     day = func.date(AnalyticsEvent.created_at)
     q = (
@@ -64,7 +62,6 @@ async def get_daily_series(db: AsyncSession, days: int = 30) -> list[dict]:
 
 
 async def get_top_zones(db: AsyncSession, direction: str, limit: int = 10) -> list[dict]:
-    """direction = 'depart' ou 'arrivee'. Utilise depart_nom/arrivee_nom (résas)."""
     col = AnalyticsEvent.depart_nom if direction == "depart" else AnalyticsEvent.arrivee_nom
     q = (
         select(col.label("nom"), func.count(AnalyticsEvent.id).label("n"))
@@ -118,7 +115,6 @@ async def get_types_location_breakdown(db: AsyncSession) -> list[dict]:
 
 
 async def get_recent_trajets(db: AsyncSession, limit: int = 200) -> list[dict]:
-    """Segments départ→arrivée pour la carte."""
     q = (
         select(
             AnalyticsEvent.depart_lat, AnalyticsEvent.depart_lon,

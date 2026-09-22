@@ -1,24 +1,21 @@
-"""Service analytics maison — écriture non bloquante d'événements."""
-
 from datetime import datetime
 from urllib.parse import urlparse
 from uuid import uuid4
 from zoneinfo import ZoneInfo
 
 from fastapi import Request, Response
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import AsyncSessionLocal
-from app.models import AnalyticsEvent, Location
+from app.models.analytics import AnalyticsEvent
+from app.models.reservation import Location
 
 
 SESSION_COOKIE = "tm_sid"
-SESSION_MAX_AGE = 60 * 60 * 24 * 30  # 30 jours
+SESSION_MAX_AGE = 60 * 60 * 24 * 30
 TZ_ANTANANARIVO = ZoneInfo("Indian/Antananarivo")
 
 
 def get_or_create_session_id(request: Request, response: Response) -> str:
-    """Retourne le session_id du cookie, en pose un neuf sinon."""
     sid = request.cookies.get(SESSION_COOKIE)
     if not sid:
         sid = str(uuid4())
@@ -52,7 +49,7 @@ def _hour_local() -> int:
     return datetime.now(TZ_ANTANANARIVO).hour
 
 
-def _parse_waypoints(text: str | None) -> tuple[tuple[float, float] | None, tuple[float, float] | None]:
+def _parse_waypoints(text: str | None):
     if not text:
         return None, None
     pts = []
@@ -68,7 +65,6 @@ def _parse_waypoints(text: str | None) -> tuple[tuple[float, float] | None, tupl
 
 
 async def _write(event: AnalyticsEvent) -> None:
-    """Écrit un événement dans sa propre session (background-safe)."""
     async with AsyncSessionLocal() as db:
         db.add(event)
         await db.commit()
@@ -140,7 +136,6 @@ async def enregistrer_event_client(
 
 
 def extraire_contexte(request: Request) -> dict:
-    """Extrait le contexte (sans muter la réponse — cookie posé ailleurs)."""
     return {
         "session_id": request.cookies.get(SESSION_COOKIE),
         "referer_host": _referer_host(request),

@@ -7,7 +7,8 @@ import datetime
 from app.csrf import require_csrf
 from app.database import get_db
 from app.limiter import limiter
-from app.services import analytics_service, car_service, routing_service, reservation_service
+from app.client.analytics import service as analytics_service
+from app.services import car_service, routing_service, reservation_service
 from app.schemas import LocationForm
 from app.templating import templates
 
