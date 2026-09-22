@@ -2,7 +2,8 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.models import Location, Voiture
+from app.models.reservation import Location
+from app.models.voiture import Voiture
 
 
 async def get_all_locations(db: AsyncSession) -> list[Location]:

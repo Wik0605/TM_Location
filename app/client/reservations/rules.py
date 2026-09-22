@@ -1,9 +1,3 @@
-"""Règles de croisement entre TypeLocation et plage horaire réservée.
-
-Les noms de TypeLocation sont libres. On reconnaît un type par mot-clé
-présent dans son nom (insensible à la casse et aux accents).
-"""
-
 from datetime import datetime
 from unicodedata import normalize
 
@@ -13,10 +7,6 @@ def _normaliser(texte: str) -> str:
     return sans_accents.lower()
 
 
-# Chaque règle : mots-clés à chercher dans le nom + contraintes horaires.
-# - heure_debut_min / heure_debut_max : bornes (incluses) de l'heure de départ
-# - duree_h : durée exacte attendue (en heures)
-# - duree_min_h / duree_max_h : bornes (incluses) de la durée
 RULES = [
     {
         "keywords": ["demi", "1/2"],
@@ -53,11 +43,6 @@ def _trouver_regle(nom: str) -> dict | None:
 
 
 def valider_type_location(nom: str, debut: datetime, fin: datetime) -> None:
-    """Vérifie que la plage [debut, fin] respecte les contraintes du type.
-
-    Lève ValueError si la plage est incompatible. Ne fait rien si le nom
-    ne matche aucune règle (type custom sans contrainte).
-    """
     regle = _trouver_regle(nom)
     if regle is None:
         return

@@ -1,9 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import Location
+from app.client.reservations.rules import valider_type_location
+from app.models.reservation import Location
 from app.schemas import LocationForm
 from app.services import routing_service
-from app.services.type_location_rules import valider_type_location
 
 
 class ReservationError(Exception):
