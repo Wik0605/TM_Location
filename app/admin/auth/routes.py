@@ -7,7 +7,7 @@ from slowapi.errors import RateLimitExceeded
 
 from app.config import settings
 from app.limiter import limiter
-from app.schemas import AdminLoginForm
+from app.admin.auth.forms import AdminLoginForm
 from app.shared.deps import require_csrf
 from app.shared.security import ADMIN_SESSION_KEY
 from app.templating import templates

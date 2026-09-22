@@ -10,7 +10,7 @@ from typing import Sequence, Union
 from alembic import op
 import sqlalchemy as sa
 
-from app.utils.slug import slugify
+from app.shared.utils.slug import slugify
 
 
 revision: str = 'a1b2c3d4e5f6'

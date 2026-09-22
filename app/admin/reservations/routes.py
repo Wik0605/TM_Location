@@ -8,7 +8,7 @@ from app.admin.auth.routes import _client_ip, security_logger
 from app.admin.reservations import service
 from app.config import settings
 from app.limiter import limiter
-from app.schemas import RentalDeleteForm, RentalStatusForm
+from app.admin.reservations.forms import RentalDeleteForm, RentalStatusForm
 from app.shared.deps import get_db, require_csrf
 from app.shared.security import require_admin
 from app.templating import templates

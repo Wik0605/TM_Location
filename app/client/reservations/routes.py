@@ -7,7 +7,7 @@ from app.client.analytics import service as analytics_service
 from app.client.reservations import service as reservation_service
 from app.client.voitures import service as car_service
 from app.limiter import limiter
-from app.schemas import LocationForm
+from app.client.reservations.forms import LocationForm
 from app.shared.deps import get_db, require_csrf
 from app.templating import templates
 

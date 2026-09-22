@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.admin.voitures import service
 from app.models.voiture import Voiture
-from app.schemas import TypeLocationForm, VoitureCreateForm, VoitureUpdateForm
+from app.admin.voitures.forms import TypeLocationForm, VoitureCreateForm, VoitureUpdateForm
 from app.shared.deps import get_db, require_csrf
 from app.shared.security import require_admin
 from app.shared.utils.images import (
