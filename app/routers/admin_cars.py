@@ -10,10 +10,12 @@ from PIL import Image
 
 from app.csrf import require_csrf
 from app.database import get_db
+from app.models import Voiture
 from app.services import admin_service
 from app.routers.admin_auth import require_admin
 from app.schemas import VoitureCreateForm, VoitureUpdateForm, TypeLocationForm
 from app.templating import templates
+from app.utils.slug import slugify, unique_slug
 
 UPLOAD_DIR = Path(__file__).parent.parent.parent / "static" / "uploads" / "voitures"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
@@ -70,8 +72,10 @@ async def create_voiture(
     form: VoitureCreateForm = Depends(VoitureCreateForm.as_form),
     db: AsyncSession = Depends(get_db),
 ):
+    slug = await unique_slug(db, slugify(form.nom), Voiture)
     data = {
         "nom": form.nom,
+        "slug": slug,
         "description": form.description,
         "places": form.places,
         "consommation_carburant": form.consommation_carburant,
