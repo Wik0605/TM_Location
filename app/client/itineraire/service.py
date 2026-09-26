@@ -88,7 +88,7 @@ def _fallback_haversine(waypoints) -> dict:
         ],
     }
     return {
-        "distance_km": total * 1.3,
+        "distance_km": total * 1.8,
         "polyline": geojson,
         "source": "haversine",
     }
