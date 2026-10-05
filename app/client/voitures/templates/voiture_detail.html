@@ -7,7 +7,7 @@
 {% block head_extra %}
 <link rel="canonical" href="{{ request.base_url }}voitures/{{ voiture.slug }}">
 <meta property="og:type" content="product">
-<meta property="og:title" content="{{ voiture.nom }} — TM Location">
+<meta property="og:title" content="{{ voiture.nom }} — {{ app_name }}">
 <meta property="og:description" content="{{ voiture.description[:160] }}">
 {% if voiture.images %}
 <meta property="og:image" content="{{ request.base_url }}{{ voiture.images[0].url.lstrip('/') }}">

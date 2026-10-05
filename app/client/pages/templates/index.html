@@ -1,12 +1,12 @@
 {% extends "base_client.html" %}
 
-{% block title %}Accueil - TM Location{% endblock %}
+{% block title %}Accueil - {{ app_name }}{% endblock %}
 
 {% block content %}
 <!-- HERO — dégradé ambre → noir, texture hachurée, card recherche flottante -->
 <section class="relative">
     <div class="relative overflow-hidden px-5 pt-8 pb-24 sm:pt-12"
-         style="background: linear-gradient(135deg, #D97706 0%, #B45309 45%, #0A0A0A 100%);">
+         style="background: linear-gradient(135deg, var(--color-primary) 0%, #C71585 45%, #0A0A0A 100%);">
 
         <!-- Texture hachurée (placeholder photo) -->
         <div class="absolute inset-0 opacity-20 pointer-events-none"

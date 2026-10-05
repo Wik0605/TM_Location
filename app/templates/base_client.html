@@ -5,17 +5,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="{% block description %}Location de voitures à Madagascar avec ou sans chauffeur. Réservez votre véhicule à Antananarivo et dans toute l'île.{% endblock %}">
-    <title>{% block title %}TM Location{% endblock %} - Location de voitures</title>
+    <title>{% block title %}{{ app_name }}{% endblock %} - Location de voitures</title>
 
     <!-- PWA -->
-    <meta name="theme-color" content="#D97706">
+    <meta name="theme-color" content="#6B3410">
     <link rel="manifest" href="/static/manifest.webmanifest">
-    <link rel="icon" type="image/svg+xml" href="/static/icons/icon.svg">
     <link rel="icon" type="image/png" sizes="192x192" href="/static/icons/icon-192.png">
     <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="TM Location">
+    <meta name="apple-mobile-web-app-title" content="{{ app_name }}">
 
     <!-- Google Fonts : Outfit (titres) + Inter (corps) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -29,6 +28,14 @@
 
     <!-- Tailwind CSS compilé -->
     <link rel="stylesheet" href="/static/css/dist.css">
+
+    <!-- Overrides de branding dynamiques (.env) -->
+    <style>
+        :root {
+            --color-primary: {{ color_primary }};
+            --color-accent: {{ color_accent }};
+        }
+    </style>
 
     <!-- HTMX -->
     <script src="/static/js/vendor/htmx.min.js" defer></script>
@@ -78,9 +85,9 @@
         class="sticky top-0 z-40 bg-white/75 backdrop-blur-xl border-b border-[color:var(--color-border)]">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-14 sm:h-16">
-                <a href="/" class="flex items-center gap-1 font-display">
-                    <span class="text-xl sm:text-2xl font-black tracking-tighter text-ink">TM</span>
-                    <span class="text-xl sm:text-2xl font-black tracking-tighter text-primary">Location</span>
+                <a href="/" class="flex items-center gap-2 font-display" aria-label="{{ app_name }} — Accueil">
+                    <img src="{{ app_logo }}" alt="" class="h-10 sm:h-12 w-auto object-contain">
+                    <span class="text-xl sm:text-2xl font-black tracking-tighter text-primary">{{ app_name }}</span>
                 </a>
                 <a href="/booking"
                     class="bg-primary text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-[11px] sm:text-xs font-bold uppercase tracking-widest hover:bg-primary-dark transition-all shadow-md">
@@ -139,9 +146,8 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
                 <!-- Brand -->
                 <div class="space-y-4">
-                    <div class="flex items-center space-x-2">
-                        <span class="text-2xl font-black text-white">TM</span>
-                        <span class="text-2xl font-black text-primary">LOCATION</span>
+                    <div class="flex items-center">
+                        <img src="{{ app_logo }}" alt="{{ app_name }}" class="h-14 w-auto object-contain">
                     </div>
                     <p class="text-gray-400 text-sm leading-relaxed">
                         Le leader de la location de voitures à Madagascar. Profitez d'une expérience premium avec notre

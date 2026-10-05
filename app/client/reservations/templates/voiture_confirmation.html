@@ -26,7 +26,7 @@
 
         <!-- Bandeau noir dégradé -->
         <div class="relative px-6 py-5 text-white overflow-hidden"
-             style="background: linear-gradient(135deg, #0A0A0A 0%, #1F1F1F 60%, #B45309 130%);">
+             style="background: linear-gradient(135deg, #0A0A0A 0%, #1F1F1F 60%, #4A2309 130%);">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-1 font-display">
                     <span class="text-lg font-black tracking-tighter text-white">TM</span>
@@ -111,7 +111,7 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Télécharger
         </button>
-        {% set wa_msg = 'Réservation TM Location #' ~ ('%06d' % (location.id or 0)) ~ '\n' ~
+        {% set wa_msg = 'Réservation ' ~ app_name ~ ' #' ~ ('%06d' % (location.id or 0)) ~ '\n' ~
             'Véhicule : ' ~ voiture.nom ~ '\n' ~
             'Client : ' ~ location.client_nom ~ '\n' ~
             'Date : ' ~ location.date_debut.strftime('%d/%m/%Y') ~ '\n' ~
@@ -179,7 +179,7 @@
         et peuvent être ajustés selon les conditions réelles de la location.
     </div>
     <div class="devis-footer">
-        TM Location — Antananarivo, Madagascar
+        {{ app_name }} — Antananarivo, Madagascar
     </div>
 </div>
 

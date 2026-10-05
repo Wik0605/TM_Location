@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Admin{% endblock %} — TM_Location</title>
+    <title>{% block title %}Admin{% endblock %} — {{ app_name }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;900&display=swap" rel="stylesheet">
@@ -28,10 +28,10 @@
         .nav-item {
             transition: background-color .2s, color .2s, transform .2s;
         }
-        .nav-item:hover { background: rgba(252, 211, 77, 0.08); color: #FCD34D; }
+        .nav-item:hover { background: rgba(212, 165, 116, 0.08); color: #D4A574; }
         .nav-item.active {
-            background: linear-gradient(90deg, rgba(217, 119, 6, 0.25) 0%, rgba(217, 119, 6, 0) 100%);
-            color: #FCD34D;
+            background: linear-gradient(90deg, rgba(107, 52, 16, 0.35) 0%, rgba(107, 52, 16, 0) 100%);
+            color: #D4A574;
             border-left: 3px solid var(--color-primary);
             padding-left: calc(0.75rem - 3px);
         }
@@ -49,7 +49,7 @@
         <div class="flex items-center gap-2.5">
             <div class="brand-dot"></div>
             <div>
-                <p class="text-[10px] text-white/60 uppercase tracking-[0.25em]">TM_Location</p>
+                <p class="text-[10px] text-white/60 uppercase tracking-[0.25em]">{{ app_name }}</p>
                 <p class="font-display font-bold text-sm">Admin</p>
             </div>
         </div>
@@ -73,7 +73,7 @@
             <span>🚗</span> Voitures
         </a>
         <div class="pt-2 mt-2 border-t border-white/10 space-y-1">
-            <a href="/" class="block px-3 py-2 text-xs text-white/50 hover:text-[#FCD34D] transition-colors">← Retour au site</a>
+            <a href="/" class="block px-3 py-2 text-xs text-white/50 hover:text-[#D4A574] transition-colors">← Retour au site</a>
             <a href="/admin/logout" class="block px-3 py-2 text-xs text-[#FCA5A5] hover:text-white transition-colors">Déconnexion</a>
         </div>
     </nav>
@@ -85,10 +85,10 @@
             <div class="px-6 py-6 border-b border-white/10">
                 <div class="flex items-center gap-2.5 mb-1">
                     <div class="brand-dot"></div>
-                    <p class="text-[10px] text-white/60 uppercase tracking-[0.25em] font-semibold">TM_Location</p>
+                    <p class="text-[10px] text-white/60 uppercase tracking-[0.25em] font-semibold">{{ app_name }}</p>
                 </div>
                 <p class="font-display font-black text-xl tracking-tight">
-                    Espace <span style="color: #FCD34D;">Admin</span>
+                    Espace <span style="color: #D4A574;">Admin</span>
                 </p>
             </div>
             <nav class="flex-1 px-3 py-6 space-y-1">
@@ -106,7 +106,7 @@
                 </a>
             </nav>
             <div class="px-6 py-5 border-t border-white/10 space-y-2">
-                <a href="/" class="block text-xs text-white/50 hover:text-[#FCD34D] transition-colors">← Retour au site</a>
+                <a href="/" class="block text-xs text-white/50 hover:text-[#D4A574] transition-colors">← Retour au site</a>
                 <a href="/admin/logout" class="block text-xs text-[#FCA5A5] hover:text-white transition-colors">Déconnexion</a>
             </div>
         </aside>

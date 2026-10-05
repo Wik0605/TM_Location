@@ -3,6 +3,7 @@ import datetime
 from fastapi.templating import Jinja2Templates
 from jinja2 import ChoiceLoader, Environment, FileSystemLoader, PrefixLoader, select_autoescape
 
+from app.config import settings
 from app.csrf import csrf_input, get_or_create_csrf_token
 
 
@@ -36,6 +37,10 @@ _loader = ChoiceLoader([
 _env = Environment(loader=_loader, autoescape=select_autoescape(["html", "xml"]))
 
 templates = Jinja2Templates(env=_env)
+templates.env.globals["app_name"] = settings.app_name
+templates.env.globals["app_logo"] = settings.app_logo
+templates.env.globals["color_primary"] = settings.color_primary
+templates.env.globals["color_accent"] = settings.color_accent
 templates.env.globals["csrf_input"] = csrf_input
 templates.env.globals["csrf_token"] = get_or_create_csrf_token
 templates.env.filters["current_year"] = lambda: datetime.datetime.now().year

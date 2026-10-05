@@ -47,7 +47,7 @@
             <div class="flex items-center justify-between">
                 <span class="font-semibold text-[color:var(--color-ink)] text-sm">{{ rental.client_nom }}</span>
                 <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider
-                    {% if rental.status == 'confirmée' %}bg-[#FEF3C7] text-[#B45309]
+                    {% if rental.status == 'confirmée' %}bg-[#F5EBE0] text-[#4A2309]
                     {% elif rental.status == 'en_cours' %}bg-[#ECFDF5] text-[#065F46]
                     {% elif rental.status == 'terminée' %}bg-[color:var(--color-neutral-soft)] text-[color:var(--color-neutral-strong)]
                     {% else %}bg-[#FEF2F2] text-[#991B1B]{% endif %}">
@@ -81,7 +81,7 @@
                 <td class="px-6 py-4 text-[color:var(--color-neutral-strong)]">{% if rental.voiture %}{{ rental.voiture.marque }} {{ rental.voiture.modele }}{% endif %}</td>
                 <td class="px-6 py-4">
                     <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider
-                        {% if rental.statut == 'confirmée' %}bg-[#FEF3C7] text-[#B45309]
+                        {% if rental.statut == 'confirmée' %}bg-[#F5EBE0] text-[#4A2309]
                         {% elif rental.statut == 'en_cours' %}bg-[#ECFDF5] text-[#065F46]
                         {% elif rental.statut == 'terminée' %}bg-[color:var(--color-neutral-soft)] text-[color:var(--color-neutral-strong)]
                         {% else %}bg-[#FEF2F2] text-[#991B1B]{% endif %}">

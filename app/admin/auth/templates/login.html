@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion Admin — TM_Location</title>
+    <title>Connexion Admin — {{ app_name }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;900&display=swap" rel="stylesheet">
@@ -12,7 +12,7 @@
     <style>
         body {
             font-family: var(--font-main);
-            background: linear-gradient(135deg, #0A0A0A 0%, #1a1208 45%, #B45309 100%);
+            background: linear-gradient(135deg, #0A0A0A 0%, #1a1208 45%, #4A2309 100%);
             min-height: 100vh;
         }
         .hero-hatch {
@@ -20,8 +20,8 @@
                 45deg,
                 transparent 0,
                 transparent 14px,
-                rgba(252, 211, 77, 0.05) 14px,
-                rgba(252, 211, 77, 0.05) 15px
+                rgba(212, 165, 116, 0.08) 14px,
+                rgba(212, 165, 116, 0.08) 15px
             );
         }
         .font-display { font-family: var(--font-display); }
@@ -41,7 +41,7 @@
         }
         .field-input:focus {
             border-color: var(--color-primary);
-            box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.15);
+            box-shadow: 0 0 0 3px rgba(107, 52, 16, 0.2);
             outline: none;
         }
     </style>
@@ -50,9 +50,9 @@
 
     <div class="w-full max-w-sm">
         <div class="text-center mb-8">
-            <p class="text-[10px] text-[#FCD34D] uppercase tracking-[0.3em] font-semibold mb-2">TM_Location</p>
+            <p class="text-[10px] text-[#D4A574] uppercase tracking-[0.3em] font-semibold mb-2">{{ app_name }}</p>
             <h1 class="font-display text-3xl font-black text-white tracking-tight">
-                Espace <span style="color: #FCD34D;">Admin</span>
+                Espace <span style="color: #D4A574;">Admin</span>
             </h1>
             <p class="text-sm text-white/60 mt-2">Connexion sécurisée</p>
         </div>
@@ -88,7 +88,7 @@
         </div>
 
         <p class="text-center mt-6">
-            <a href="/" class="text-xs text-white/60 hover:text-[#FCD34D] transition-colors tracking-wide">← Retour au site</a>
+            <a href="/" class="text-xs text-white/60 hover:text-[#D4A574] transition-colors tracking-wide">← Retour au site</a>
         </p>
     </div>
 
