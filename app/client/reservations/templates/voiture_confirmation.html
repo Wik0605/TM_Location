@@ -28,9 +28,9 @@
         <div class="relative px-6 py-5 text-white overflow-hidden"
              style="background: linear-gradient(135deg, #0A0A0A 0%, #1F1F1F 60%, #4A2309 130%);">
             <div class="flex items-center justify-between">
-                <div class="flex items-center gap-1 font-display">
-                    <span class="text-lg font-black tracking-tighter text-white">TM</span>
-                    <span class="text-lg font-black tracking-tighter text-primary">Location</span>
+                <div class="flex items-center gap-2 font-display">
+                    <img src="{{ app_logo }}" alt="{{ app_name }}" class="h-7 w-auto">
+                    <span class="sr-only">{{ app_name }}</span>
                 </div>
                 <span class="text-[10px] font-bold uppercase tracking-[0.25em] text-accent">
                     Ticket
@@ -139,7 +139,7 @@
 <!-- Bloc devis imprimable (caché à l'écran) -->
 <div class="devis-print" id="devis-print" aria-hidden="true">
     <div class="devis-header">
-        <div class="devis-brand">TM <span class="brand-accent">Location</span></div>
+        <div class="devis-brand">{{ app_name }}</div>
         <div class="devis-meta">
             <div><strong>Confirmation de réservation</strong></div>
             <div>Réf. #{{ "%06d"|format(location.id if location.id else 0) }}</div>
