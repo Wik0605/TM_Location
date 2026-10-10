@@ -1,5 +1,6 @@
 import uuid
 from pathlib import Path
+from uuid import UUID
 from typing import List
 
 from fastapi import APIRouter, Depends, File, Request, UploadFile
@@ -67,7 +68,7 @@ async def create_voiture(
 @router.post("/voitures/{voiture_id}/delete", response_class=HTMLResponse)
 async def delete_voiture(
     request: Request,
-    voiture_id: int,
+    voiture_id: UUID,
     db: AsyncSession = Depends(get_db),
 ):
     await service.delete_voiture(db, voiture_id)
@@ -81,7 +82,7 @@ async def delete_voiture(
 @router.post("/voitures/{voiture_id}/edit", response_class=HTMLResponse)
 async def edit_voiture(
     request: Request,
-    voiture_id: int,
+    voiture_id: UUID,
     form: VoitureUpdateForm = Depends(VoitureUpdateForm.as_form),
     db: AsyncSession = Depends(get_db),
 ):
@@ -104,7 +105,7 @@ async def edit_voiture(
 @router.post("/voitures/{voiture_id}/images", response_class=HTMLResponse)
 async def add_voiture_images(
     request: Request,
-    voiture_id: int,
+    voiture_id: UUID,
     files: List[UploadFile] = File(default=[]),
     db: AsyncSession = Depends(get_db),
 ):
@@ -136,8 +137,8 @@ async def add_voiture_images(
 @router.post("/voitures/{voiture_id}/images/{image_id}/delete", response_class=HTMLResponse)
 async def delete_voiture_image(
     request: Request,
-    voiture_id: int,
-    image_id: int,
+    voiture_id: UUID,
+    image_id: UUID,
     db: AsyncSession = Depends(get_db),
 ):
     await service.delete_voiture_image(db, image_id)
@@ -151,7 +152,7 @@ async def delete_voiture_image(
 @router.post("/voitures/{voiture_id}/types/create", response_class=HTMLResponse)
 async def add_type_location(
     request: Request,
-    voiture_id: int,
+    voiture_id: UUID,
     form: TypeLocationForm = Depends(TypeLocationForm.as_form),
     db: AsyncSession = Depends(get_db),
 ):
@@ -166,8 +167,8 @@ async def add_type_location(
 @router.post("/voitures/{voiture_id}/types/{type_id}/delete", response_class=HTMLResponse)
 async def delete_type_location(
     request: Request,
-    voiture_id: int,
-    type_id: int,
+    voiture_id: UUID,
+    type_id: UUID,
     db: AsyncSession = Depends(get_db),
 ):
     await service.delete_type_location(db, type_id)

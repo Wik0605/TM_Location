@@ -21,7 +21,7 @@ async def creer_reservation(
     arrivee_coords: str | None = None
     if itinerary_token:
         token_data = routing_service.lire_token(itinerary_token)
-        if token_data and token_data["voiture_id"] == voiture.id:
+        if token_data and str(token_data["voiture_id"]) == str(voiture.id):
             form.itinerary_distance_km = token_data["distance_km"]
             waypoints = token_data["waypoints"]
             form.itinerary_waypoints = ";".join(

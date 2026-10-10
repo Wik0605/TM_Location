@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -32,7 +34,7 @@ async def update_location_statut(
     return loc
 
 
-async def delete_location(db: AsyncSession, location_id: int) -> bool:
+async def delete_location(db: AsyncSession, location_id: UUID) -> bool:
     result = await db.execute(select(Location).where(Location.id == location_id))
     loc = result.scalar_one_or_none()
     if not loc:

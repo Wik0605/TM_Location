@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Query, Request, Response
 from pydantic import BaseModel, Field, conlist
 
@@ -49,7 +51,7 @@ class WaypointsPayload(BaseModel):
 @limiter.limit("30/minute")
 async def calculer_itineraire(
     request: Request,
-    voiture_id: int,
+    voiture_id: UUID,
     payload: WaypointsPayload,
     response: Response,
     background: BackgroundTasks,

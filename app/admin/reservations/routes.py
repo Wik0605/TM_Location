@@ -1,4 +1,5 @@
 import secrets
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse
@@ -44,7 +45,7 @@ async def admin_reservations(request: Request, db: AsyncSession = Depends(get_db
 @router.post("/reservations/{location_id}/status", response_class=HTMLResponse)
 async def update_location_status(
     request: Request,
-    location_id: int,
+    location_id: UUID,
     form: RentalStatusForm = Depends(RentalStatusForm.as_form),
     db: AsyncSession = Depends(get_db),
 ):
@@ -57,7 +58,7 @@ async def update_location_status(
 @limiter.limit("3/15minutes")
 async def delete_reservation(
     request: Request,
-    location_id: int,
+    location_id: UUID,
     form: RentalDeleteForm = Depends(RentalDeleteForm.as_form),
     db: AsyncSession = Depends(get_db),
 ):
