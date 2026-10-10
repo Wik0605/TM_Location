@@ -21,17 +21,13 @@ from sqlalchemy.orm import DeclarativeBase
 from sqlmodel import SQLModel
 from pathlib import Path
 
-# Chemin vers la base de données SQLite
-# Utilise Path pour être compatible Windows/Mac/Linux
-DATABASE_PATH = Path(__file__).parent.parent / "data" / "tm_location.db"
+from app.config import settings
 
-# Créer le dossier data s'il n'existe pas
+# Fallback SQLite si DATABASE_URL n'est pas défini dans .env
+DATABASE_PATH = Path(__file__).parent.parent / "data" / "tm_location.db"
 DATABASE_PATH.parent.mkdir(parents=True, exist_ok=True)
 
-# URL de connexion à la base de données
-# Format : sqlite+aiosqlite:///<chemin>
-# Le +aiosqlite indique qu'on utilise le driver asynchrone
-DATABASE_URL = f"sqlite+aiosqlite:///{DATABASE_PATH}"
+DATABASE_URL = settings.database_url or f"sqlite+aiosqlite:///{DATABASE_PATH}"
 
 # Création du moteur asynchrone
 # echo=True affiche les requêtes SQL dans la console (utile pour le debug)
