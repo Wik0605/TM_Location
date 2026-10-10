@@ -1,15 +1,17 @@
 from datetime import datetime
 from typing import Optional
+from uuid import UUID
 from sqlalchemy import Column, DateTime
 from sqlmodel import SQLModel, Field
 
 from app.models.base import utcnow
+from app.utils.ids import new_uuid7
 
 
 class User(SQLModel, table=True):
     __tablename__ = "users"
 
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: UUID = Field(default_factory=new_uuid7, primary_key=True)
     google_id: Optional[str] = Field(default=None, max_length=100, unique=True, index=True)
     facebook_id: Optional[str] = Field(default=None, max_length=100, unique=True, index=True)
     email: str = Field(max_length=255, unique=True)
@@ -22,7 +24,7 @@ class User(SQLModel, table=True):
 
 
 class UserRead(SQLModel):
-    id: int
+    id: UUID
     email: str
     name: str
     picture: Optional[str] = None
