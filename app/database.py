@@ -1,33 +1,23 @@
 """
-Configuration de la base de données
+Configuration de la base de données PostgreSQL (asyncpg).
 
-Ce module configure SQLAlchemy pour une utilisation asynchrone
-avec SQLite (pour le développement) ou PostgreSQL (pour la production).
-
-Pourquoi async ?
-- FastAPI est asynchrone par nature
-- Permet de gérer plus de requêtes simultanément
-- Meilleure performance pour les applications web modernes
-
-Pourquoi SQLite en développement ?
-- Pas d'installation requise
-- Fichier unique facile à sauvegarder
-- Parfait pour prototyper et tester
-- Migration facile vers PostgreSQL pour la production
+DATABASE_URL doit être défini dans .env, au format :
+    postgresql+asyncpg://user:password@host:port/dbname
 """
 
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
 from sqlmodel import SQLModel
-from pathlib import Path
 
 from app.config import settings
 
-# Fallback SQLite si DATABASE_URL n'est pas défini dans .env
-DATABASE_PATH = Path(__file__).parent.parent / "data" / "tm_location.db"
-DATABASE_PATH.parent.mkdir(parents=True, exist_ok=True)
+if not settings.database_url:
+    raise RuntimeError(
+        "DATABASE_URL manquant dans .env "
+        "(ex: postgresql+asyncpg://postgres:dev@localhost:5432/tm_location)"
+    )
 
-DATABASE_URL = settings.database_url or f"sqlite+aiosqlite:///{DATABASE_PATH}"
+DATABASE_URL = settings.database_url
 
 # Création du moteur asynchrone
 # echo=True affiche les requêtes SQL dans la console (utile pour le debug)
