@@ -5,7 +5,7 @@ INSECURE_DEFAULTS = {"changeme", "admin", ""}
 
 class Settings(BaseSettings):
     app_name: str = "TM Location"
-    app_logo: str = "/static/icons/icon-512.png"
+    app_logo: str = "/static/icons/apple-touch-icon.png"
     color_primary: str = "#6B3410"
     color_accent: str = "#D4A574"
     secret_key: str = "changeme"
