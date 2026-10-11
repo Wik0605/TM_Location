@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from sqlalchemy import delete as sql_delete
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,7 +17,7 @@ async def get_all_voitures(db: AsyncSession) -> list[Voiture]:
     return result.scalars().all()
 
 
-async def get_voiture_by_id(db: AsyncSession, voiture_id: int) -> Voiture | None:
+async def get_voiture_by_id(db: AsyncSession, voiture_id: UUID) -> Voiture | None:
     result = await db.execute(
         select(Voiture)
         .where(Voiture.id == voiture_id)
@@ -32,7 +34,7 @@ async def create_voiture(db: AsyncSession, data: dict) -> Voiture:
     return voiture
 
 
-async def update_voiture(db: AsyncSession, voiture_id: int, data: dict) -> Voiture | None:
+async def update_voiture(db: AsyncSession, voiture_id: UUID, data: dict) -> Voiture | None:
     voiture = await get_voiture_by_id(db, voiture_id)
     if not voiture:
         return None
@@ -44,7 +46,7 @@ async def update_voiture(db: AsyncSession, voiture_id: int, data: dict) -> Voitu
     return voiture
 
 
-async def delete_voiture(db: AsyncSession, voiture_id: int) -> bool:
+async def delete_voiture(db: AsyncSession, voiture_id: UUID) -> bool:
     result = await db.execute(select(Voiture).where(Voiture.id == voiture_id))
     voiture = result.scalar_one_or_none()
     if not voiture:
@@ -54,7 +56,7 @@ async def delete_voiture(db: AsyncSession, voiture_id: int) -> bool:
     return True
 
 
-async def add_voiture_image(db: AsyncSession, voiture_id: int, url: str) -> VoitureImage:
+async def add_voiture_image(db: AsyncSession, voiture_id: UUID, url: str) -> VoitureImage:
     result = await db.execute(
         select(func.max(VoitureImage.position)).where(VoitureImage.voiture_id == voiture_id)
     )
@@ -66,7 +68,7 @@ async def add_voiture_image(db: AsyncSession, voiture_id: int, url: str) -> Voit
     return image
 
 
-async def delete_voiture_image(db: AsyncSession, image_id: int) -> bool:
+async def delete_voiture_image(db: AsyncSession, image_id: UUID) -> bool:
     result = await db.execute(select(VoitureImage).where(VoitureImage.id == image_id))
     image = result.scalar_one_or_none()
     if not image:
@@ -77,7 +79,7 @@ async def delete_voiture_image(db: AsyncSession, image_id: int) -> bool:
 
 
 async def add_type_location(
-    db: AsyncSession, voiture_id: int, nom: str, prix: int
+    db: AsyncSession, voiture_id: UUID, nom: str, prix: int
 ) -> TypeLocation:
     tl = TypeLocation(voiture_id=voiture_id, nom=nom, prix=prix)
     db.add(tl)
@@ -86,7 +88,7 @@ async def add_type_location(
     return tl
 
 
-async def delete_type_location(db: AsyncSession, type_id: int) -> bool:
+async def delete_type_location(db: AsyncSession, type_id: UUID) -> bool:
     result = await db.execute(sql_delete(TypeLocation).where(TypeLocation.id == type_id))
     await db.commit()
     return result.rowcount > 0

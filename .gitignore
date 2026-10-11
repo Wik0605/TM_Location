@@ -19,6 +19,7 @@ static/uploads/
 *.db
 *.backup
 *.pre_migration
+*.pre_etape*
 data/*.backup_*
 
 # Node.js

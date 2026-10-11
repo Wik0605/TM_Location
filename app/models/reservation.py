@@ -1,18 +1,20 @@
 from datetime import datetime
 from typing import Optional
+from uuid import UUID
 from sqlalchemy import Column, DateTime, Text
 from sqlmodel import SQLModel, Field, Relationship
 
 from app.models.base import utcnow
 from app.models.voiture import Voiture, TypeLocation
+from app.utils.ids import new_uuid7
 
 
 class Location(SQLModel, table=True):
     __tablename__ = "locations"
 
-    id: Optional[int] = Field(default=None, primary_key=True)
-    voiture_id: int = Field(foreign_key="voitures.id")
-    type_location_id: Optional[int] = Field(default=None, foreign_key="types_location.id")
+    id: UUID = Field(default_factory=new_uuid7, primary_key=True)
+    voiture_id: UUID = Field(foreign_key="voitures.id")
+    type_location_id: Optional[UUID] = Field(default=None, foreign_key="types_location.id")
 
     client_nom: str = Field(max_length=100)
     client_telephone: str = Field(max_length=20)
@@ -51,8 +53,8 @@ class Location(SQLModel, table=True):
 
 
 class LocationCreate(SQLModel):
-    voiture_id: int
-    type_location_id: Optional[int] = None
+    voiture_id: UUID
+    type_location_id: Optional[UUID] = None
     client_nom: str = Field(min_length=2, max_length=100)
     client_telephone: str = Field(min_length=8, max_length=20)
     client_email: Optional[str] = None
@@ -62,7 +64,7 @@ class LocationCreate(SQLModel):
 
 
 class LocationRead(LocationCreate):
-    id: int
+    id: UUID
     prix_total: float
     statut: str
     created_at: datetime

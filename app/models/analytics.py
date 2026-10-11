@@ -1,15 +1,17 @@
 from datetime import datetime
 from typing import Optional
+from uuid import UUID
 from sqlalchemy import Column, DateTime
 from sqlmodel import SQLModel, Field
 
 from app.models.base import utcnow
+from app.utils.ids import new_uuid7
 
 
 class AnalyticsEvent(SQLModel, table=True):
     __tablename__ = "analytics_events"
 
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: UUID = Field(default_factory=new_uuid7, primary_key=True)
     event_type: str = Field(max_length=40, index=True)
     session_id: Optional[str] = Field(default=None, max_length=36, index=True)
 
@@ -21,14 +23,14 @@ class AnalyticsEvent(SQLModel, table=True):
     arrivee_nom: Optional[str] = Field(default=None, max_length=120)
     distance_km: Optional[float] = None
 
-    voiture_id: Optional[int] = Field(default=None, foreign_key="voitures.id")
-    type_location_id: Optional[int] = Field(default=None, foreign_key="types_location.id")
+    voiture_id: Optional[UUID] = Field(default=None, foreign_key="voitures.id")
+    type_location_id: Optional[UUID] = Field(default=None, foreign_key="types_location.id")
     prix: Optional[float] = None
 
     referer_host: Optional[str] = Field(default=None, max_length=120)
     hour_local: Optional[int] = None
 
-    location_id: Optional[int] = Field(default=None, foreign_key="locations.id")
+    location_id: Optional[UUID] = Field(default=None, foreign_key="locations.id")
 
     created_at: datetime = Field(
         default_factory=utcnow,
@@ -46,8 +48,8 @@ class EventIn(SQLModel):
     depart_nom: Optional[str] = None
     arrivee_nom: Optional[str] = None
     distance_km: Optional[float] = None
-    voiture_id: Optional[int] = None
-    type_location_id: Optional[int] = None
+    voiture_id: Optional[UUID] = None
+    type_location_id: Optional[UUID] = None
     prix: Optional[float] = None
     referer_host: Optional[str] = None
     hour_local: Optional[int] = None

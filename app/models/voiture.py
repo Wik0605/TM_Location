@@ -1,9 +1,11 @@
 from datetime import datetime
 from typing import Optional, TYPE_CHECKING
+from uuid import UUID
 from sqlalchemy import Column, DateTime, Text
 from sqlmodel import SQLModel, Field, Relationship
 
 from app.models.base import utcnow
+from app.utils.ids import new_uuid7
 
 if TYPE_CHECKING:
     from app.models.reservation import Location
@@ -19,7 +21,7 @@ class VoitureBase(SQLModel):
 class Voiture(VoitureBase, table=True):
     __tablename__ = "voitures"
 
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: UUID = Field(default_factory=new_uuid7, primary_key=True)
     slug: str = Field(max_length=140, unique=True, index=True)
     is_available: bool = Field(default=True)
     created_at: datetime = Field(
@@ -68,8 +70,8 @@ class Voiture(VoitureBase, table=True):
 class VoitureImage(SQLModel, table=True):
     __tablename__ = "voiture_images"
 
-    id: Optional[int] = Field(default=None, primary_key=True)
-    voiture_id: int = Field(foreign_key="voitures.id")
+    id: UUID = Field(default_factory=new_uuid7, primary_key=True)
+    voiture_id: UUID = Field(foreign_key="voitures.id")
     url: str = Field(max_length=255)
     position: int = Field(default=0)
 
@@ -79,8 +81,8 @@ class VoitureImage(SQLModel, table=True):
 class TypeLocation(SQLModel, table=True):
     __tablename__ = "types_location"
 
-    id: Optional[int] = Field(default=None, primary_key=True)
-    voiture_id: int = Field(foreign_key="voitures.id")
+    id: UUID = Field(default_factory=new_uuid7, primary_key=True)
+    voiture_id: UUID = Field(foreign_key="voitures.id")
     nom: str = Field(max_length=100)
     prix: int
 
@@ -125,7 +127,7 @@ class VoitureUpdate(SQLModel):
 
 
 class VoitureRead(VoitureBase):
-    id: int
+    id: UUID
     slug: str
     is_available: bool
     created_at: datetime
@@ -138,7 +140,7 @@ class TypeLocationCreate(SQLModel):
 
 
 class TypeLocationRead(SQLModel):
-    id: int
-    voiture_id: int
+    id: UUID
+    voiture_id: UUID
     nom: str
     prix: int

@@ -2,6 +2,7 @@ import logging
 import math
 from datetime import date, datetime, timedelta, timezone
 from typing import List, Optional, Tuple
+from uuid import UUID
 
 import httpx
 import jwt
@@ -113,11 +114,11 @@ async def calculer_itineraire(waypoints: List[Tuple[float, float]]) -> dict:
     return result
 
 
-def emettre_token(distance_km: float, waypoints, voiture_id: int, source: str) -> str:
+def emettre_token(distance_km: float, waypoints, voiture_id: UUID, source: str) -> str:
     payload = {
         "distance_km": distance_km,
         "waypoints": [[lat, lon] for lat, lon in waypoints],
-        "voiture_id": voiture_id,
+        "voiture_id": str(voiture_id),
         "source": source,
         "exp": datetime.now(timezone.utc) + timedelta(seconds=TOKEN_TTL_SECONDS),
     }
