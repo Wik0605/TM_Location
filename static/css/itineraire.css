@@ -525,3 +525,15 @@ body.has-sticky-cta { padding-bottom: 88px; }
         padding-right: 0.625rem;
     }
 }
+
+.quartier-label {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    color: #ffffff;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-shadow: 0 0 3px rgba(0,0,0,0.8);
+    white-space: nowrap;
+    pointer-events: none;
+}

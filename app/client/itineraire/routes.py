@@ -1,12 +1,15 @@
 from uuid import UUID
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException, Query, Request, Response
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, Response
 from pydantic import BaseModel, Field, conlist
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import text
 
 from app.client.analytics import service as analytics_service
 from app.client.itineraire import service as routing_service
 from app.client.itineraire.external import reverse_geocode_nominatim
 from app.client.itineraire.service import RoutingError
+from app.database import get_db
 from app.limiter import limiter
 
 
@@ -94,3 +97,47 @@ async def calculer_itineraire(
         "source": result["source"],
         "token": token,
     }
+
+
+@router.get("/quartiers")
+@limiter.limit("60/minute")
+async def get_quartiers(
+    request: Request,
+    min_lon: float = Query(..., ge=-180, le=180),
+    min_lat: float = Query(..., ge=-90, le=90),
+    max_lon: float = Query(..., ge=-180, le=180),
+    max_lat: float = Query(..., ge=-90, le=90),
+    db: AsyncSession = Depends(get_db),
+):
+    sql = text("""
+        SELECT
+            id::text,
+            nom,
+            nom_court,
+            type,
+            ST_AsGeoJSON(geom)::json AS geometry
+        FROM quartiers
+        WHERE actif = true
+          AND ST_Intersects(geom, ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326))
+        LIMIT 200
+    """)
+    result = await db.execute(sql, {
+        "min_lon": min_lon, "min_lat": min_lat,
+        "max_lon": max_lon, "max_lat": max_lat,
+    })
+    rows = result.mappings().all()
+
+    features = [
+        {
+            "type": "Feature",
+            "geometry": row["geometry"],
+            "properties": {
+                "id": row["id"],
+                "nom": row["nom"],
+                "nom_court": row["nom_court"],
+                "type": row["type"],
+            },
+        }
+        for row in rows
+    ]
+    return {"type": "FeatureCollection", "features": features}
