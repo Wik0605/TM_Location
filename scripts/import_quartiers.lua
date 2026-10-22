@@ -7,7 +7,8 @@ local quartiers = osm2pgsql.define_table({
         { column = 'type',      type = 'text' },
         { column = 'actif',     type = 'boolean' },
         { column = 'geom',      type = 'geometry', projection = 4326 },
-    }
+    },
+    create = false,
 })
 
 function osm2pgsql.process_relation(object)
