@@ -111,7 +111,7 @@ async def get_quartiers(
 ):
     sql = text("""
         SELECT
-            id::text,
+            osm_id::text AS id,
             nom,
             nom_court,
             type,
