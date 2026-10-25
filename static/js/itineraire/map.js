@@ -15,7 +15,7 @@ export function initMap() {
         attributionControl: false,
         tap: true,
         tapTolerance: 15,
-    }).setView([-18.94, 47.49], 13);
+    }).setView([-18.9159, 47.5228], 16);
 
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
@@ -85,7 +85,7 @@ export function initMap() {
     let quartiersLayer = null;
 
     async function chargerQuartiers() {
-        if (map.getZoom() < 13) {
+        if (map.getZoom() < 15) {
             if (quartiersLayer) { map.removeLayer(quartiersLayer); quartiersLayer = null; }
             return;
         }
