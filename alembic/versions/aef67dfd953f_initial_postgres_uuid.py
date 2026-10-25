@@ -1,7 +1,7 @@
 """initial_postgres_uuid
 
 Revision ID: aef67dfd953f
-Revises: 
+Revises: c3d4e5f6a7b8
 Create Date: 2026-10-10 23:46:29.215218
 
 """
@@ -14,7 +14,7 @@ import sqlmodel
 
 # revision identifiers, used by Alembic.
 revision: str = 'aef67dfd953f'
-down_revision: Union[str, Sequence[str], None] = None
+down_revision: Union[str, Sequence[str], None] = 'c3d4e5f6a7b8'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

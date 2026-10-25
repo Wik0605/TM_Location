@@ -29,6 +29,7 @@ from app.models import voiture as _voiture  # noqa: F401
 from app.models import reservation as _reservation  # noqa: F401
 from app.models import user as _user  # noqa: F401
 from app.models import analytics as _analytics  # noqa: F401
+from app.models import quartier as _quartier  # noqa: F401
 
 target_metadata = SQLModel.metadata
 
