@@ -8,7 +8,7 @@ import httpx
 import jwt
 from fastapi import Request
 
-from app.client.itineraire.external import appeler_brouter, appeler_osrm
+from app.client.itineraire.external import appeler_osrm
 from app.config import settings
 
 logger = logging.getLogger(__name__)
@@ -98,19 +98,14 @@ def _fallback_haversine(waypoints) -> dict:
 async def calculer_itineraire(waypoints: List[Tuple[float, float]]) -> dict:
     _valider_waypoints(waypoints)
     async with httpx.AsyncClient() as client:
-        result = await appeler_brouter(waypoints, client)
-        if result:
-            logger.info("itineraire_calcul source=brouter points=%d distance_km=%.2f",
-                        len(waypoints), result["distance_km"])
-            return result
         result = await appeler_osrm(waypoints, client)
         if result:
-            logger.warning("itineraire_calcul source=osrm points=%d distance_km=%.2f fallback_from=brouter",
-                           len(waypoints), result["distance_km"])
+            logger.info("itineraire_calcul source=osrm_local points=%d distance_km=%.2f",
+                        len(waypoints), result["distance_km"])
             return result
     result = _fallback_haversine(waypoints)
-    logger.error("itineraire_calcul source=haversine points=%d distance_km=%.2f fallback_from=osrm",
-                 len(waypoints), result["distance_km"])
+    logger.warning("itineraire_calcul source=haversine points=%d distance_km=%.2f fallback_from=osrm_local",
+                   len(waypoints), result["distance_km"])
     return result
 
 

@@ -1,0 +1,129 @@
+from typing import Optional
+import httpx
+
+NOMINATIM_LOCAL_URL = "http://localhost:8081"
+PHOTON_URL = "https://photon.komoot.io/api/"
+MG_BBOX = "43.2,-25.6,50.5,-11.9"
+HTTP_TIMEOUT = 3.0
+
+
+def _nominatim_to_photon(results: list) -> dict:
+    features = []
+    for r in results:
+        try:
+            lat = float(r["lat"])
+            lon = float(r["lon"])
+        except (KeyError, ValueError, TypeError):
+            continue
+
+        addr = r.get("address", {})
+        name = (
+            addr.get("amenity")
+            or addr.get("shop")
+            or addr.get("office")
+            or addr.get("tourism")
+            or addr.get("suburb")
+            or addr.get("neighbourhood")
+            or addr.get("quarter")
+            or addr.get("village")
+            or addr.get("town")
+            or addr.get("city")
+            or r.get("name")
+            or r.get("display_name", "").split(",")[0]
+        )
+        props = {
+            "name": name,
+            "city": addr.get("city") or addr.get("town") or addr.get("village") or "",
+            "district": addr.get("suburb") or addr.get("neighbourhood") or "",
+            "state": addr.get("state") or addr.get("region") or "",
+            "country": addr.get("country") or "",
+            "osm_id": r.get("osm_id"),
+            "osm_type": r.get("osm_type"),
+            "type": r.get("type") or r.get("class") or "",
+        }
+        bbox = r.get("boundingbox")
+        if bbox and len(bbox) == 4:
+            south, north, west, east = (float(x) for x in bbox)
+            props["extent"] = [west, north, east, south]
+
+        features.append({
+            "type": "Feature",
+            "geometry": {"type": "Point", "coordinates": [lon, lat]},
+            "properties": props,
+        })
+    return {"type": "FeatureCollection", "features": features}
+
+
+async def search_photon(
+    q: str,
+    lat: Optional[float] = None,
+    lon: Optional[float] = None,
+    limit: int = 10,
+    lang: str = "fr",
+) -> Optional[dict]:
+    params = {
+        "q": q,
+        "limit": limit,
+        "lang": lang,
+        "bbox": MG_BBOX,
+    }
+    if lat is not None and lon is not None:
+        params["lat"] = lat
+        params["lon"] = lon
+    try:
+        async with httpx.AsyncClient(timeout=HTTP_TIMEOUT) as client:
+            resp = await client.get(PHOTON_URL, params=params)
+            if resp.status_code != 200:
+                return None
+            data = resp.json()
+            if not data.get("features"):
+                return None
+            return data
+    except httpx.HTTPError:
+        return None
+
+
+async def search_nominatim_local(
+    q: str,
+    lat: Optional[float] = None,
+    lon: Optional[float] = None,
+    limit: int = 10,
+    lang: str = "fr",
+) -> dict:
+    params = {
+        "q": q,
+        "format": "json",
+        "addressdetails": 1,
+        "limit": limit,
+        "accept-language": lang,
+        "countrycodes": "mg",
+    }
+    if lat is not None and lon is not None:
+        params["viewbox"] = f"{lon - 1},{lat + 1},{lon + 1},{lat - 1}"
+        params["bounded"] = 0
+
+    try:
+        async with httpx.AsyncClient(timeout=HTTP_TIMEOUT) as client:
+            resp = await client.get(
+                f"{NOMINATIM_LOCAL_URL}/search",
+                params=params,
+                headers={"User-Agent": "TM_Location/1.0"},
+            )
+            if resp.status_code != 200:
+                return {"type": "FeatureCollection", "features": []}
+            return _nominatim_to_photon(resp.json())
+    except httpx.HTTPError:
+        return {"type": "FeatureCollection", "features": []}
+
+
+async def search_places(
+    q: str,
+    lat: Optional[float] = None,
+    lon: Optional[float] = None,
+    limit: int = 10,
+    lang: str = "fr",
+) -> dict:
+    result = await search_photon(q=q, lat=lat, lon=lon, limit=limit, lang=lang)
+    if result is not None:
+        return result
+    return await search_nominatim_local(q=q, lat=lat, lon=lon, limit=limit, lang=lang)

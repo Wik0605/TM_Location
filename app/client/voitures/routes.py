@@ -7,6 +7,7 @@ import datetime as _dt
 from app.client.voitures import service
 from app.shared.deps import get_db
 from app.templating import templates
+from app.config import settings
 
 
 router = APIRouter(prefix="", tags=["client-voitures"])
@@ -64,4 +65,5 @@ async def voiture_itineraire(request: Request, key: str, db: AsyncSession = Depe
         "request": request,
         "car": voiture,
         "rental_types": voiture.types_location,
+        "maptiler_key": settings.maptiler_api_key,
     })

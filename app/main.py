@@ -50,9 +50,9 @@ STATIC_CACHE_MAX_AGE = 60 * 60 * 24 * 7  # 7 jours
 
 CSP_POLICY = (
     "default-src 'self'; "
-    "script-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com; "
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; "
-    "font-src 'self' https://fonts.gstatic.com; "
+    "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; "
+    "style-src 'self' 'unsafe-inline'; "
+    "font-src 'self'; "
     "img-src 'self' data: blob: https:; "
     "connect-src 'self' https://photon.komoot.io; "
     "frame-ancestors 'none'; "

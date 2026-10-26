@@ -1,3 +1,4 @@
+from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, Response
@@ -8,6 +9,7 @@ from sqlalchemy import text
 from app.client.analytics import service as analytics_service
 from app.client.itineraire import service as routing_service
 from app.client.itineraire.external import reverse_geocode_nominatim
+from app.client.itineraire.geocoding import search_places
 from app.client.itineraire.service import RoutingError
 from app.database import get_db
 from app.limiter import limiter
@@ -19,6 +21,19 @@ router = APIRouter(prefix="/api", tags=["itineraire-api"])
 _REVERSE_GEOCODE_CACHE: dict[tuple[float, float], str] = {}
 _REVERSE_GEOCODE_CACHE_MAX = 500
 _FALLBACK_NAME = "Lieu sélectionné"
+
+
+@router.get("/search")
+@limiter.limit("60/minute")
+async def search(
+    request: Request,
+    q: str = Query(..., min_length=2, max_length=200),
+    lat: Optional[float] = Query(None, ge=-90, le=90),
+    lon: Optional[float] = Query(None, ge=-180, le=180),
+    limit: int = Query(10, ge=1, le=20),
+    lang: str = Query("fr", max_length=5),
+):
+    return await search_places(q=q, lat=lat, lon=lon, limit=limit, lang=lang)
 
 
 @router.get("/reverse-geocode")

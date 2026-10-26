@@ -37,9 +37,12 @@ async def appeler_brouter(waypoints, client: httpx.AsyncClient) -> Optional[dict
         return None
 
 
+OSRM_URL = "http://localhost:5001"
+
+
 async def appeler_osrm(waypoints, client: httpx.AsyncClient) -> Optional[dict]:
     coords = ";".join(f"{lon},{lat}" for lat, lon in waypoints)
-    url = f"https://router.project-osrm.org/route/v1/driving/{coords}"
+    url = f"{OSRM_URL}/route/v1/driving/{coords}"
     params = {"overview": "full", "geometries": "geojson"}
     try:
         resp = await client.get(url, params=params, timeout=HTTP_TIMEOUT)

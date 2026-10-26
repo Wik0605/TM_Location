@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     environment: str = "development"
     allowed_origins: str = "http://localhost:8000,http://127.0.0.1:8000"
     database_url: str = ""
+    maptiler_api_key: str = ""
 
     @property
     def is_production(self) -> bool:

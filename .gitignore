@@ -27,3 +27,12 @@ node_modules/
 
 # Environnement virtuel Python
 venv/
+
+# Données OSM et OSRM (fichiers lourds)
+osrm-data/
+
+# Backups PostgreSQL
+*.dump
+
+# Polices locales (générées, ne pas versionner les binaires)
+static/fonts/
