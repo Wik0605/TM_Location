@@ -1,3 +1,4 @@
+from datetime import time
 from typing import Optional
 
 from fastapi import Form
@@ -9,6 +10,8 @@ class VoitureCreateForm(BaseModel):
     description: str = Field(..., min_length=1, max_length=2000)
     places: int = Field(5, ge=1, le=20)
     consommation_carburant: float = Field(8.0, ge=0, le=100)
+    heure_dispo_debut: Optional[time] = None
+    heure_dispo_fin: Optional[time] = None
 
     @classmethod
     def as_form(
@@ -17,12 +20,16 @@ class VoitureCreateForm(BaseModel):
         description: str = Form(...),
         places: int = Form(5),
         consommation_carburant: float = Form(8.0),
+        heure_dispo_debut: Optional[str] = Form(None),
+        heure_dispo_fin: Optional[str] = Form(None),
     ) -> "VoitureCreateForm":
         return cls(
             nom=nom,
             description=description,
             places=places,
             consommation_carburant=consommation_carburant,
+            heure_dispo_debut=time.fromisoformat(heure_dispo_debut) if heure_dispo_debut else None,
+            heure_dispo_fin=time.fromisoformat(heure_dispo_fin) if heure_dispo_fin else None,
         )
 
 
@@ -32,6 +39,8 @@ class VoitureUpdateForm(BaseModel):
     places: Optional[int] = Field(None, ge=1, le=20)
     consommation_carburant: Optional[float] = Field(None, ge=0, le=100)
     is_available: Optional[str] = Field(None, max_length=10)
+    heure_dispo_debut: Optional[time] = None
+    heure_dispo_fin: Optional[time] = None
 
     @classmethod
     def as_form(
@@ -41,6 +50,8 @@ class VoitureUpdateForm(BaseModel):
         places: Optional[int] = Form(None),
         consommation_carburant: Optional[float] = Form(None),
         is_available: Optional[str] = Form(None),
+        heure_dispo_debut: Optional[str] = Form(None),
+        heure_dispo_fin: Optional[str] = Form(None),
     ) -> "VoitureUpdateForm":
         return cls(
             nom=nom,
@@ -48,6 +59,8 @@ class VoitureUpdateForm(BaseModel):
             places=places,
             consommation_carburant=consommation_carburant,
             is_available=is_available,
+            heure_dispo_debut=time.fromisoformat(heure_dispo_debut) if heure_dispo_debut else None,
+            heure_dispo_fin=time.fromisoformat(heure_dispo_fin) if heure_dispo_fin else None,
         )
 
 

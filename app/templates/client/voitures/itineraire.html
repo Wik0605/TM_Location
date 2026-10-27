@@ -72,7 +72,9 @@
              class="relative bg-white overflow-hidden map-wrapper">
             <div id="map"
                  data-daily-price="{{ car.daily_price }}"
-                 data-car-id="{{ car.id }}"></div>
+                 data-car-id="{{ car.id }}"
+                 data-heure-dispo-debut="{{ car.heure_dispo_debut.strftime('%H:%M') if car.heure_dispo_debut else '' }}"
+                 data-heure-dispo-fin="{{ car.heure_dispo_fin.strftime('%H:%M') if car.heure_dispo_fin else '' }}"></div>
             <!-- Loader calcul itinéraire -->
             <div id="map-loader" style="display:none;"
                  class="absolute inset-0 bg-white/85 backdrop-blur-sm z-50 flex flex-col items-center justify-center">
@@ -201,6 +203,16 @@
             <p id="calc-hint" class="text-[11px] text-[color:var(--color-neutral)] text-center mt-3 mb-1">
                 Le devis s'affiche automatiquement dès que tout est renseigné.
             </p>
+        </div>
+
+        <!-- Avertissement hors plage horaire -->
+        <div id="heure-dispo-warning"
+             class="bg-red-50 border-l-4 border-red-600 text-red-700 px-4 py-3 text-xs rounded-2xl font-semibold"
+             style="display:none;">
+            🚫 Devis impossible — Voiture non disponible à ces heures.
+            {% if car.heure_dispo_debut and car.heure_dispo_fin %}
+            <span class="block mt-1 font-normal">Disponible de {{ car.heure_dispo_debut.strftime('%Hh%M') }} à {{ car.heure_dispo_fin.strftime('%Hh%M') }}.</span>
+            {% endif %}
         </div>
 
         <!-- Résultats -->
@@ -347,6 +359,32 @@
     </div>
 </template>
 
+<script>
+(function() {
+    const mapEl = document.getElementById('map');
+    const heureDebut = mapEl?.dataset.heureDispoDebut;
+    const heureFin = mapEl?.dataset.heureDispoFin;
+    if (!heureDebut || !heureFin) return;
+
+    const warning = document.getElementById('heure-dispo-warning');
+    const dtStart = document.getElementById('datetime-start');
+    const dtEnd = document.getElementById('datetime-end');
+
+    function verifier() {
+        const s = dtStart?.value;
+        const e = dtEnd?.value;
+        if (!s && !e) { warning.style.display = 'none'; return; }
+        const hS = s ? s.slice(11, 16) : null;
+        const hE = e ? e.slice(11, 16) : null;
+        const horsPlage = (hS && (hS < heureDebut || hS > heureFin))
+                       || (hE && (hE > heureFin || hE < heureDebut));
+        warning.style.display = horsPlage ? 'block' : 'none';
+    }
+
+    dtStart?.addEventListener('change', verifier);
+    dtEnd?.addEventListener('change', verifier);
+})();
+</script>
 <meta name="maptiler-key" content="{{ maptiler_key }}">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>

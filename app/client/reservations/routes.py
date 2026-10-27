@@ -66,6 +66,14 @@ async def voiture_reserver(
             "erreur_disponibilite": True,
         }, status_code=409)
 
+    date_fin_effective = form.date_fin or form.date_debut
+    if not car_service.verifier_heures_disponibilite(voiture, form.date_debut, date_fin_effective):
+        return templates.TemplateResponse("client/voitures/voiture_detail.html", {
+            "request": request,
+            "voiture": voiture,
+            "erreur_heures": True,
+        }, status_code=409)
+
     try:
         loc, type_location = await reservation_service.creer_reservation(
             db, voiture, form, form_data.get("itinerary_token")

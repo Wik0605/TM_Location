@@ -1,4 +1,5 @@
-from datetime import datetime
+from datetime import datetime, time
+from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
@@ -42,6 +43,8 @@ class VoitureLite(BaseModel):
 class VoitureFull(VoitureLite):
     description: str
     consommation_carburant: float
+    heure_dispo_debut: Optional[time] = None
+    heure_dispo_fin: Optional[time] = None
     images: list[VoitureImageFull] = []
     types_location: list[TypeLocationLite] = []
 

@@ -132,6 +132,15 @@
         </div>
         {% endif %}
 
+        {% if erreur_heures %}
+        <div class="bg-red-50 border-l-4 border-red-600 text-red-700 px-3 py-3 text-xs rounded-lg mb-3 font-semibold">
+            🚫 Devis impossible — la voiture n'est pas disponible aux heures demandées.
+            {% if voiture.heure_dispo_debut and voiture.heure_dispo_fin %}
+            <span class="block mt-1 font-normal">Elle est disponible de {{ voiture.heure_dispo_debut.strftime('%Hh%M') }} à {{ voiture.heure_dispo_fin.strftime('%Hh%M') }}.</span>
+            {% endif %}
+        </div>
+        {% endif %}
+
         <form action="/voitures/{{ voiture.slug }}/reserver" method="POST" class="space-y-3" id="form-reserver">
             {{ csrf_input(request) }}
             <input type="hidden" name="type_location_id" id="hidden-type-location-id"

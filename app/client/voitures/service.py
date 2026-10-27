@@ -75,6 +75,14 @@ async def voiture_est_disponible(
     return voiture_id not in reserves
 
 
+def verifier_heures_disponibilite(voiture: Voiture, debut: datetime, fin: datetime) -> bool:
+    if voiture.heure_dispo_debut is None or voiture.heure_dispo_fin is None:
+        return True
+    h_debut = debut.time().replace(second=0, microsecond=0)
+    h_fin = fin.time().replace(second=0, microsecond=0)
+    return voiture.heure_dispo_debut <= h_debut and h_fin <= voiture.heure_dispo_fin
+
+
 async def get_voiture_by_id(db: AsyncSession, voiture_id: int) -> Optional[Voiture]:
     result = await db.execute(
         select(Voiture)

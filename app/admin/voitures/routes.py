@@ -56,6 +56,8 @@ async def create_voiture(
         "places": form.places,
         "consommation_carburant": form.consommation_carburant,
         "is_available": True,
+        "heure_dispo_debut": form.heure_dispo_debut,
+        "heure_dispo_fin": form.heure_dispo_fin,
     }
     await service.create_voiture(db, data)
     voitures = await service.get_all_voitures(db)
@@ -92,6 +94,8 @@ async def edit_voiture(
         "places": form.places,
         "consommation_carburant": form.consommation_carburant,
         "is_available": form.is_available == "on" if form.is_available is not None else None,
+        "heure_dispo_debut": form.heure_dispo_debut,
+        "heure_dispo_fin": form.heure_dispo_fin,
     }
     data = {k: v for k, v in data.items() if v is not None}
     voiture = await service.update_voiture(db, voiture_id, data)

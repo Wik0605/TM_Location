@@ -121,6 +121,11 @@
                         {{ voiture.types_location | length }} forfait{{ 's' if voiture.types_location|length > 1 else '' }}
                     </span>
                     {% endif %}
+                    {% if voiture.heure_dispo_debut and voiture.heure_dispo_fin %}
+                    <span class="bg-[color:var(--color-neutral-soft)] text-[color:var(--color-neutral-strong)] text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-md">
+                        {{ voiture.heure_dispo_debut.strftime('%Hh') }}–{{ voiture.heure_dispo_fin.strftime('%Hh') }}
+                    </span>
+                    {% endif %}
                 </div>
 
                 <!-- Prix + CTA -->

@@ -1,7 +1,7 @@
-from datetime import datetime
+from datetime import datetime, time
 from typing import Optional, TYPE_CHECKING
 from uuid import UUID
-from sqlalchemy import Column, DateTime, Text
+from sqlalchemy import Column, DateTime, Text, Time
 from sqlmodel import SQLModel, Field, Relationship
 
 from app.models.base import utcnow
@@ -16,6 +16,12 @@ class VoitureBase(SQLModel):
     description: str = Field(sa_column=Column(Text, nullable=False))
     consommation_carburant: float = Field(default=8.0)
     places: int = Field(default=5)
+    heure_dispo_debut: Optional[time] = Field(
+        default=None, sa_column=Column(Time, nullable=True)
+    )
+    heure_dispo_fin: Optional[time] = Field(
+        default=None, sa_column=Column(Time, nullable=True)
+    )
 
 
 class Voiture(VoitureBase, table=True):
@@ -124,6 +130,8 @@ class VoitureUpdate(SQLModel):
     consommation_carburant: Optional[float] = None
     places: Optional[int] = None
     is_available: Optional[bool] = None
+    heure_dispo_debut: Optional[time] = None
+    heure_dispo_fin: Optional[time] = None
 
 
 class VoitureRead(VoitureBase):
