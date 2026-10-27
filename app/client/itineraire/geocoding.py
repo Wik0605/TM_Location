@@ -1,10 +1,16 @@
 from typing import Optional
+import asyncio
+import json
+import pathlib
 import httpx
 
 NOMINATIM_LOCAL_URL = "http://localhost:8081"
 PHOTON_URL = "https://photon.komoot.io/api/"
 MG_BBOX = "43.2,-25.6,50.5,-11.9"
 HTTP_TIMEOUT = 3.0
+
+_SYNONYMES_PATH = pathlib.Path(__file__).parent / "synonymes.json"
+_SYNONYMES: dict = json.loads(_SYNONYMES_PATH.read_text(encoding="utf-8"))
 
 
 def _nominatim_to_photon(results: list) -> dict:
@@ -116,6 +122,30 @@ async def search_nominatim_local(
         return {"type": "FeatureCollection", "features": []}
 
 
+def _search_synonymes(q: str, limit: int) -> list:
+    key = q.strip().lower()
+    features = []
+    for syn, data in _SYNONYMES.items():
+        if key in syn or syn.startswith(key):
+            features.append({
+                "type": "Feature",
+                "geometry": {"type": "Point", "coordinates": [data["lon"], data["lat"]]},
+                "properties": {
+                    "name": data["label"],
+                    "city": data.get("city", ""),
+                    "district": "",
+                    "state": "Antananarivo",
+                    "country": "Madagascar",
+                    "osm_id": None,
+                    "osm_type": None,
+                    "type": "neighbourhood",
+                },
+            })
+        if len(features) >= limit:
+            break
+    return features
+
+
 async def search_places(
     q: str,
     lat: Optional[float] = None,
@@ -123,7 +153,23 @@ async def search_places(
     limit: int = 10,
     lang: str = "fr",
 ) -> dict:
-    result = await search_photon(q=q, lat=lat, lon=lon, limit=limit, lang=lang)
-    if result is not None:
-        return result
-    return await search_nominatim_local(q=q, lat=lat, lon=lon, limit=limit, lang=lang)
+    synonyme_features = _search_synonymes(q, limit)
+
+    photon_result, nominatim_result = await asyncio.gather(
+        search_photon(q=q, lat=lat, lon=lon, limit=limit, lang=lang),
+        search_nominatim_local(q=q, lat=lat, lon=lon, limit=limit, lang=lang),
+    )
+
+    photon_features = (photon_result or {}).get("features", [])
+    nominatim_features = nominatim_result.get("features", [])
+
+    seen = set()
+    merged = []
+    for f in synonyme_features + photon_features + nominatim_features:
+        osm_id = f.get("properties", {}).get("osm_id")
+        key = osm_id if osm_id else id(f)
+        if key not in seen:
+            seen.add(key)
+            merged.append(f)
+
+    return {"type": "FeatureCollection", "features": merged[:limit]}

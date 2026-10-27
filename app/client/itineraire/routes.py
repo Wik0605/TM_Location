@@ -30,7 +30,7 @@ async def search(
     q: str = Query(..., min_length=2, max_length=200),
     lat: Optional[float] = Query(None, ge=-90, le=90),
     lon: Optional[float] = Query(None, ge=-180, le=180),
-    limit: int = Query(10, ge=1, le=20),
+    limit: int = Query(15, ge=1, le=20),
     lang: str = Query("fr", max_length=5),
 ):
     return await search_places(q=q, lat=lat, lon=lon, limit=limit, lang=lang)

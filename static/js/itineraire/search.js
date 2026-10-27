@@ -21,7 +21,7 @@ function searchPlaces(query, signal) {
     const url =
         `${SEARCH_URL}?q=${encodeURIComponent(query)}` +
         `&lat=${center.lat}&lon=${center.lng}` +
-        `&limit=10&lang=fr`;
+        `&limit=15&lang=fr`;
     return fetch(url, { signal, headers: { Accept: 'application/json' } })
         .then((r) => (r.ok ? r.json() : { features: [] }))
         .then((data) => data.features || []);
@@ -125,7 +125,7 @@ export function attachSearchBox(container, target) {
             container.classList.remove('is-loading');
             return;
         }
-        debounceTimer = setTimeout(() => triggerSearch(v), 400);
+        debounceTimer = setTimeout(() => triggerSearch(v), 200);
     });
 
     input.addEventListener('focus', () => {
