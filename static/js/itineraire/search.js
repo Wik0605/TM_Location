@@ -18,8 +18,9 @@ function formatSuggestion(item) {
 function searchPlaces(query, signal) {
     // Biais de position vers le centre courant de la carte (équivalent viewbox)
     const center = state.map ? state.map.getCenter() : { lat: -18.91, lng: 47.52 };
+    const q = query.charAt(0).toUpperCase() + query.slice(1);
     const url =
-        `${SEARCH_URL}?q=${encodeURIComponent(query)}` +
+        `${SEARCH_URL}?q=${encodeURIComponent(q)}` +
         `&lat=${center.lat}&lon=${center.lng}` +
         `&limit=15&lang=fr`;
     return fetch(url, { signal, headers: { Accept: 'application/json' } })
