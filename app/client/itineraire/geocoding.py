@@ -1,8 +1,12 @@
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 import asyncio
 import json
 import pathlib
 import httpx
+from sqlalchemy import text
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 NOMINATIM_LOCAL_URL = "http://localhost:8081"
 PHOTON_URL = "https://photon.komoot.io/api/"
@@ -146,26 +150,67 @@ def _search_synonymes(q: str, limit: int) -> list:
     return features
 
 
+async def search_quartiers_db(db: "AsyncSession", q: str, limit: int) -> list:
+    sql = text("""
+        SELECT
+            nom,
+            nom_court,
+            type,
+            ST_X(ST_Centroid(geom)) AS lon,
+            ST_Y(ST_Centroid(geom)) AS lat
+        FROM quartiers
+        WHERE actif = true
+          AND (nom ILIKE :search OR nom_court ILIKE :search)
+        ORDER BY nom
+        LIMIT :limit
+    """)
+    result = await db.execute(sql, {"search": f"%{q}%", "limit": limit})
+    rows = result.mappings().all()
+    features = []
+    for row in rows:
+        features.append({
+            "type": "Feature",
+            "geometry": {"type": "Point", "coordinates": [row["lon"], row["lat"]]},
+            "properties": {
+                "name": row["nom"],
+                "city": "Antananarivo",
+                "district": row["nom_court"],
+                "state": "Antananarivo",
+                "country": "Madagascar",
+                "osm_id": None,
+                "osm_type": None,
+                "type": row["type"],
+            },
+        })
+    return features
+
+
 async def search_places(
     q: str,
     lat: Optional[float] = None,
     lon: Optional[float] = None,
     limit: int = 10,
     lang: str = "fr",
+    db: Optional["AsyncSession"] = None,
 ) -> dict:
     synonyme_features = _search_synonymes(q, limit)
 
-    photon_result, nominatim_result = await asyncio.gather(
+    tasks = [
         search_photon(q=q, lat=lat, lon=lon, limit=limit, lang=lang),
         search_nominatim_local(q=q, lat=lat, lon=lon, limit=limit, lang=lang),
-    )
+    ]
+    if db is not None:
+        tasks.append(search_quartiers_db(db=db, q=q, limit=limit))
 
-    photon_features = (photon_result or {}).get("features", [])
-    nominatim_features = nominatim_result.get("features", [])
+    results = await asyncio.gather(*tasks)
+
+    photon_features = (results[0] or {}).get("features", [])
+    nominatim_features = results[1].get("features", [])
+    quartiers_features = results[2] if db is not None else []
 
     seen = set()
     merged = []
-    for f in synonyme_features + photon_features + nominatim_features:
+    for f in quartiers_features + synonyme_features + photon_features + nominatim_features:
         osm_id = f.get("properties", {}).get("osm_id")
         key = osm_id if osm_id else id(f)
         if key not in seen:

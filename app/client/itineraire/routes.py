@@ -32,8 +32,9 @@ async def search(
     lon: Optional[float] = Query(None, ge=-180, le=180),
     limit: int = Query(15, ge=1, le=20),
     lang: str = Query("fr", max_length=5),
+    db: AsyncSession = Depends(get_db),
 ):
-    return await search_places(q=q, lat=lat, lon=lon, limit=limit, lang=lang)
+    return await search_places(q=q, lat=lat, lon=lon, limit=limit, lang=lang, db=db)
 
 
 @router.get("/reverse-geocode")
