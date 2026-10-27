@@ -1,7 +1,7 @@
 import datetime
 
 from fastapi.templating import Jinja2Templates
-from jinja2 import ChoiceLoader, Environment, FileSystemLoader, PrefixLoader, select_autoescape
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from app.config import settings
 from app.csrf import csrf_input, get_or_create_csrf_token
@@ -16,23 +16,7 @@ def _to_webp(url: str) -> str:
     return url
 
 
-_client_features = PrefixLoader({
-    "voitures": FileSystemLoader("app/client/voitures/templates"),
-    "reservations": FileSystemLoader("app/client/reservations/templates"),
-    "pages": FileSystemLoader("app/client/pages/templates"),
-})
-
-_admin_features = PrefixLoader({
-    "voitures": FileSystemLoader("app/admin/voitures/templates"),
-    "reservations": FileSystemLoader("app/admin/reservations/templates"),
-    "stats": FileSystemLoader("app/admin/stats/templates"),
-    "auth": FileSystemLoader("app/admin/auth/templates"),
-})
-
-_loader = ChoiceLoader([
-    FileSystemLoader("app/templates"),
-    PrefixLoader({"client": _client_features, "admin": _admin_features}),
-])
+_loader = FileSystemLoader("app/templates")
 
 _env = Environment(loader=_loader, autoescape=select_autoescape(["html", "xml"]))
 
