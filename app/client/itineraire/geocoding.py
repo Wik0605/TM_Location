@@ -206,6 +206,7 @@ async def search_places(
 
     photon_features = (results[0] or {}).get("features", [])
     nominatim_features = results[1].get("features", [])
+
     quartiers_features = results[2] if db is not None else []
 
     seen = set()
