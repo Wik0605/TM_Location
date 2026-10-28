@@ -322,7 +322,7 @@
             <span class="sticky-cta-label">Total estimé</span>
             <span class="sticky-cta-amount"><span id="sticky-total">0</span> Ar</span>
         </div>
-        <a href="/voitures/{{ car.slug }}" class="sticky-cta-btn">
+        <a href="/voitures/{{ car.slug }}/reserver-form" class="sticky-cta-btn" id="sticky-reserve-link">
             Réserver
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </a>
@@ -383,6 +383,19 @@
 
     dtStart?.addEventListener('change', verifier);
     dtEnd?.addEventListener('change', verifier);
+})();
+
+(function() {
+    const link = document.getElementById('sticky-reserve-link');
+    if (!link) return;
+    try {
+        const token = localStorage.getItem('itinerary_token_{{ car.id }}');
+        if (token) {
+            const url = new URL(link.href, location.origin);
+            url.searchParams.set('token', token);
+            link.href = url.toString();
+        }
+    } catch { /* localStorage indisponible */ }
 })();
 </script>
 <meta name="maptiler-key" content="{{ maptiler_key }}">

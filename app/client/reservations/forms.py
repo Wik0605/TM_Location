@@ -1,5 +1,6 @@
 from datetime import date, datetime
 from typing import Optional
+from uuid import UUID
 
 from fastapi import Form
 from pydantic import BaseModel, Field, field_validator
@@ -11,7 +12,7 @@ NOM_PERSONNE_REGEX = r"^[A-Za-zÀ-ÿ\s'-]+$"
 
 
 class LocationForm(BaseModel):
-    type_location_id: Optional[int] = Field(None, gt=0)
+    type_location_id: Optional[UUID] = None
     client_nom: str = Field(..., min_length=2, max_length=100, pattern=NOM_PERSONNE_REGEX)
     client_telephone: str = Field(..., pattern=PHONE_REGEX)
     client_email: Optional[str] = Field(None, pattern=EMAIL_REGEX, max_length=200)

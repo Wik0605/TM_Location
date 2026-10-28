@@ -19,6 +19,28 @@ def _traduire_erreur(exc: ValidationError) -> str:
     return "Erreur de saisie, veuillez vérifier les informations du formulaire."
 
 
+@router.get("/voitures/{key}/reserver-form", response_class=HTMLResponse)
+async def voiture_reserver_form(
+    request: Request,
+    key: str,
+    db: AsyncSession = Depends(get_db),
+    depart: str = "",
+    retour: str = "",
+    token: str = "",
+):
+    voiture, _ = await car_service.resoudre_voiture(db, key)
+    if not voiture:
+        return templates.TemplateResponse("client/pages/404.html", {"request": request}, status_code=404)
+
+    return templates.TemplateResponse("client/reservations/formulaire_reservation.html", {
+        "request": request,
+        "voiture": voiture,
+        "depart": depart,
+        "retour": retour,
+        "token": token,
+    })
+
+
 @router.post("/voitures/{key}/reserver", response_class=HTMLResponse)
 @limiter.limit("10/hour")
 async def voiture_reserver(
@@ -48,7 +70,7 @@ async def voiture_reserver(
             itinerary_waypoints=None,
         )
     except ValidationError as e:
-        return templates.TemplateResponse("client/voitures/voiture_detail.html", {
+        return templates.TemplateResponse("client/reservations/formulaire_reservation.html", {
             "request": request,
             "voiture": voiture,
             "error": _traduire_erreur(e),
@@ -58,17 +80,17 @@ async def voiture_reserver(
         db, voiture.id, form.date_debut, form.date_fin
     )
     if not disponible:
-        return templates.TemplateResponse("client/voitures/voiture_detail.html", {
+        return templates.TemplateResponse("client/reservations/formulaire_reservation.html", {
             "request": request,
             "voiture": voiture,
-            "depart": form.date_debut.isoformat(),
-            "retour": form.date_fin.isoformat() if form.date_fin else "",
+            "depart": form.date_debut.date().isoformat(),
+            "retour": form.date_fin.date().isoformat() if form.date_fin else "",
             "erreur_disponibilite": True,
         }, status_code=409)
 
     date_fin_effective = form.date_fin or form.date_debut
     if not car_service.verifier_heures_disponibilite(voiture, form.date_debut, date_fin_effective):
-        return templates.TemplateResponse("client/voitures/voiture_detail.html", {
+        return templates.TemplateResponse("client/reservations/formulaire_reservation.html", {
             "request": request,
             "voiture": voiture,
             "erreur_heures": True,
@@ -79,7 +101,7 @@ async def voiture_reserver(
             db, voiture, form, form_data.get("itinerary_token")
         )
     except reservation_service.ReservationError as e:
-        return templates.TemplateResponse("client/voitures/voiture_detail.html", {
+        return templates.TemplateResponse("client/reservations/formulaire_reservation.html", {
             "request": request,
             "voiture": voiture,
             "error": str(e),
