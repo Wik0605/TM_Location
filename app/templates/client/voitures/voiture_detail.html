@@ -1,0 +1,159 @@
+{% extends "base_client.html" %}
+
+{% block title %}{{ voiture.nom }}{% endblock %}
+
+{% block description %}{{ voiture.description[:160] }}{% endblock %}
+
+{% block head_extra %}
+<link rel="canonical" href="{{ request.base_url }}voitures/{{ voiture.slug }}">
+<meta property="og:type" content="product">
+<meta property="og:title" content="{{ voiture.nom }} — {{ app_name }}">
+<meta property="og:description" content="{{ voiture.description[:160] }}">
+{% if voiture.images %}
+<meta property="og:image" content="{{ request.base_url }}{{ voiture.images[0].url.lstrip('/') }}">
+{% endif %}
+{% endblock %}
+
+{% block content %}
+{% set photos = (voiture.images | map(attribute='url') | list) %}
+
+<section class="max-w-md mx-auto px-5 pt-6 pb-8">
+
+    <!-- Bouton retour + titre -->
+    <div class="flex items-center gap-3 mb-5">
+        <a href="/voitures"
+           class="w-9 h-9 rounded-full bg-[color:var(--color-neutral-soft)] flex items-center justify-center text-ink hover:bg-[color:var(--color-border-strong)] transition-all"
+           aria-label="Retour catalogue">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+            </svg>
+        </a>
+        <div class="min-w-0 flex-1">
+            <span class="block text-[10px] font-bold uppercase tracking-[0.2em] text-[color:var(--color-neutral)]">Véhicule</span>
+            <h1 class="font-display text-xl font-black text-ink tracking-tight leading-tight truncate">{{ voiture.nom }}</h1>
+        </div>
+    </div>
+
+    <!-- Galerie image 220px -->
+    {% if photos %}
+    <div class="relative rounded-3xl overflow-hidden bg-[color:var(--color-primary-tint)] mb-4" id="carousel">
+        <div id="carousel-track">
+            {% for photo in photos %}
+            <div class="w-full cursor-zoom-in"
+                 id="slide-{{ loop.index0 }}"
+                 style="height:220px;{% if not loop.first %}display:none{% endif %}"
+                 onclick="openLightbox({{ loop.index0 }})">
+                <picture>
+                    <source srcset="{{ photo | to_webp }}" type="image/webp">
+                    <img src="{{ photo }}" alt="{{ voiture.nom }} — photo {{ loop.index }}"
+                         loading="{% if loop.first %}eager{% else %}lazy{% endif %}"
+                         decoding="async"
+                         style="width:100%;height:100%;object-fit:cover;display:block;">
+                </picture>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if photos | length > 1 %}
+        <button onclick="carouselPrev()"
+                class="absolute left-3 top-1/2 -translate-y-1/2 bg-white/85 backdrop-blur-md hover:bg-white text-ink rounded-full w-9 h-9 flex items-center justify-center shadow-md transition-all">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+            </svg>
+        </button>
+        <button onclick="carouselNext()"
+                class="absolute right-3 top-1/2 -translate-y-1/2 bg-white/85 backdrop-blur-md hover:bg-white text-ink rounded-full w-9 h-9 flex items-center justify-center shadow-md transition-all">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+            </svg>
+        </button>
+        <!-- Dots pagination -->
+        <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5" id="carousel-dots">
+            {% for photo in photos %}
+            <button onclick="carouselGoTo({{ loop.index0 }})"
+                    class="rounded-full transition-all {% if loop.first %}bg-white w-6 h-1.5{% else %}bg-white/50 w-1.5 h-1.5{% endif %}"
+                    id="dot-{{ loop.index0 }}"></button>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <span class="absolute top-3 left-3 bg-success text-white text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full">
+            Disponible
+        </span>
+    </div>
+    {% else %}
+    <div class="rounded-3xl mb-4 flex items-center justify-center"
+         style="height:220px; background-image: repeating-linear-gradient(45deg, rgba(217,119,6,0.12) 0 2px, transparent 2px 14px); background-color: var(--color-primary-tint);">
+        <span class="font-display text-2xl font-black text-primary/60 tracking-tight">{{ voiture.nom }}</span>
+    </div>
+    {% endif %}
+
+
+    
+
+    <!-- Tarifs disponibles (radio selection) -->
+    {% if voiture.types_location %}
+    <div class="mb-5">
+        <h2 class="font-display text-sm font-black text-ink tracking-tight mb-2 uppercase">
+            Choisis ton forfait
+        </h2>
+        <div class="space-y-2" id="tarifs-list">
+            {% for tl in voiture.types_location %}
+            <label class="flex items-center justify-between bg-white border border-[color:var(--color-border-strong)] rounded-2xl px-4 py-3 cursor-pointer hover:border-primary transition-all has-[:checked]:border-primary has-[:checked]:bg-[color:var(--color-primary-light)]">
+                <div class="flex items-center gap-3">
+                    <input type="radio" name="type_location_selected" value="{{ tl.id }}"
+                           class="accent-primary" {% if loop.first %}checked{% endif %}>
+                    <span class="font-semibold text-ink text-sm">{{ tl.nom }}</span>
+                </div>
+                <span class="font-display font-black text-primary text-sm whitespace-nowrap">
+                    {{ "{:,}".format(tl.prix).replace(",", " ") }} Ar
+                </span>
+            </label>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- CTAs -->
+    <div class="space-y-3">
+        <a href="/voitures/{{ voiture.slug }}/itineraire"
+           class="flex items-center justify-center gap-2 w-full bg-primary hover:bg-primary-dark text-white font-bold text-sm py-3.5 rounded-2xl uppercase tracking-widest transition-all shadow-lg">
+            <span>Calculateur d'itinéraire</span>
+        </a>
+        <a href="/voitures/{{ voiture.slug }}/reserver-form"
+           class="flex items-center justify-center w-full bg-ink hover:bg-primary text-white font-bold text-sm py-3.5 rounded-2xl uppercase tracking-widest transition-all">
+            Réserver ce véhicule
+        </a>
+    </div>
+
+</section>
+
+<!-- Lightbox overlay -->
+{% if photos %}
+<div id="lightbox" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/90" onclick="closeLightboxOnBackdrop(event)">
+    <button onclick="closeLightbox()" class="absolute top-4 right-4 text-white bg-white/10 hover:bg-white/30 rounded-full w-11 h-11 flex items-center justify-center text-2xl font-bold transition-all z-10">✕</button>
+    {% if photos | length > 1 %}
+    <button onclick="lightboxPrev(event)" class="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/30 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-md transition-all z-10">
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+    </button>
+    <button onclick="lightboxNext(event)" class="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/30 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-md transition-all z-10">
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+    </button>
+    {% endif %}
+    <img id="lightbox-img" src="" alt="" class="max-w-[90vw] max-h-[85vh] rounded-xl object-contain shadow-2xl select-none">
+    <div class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white text-sm font-bold px-4 py-1.5 rounded-full">
+        <span id="lightbox-counter">1</span> / {{ photos | length }}
+    </div>
+</div>
+{% endif %}
+
+<script>
+{% if photos %}
+const photos = [{% for p in photos %}"{{ p }}"{% if not loop.last %},{% endif %}{% endfor %}];
+const total = photos.length;
+{% endif %}
+</script>
+{% if photos %}
+<script src="/static/js/car_detail.js"></script>
+{% endif %}
+{% endblock %}

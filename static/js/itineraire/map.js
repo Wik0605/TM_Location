@@ -15,7 +15,7 @@ export function initMap() {
         attributionControl: false,
         tap: true,
         tapTolerance: 15,
-    }).setView([-18.91, 47.52], 15);
+    }).setView([-18.9159, 47.5228], 16);
 
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
@@ -71,8 +71,7 @@ export function initMap() {
     const osmLabels = L.tileLayer(
         'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png',
         {
-            attribution:
-                '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
             subdomains: 'abcd',
             maxZoom: 19,
             pane: 'shadowPane',
@@ -81,6 +80,35 @@ export function initMap() {
     const esriCarto = L.layerGroup([esriImagery, osmLabels]);
 
     esriCarto.addTo(map);
+
+    let quartiersLayer = null;
+
+    async function chargerQuartiers() {
+        if (map.getZoom() < 15) {
+            if (quartiersLayer) { map.removeLayer(quartiersLayer); quartiersLayer = null; }
+            return;
+        }
+        const b = map.getBounds();
+        const url = `/api/quartiers?min_lon=${b.getWest()}&min_lat=${b.getSouth()}&max_lon=${b.getEast()}&max_lat=${b.getNorth()}`;
+        try {
+            const res = await fetch(url);
+            const geojson = await res.json();
+            if (quartiersLayer) map.removeLayer(quartiersLayer);
+            quartiersLayer = L.geoJSON(geojson, {
+                style: { color: '#ffffff', weight: 1, fillOpacity: 0.05 },
+                onEachFeature(feature, layer) {
+                    layer.bindTooltip(feature.properties.nom_court, {
+                        permanent: true,
+                        direction: 'center',
+                        className: 'quartier-label',
+                    });
+                },
+            }).addTo(map);
+        } catch (_) {}
+    }
+
+    map.on('moveend', chargerQuartiers);
+    chargerQuartiers();
 
     state.map = map;
     state.markersLayer = L.layerGroup().addTo(map);

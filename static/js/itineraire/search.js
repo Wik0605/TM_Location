@@ -1,9 +1,7 @@
 import { state } from './state.js';
 import { activatePickMode } from './pick.js';
 
-const PHOTON_URL = 'https://photon.komoot.io/api/';
-// Bounding box Madagascar (approx) : ouest, sud, est, nord
-const MG_BBOX = '43.2,-25.6,50.5,-11.9';
+const SEARCH_URL = '/api/search';
 
 function formatSuggestion(item) {
     const p = item.properties || {};
@@ -20,10 +18,11 @@ function formatSuggestion(item) {
 function searchPlaces(query, signal) {
     // Biais de position vers le centre courant de la carte (équivalent viewbox)
     const center = state.map ? state.map.getCenter() : { lat: -18.91, lng: 47.52 };
+    const q = query.charAt(0).toUpperCase() + query.slice(1);
     const url =
-        `${PHOTON_URL}?q=${encodeURIComponent(query)}` +
+        `${SEARCH_URL}?q=${encodeURIComponent(q)}` +
         `&lat=${center.lat}&lon=${center.lng}` +
-        `&limit=10&lang=fr&bbox=${MG_BBOX}`;
+        `&limit=15&lang=fr`;
     return fetch(url, { signal, headers: { Accept: 'application/json' } })
         .then((r) => (r.ok ? r.json() : { features: [] }))
         .then((data) => data.features || []);
@@ -127,7 +126,7 @@ export function attachSearchBox(container, target) {
             container.classList.remove('is-loading');
             return;
         }
-        debounceTimer = setTimeout(() => triggerSearch(v), 400);
+        debounceTimer = setTimeout(() => triggerSearch(v), 200);
     });
 
     input.addEventListener('focus', () => {

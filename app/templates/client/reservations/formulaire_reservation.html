@@ -1,0 +1,147 @@
+{% extends "base_client.html" %}
+
+{% block title %}Réserver — {{ voiture.nom }}{% endblock %}
+
+{% block content %}
+<section class="max-w-md mx-auto px-5 pt-6 pb-8">
+
+    <!-- Bouton retour + titre -->
+    <div class="flex items-center gap-3 mb-5">
+        <a href="/voitures/{{ voiture.slug }}"
+           class="w-9 h-9 rounded-full bg-[color:var(--color-neutral-soft)] flex items-center justify-center text-ink hover:bg-[color:var(--color-border-strong)] transition-all"
+           aria-label="Retour véhicule">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+            </svg>
+        </a>
+        <div class="min-w-0 flex-1">
+            <span class="block text-[10px] font-bold uppercase tracking-[0.2em] text-[color:var(--color-neutral)]">Réservation</span>
+            <h1 class="font-display text-xl font-black text-ink tracking-tight leading-tight truncate">{{ voiture.nom }}</h1>
+        </div>
+    </div>
+
+    <!-- Sélecteur de forfait -->
+    {% if voiture.types_location %}
+    <div class="mb-5">
+        <h2 class="font-display text-sm font-black text-ink tracking-tight mb-2 uppercase">
+            Choisis ton forfait
+        </h2>
+        <div class="space-y-2" id="tarifs-list">
+            {% for tl in voiture.types_location %}
+            <label class="flex items-center justify-between bg-white border border-[color:var(--color-border-strong)] rounded-2xl px-4 py-3 cursor-pointer hover:border-primary transition-all has-[:checked]:border-primary has-[:checked]:bg-[color:var(--color-primary-light)]">
+                <div class="flex items-center gap-3">
+                    <input type="radio" name="type_location_selected" value="{{ tl.id }}"
+                           class="accent-primary" {% if loop.first %}checked{% endif %}>
+                    <span class="font-semibold text-ink text-sm">{{ tl.nom }}</span>
+                </div>
+                <span class="font-display font-black text-primary text-sm whitespace-nowrap">
+                    {{ "{:,}".format(tl.prix).replace(",", " ") }} Ar
+                </span>
+            </label>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Formulaire de réservation -->
+    <div class="bg-white rounded-3xl p-5 border border-[color:var(--color-border)] shadow-[0_4px_16px_rgba(0,0,0,0.06)]">
+        <h2 class="font-display text-base font-black text-ink tracking-tight mb-4">
+            Tes informations
+        </h2>
+
+        {% if errors %}
+        <div class="bg-red-50 border-l-4 border-danger text-danger px-3 py-2 text-xs rounded-lg mb-3 space-y-1">
+            {% for msg in errors %}
+            <p>⚠️ {{ msg }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if error %}
+        <div class="bg-red-50 border-l-4 border-danger text-danger px-3 py-2 text-xs rounded-lg mb-3">
+            ⚠️ {{ error }}
+        </div>
+        {% endif %}
+
+        {% if erreur_disponibilite %}
+        <div class="bg-red-50 border-l-4 border-red-600 text-red-700 px-3 py-3 text-xs rounded-lg mb-3 font-semibold">
+            🚫 Voiture non disponible à cette date. Merci de choisir d'autres dates.
+        </div>
+        {% endif %}
+
+        {% if erreur_heures %}
+        <div class="bg-red-50 border-l-4 border-red-600 text-red-700 px-3 py-3 text-xs rounded-lg mb-3 font-semibold">
+            🚫 Devis impossible — la voiture n'est pas disponible aux heures demandées.
+            {% if voiture.heure_dispo_debut and voiture.heure_dispo_fin %}
+            <span class="block mt-1 font-normal">Elle est disponible de {{ voiture.heure_dispo_debut.strftime('%Hh%M') }} à {{ voiture.heure_dispo_fin.strftime('%Hh%M') }}.</span>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <form action="/voitures/{{ voiture.slug }}/reserver" method="POST" class="space-y-3" id="form-reserver">
+            {{ csrf_input(request) }}
+            <input type="hidden" name="type_location_id" id="hidden-type-location-id"
+                   value="{{ voiture.types_location[0].id if voiture.types_location else '' }}">
+            <input type="hidden" name="itinerary_token" id="itinerary-token" value="{{ token or '' }}">
+
+            <div class="grid grid-cols-1 gap-3">
+                <label class="block">
+                    <span class="block text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)] mb-1">Nom complet</span>
+                    <input type="text" name="client_nom" required placeholder="Ex : Jean Rakoto"
+                           class="w-full text-sm text-ink bg-[color:var(--color-neutral-soft)] border-0 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-primary focus:bg-white transition-all">
+                </label>
+                <label class="block">
+                    <span class="block text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)] mb-1">Téléphone</span>
+                    <input type="tel" name="client_telephone" required placeholder="+261 34 00 000 00"
+                           class="w-full text-sm text-ink bg-[color:var(--color-neutral-soft)] border-0 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-primary focus:bg-white transition-all">
+                </label>
+                <label class="block">
+                    <span class="block text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)] mb-1">Email (optionnel)</span>
+                    <input type="email" name="client_email" placeholder="jean@email.mg"
+                           class="w-full text-sm text-ink bg-[color:var(--color-neutral-soft)] border-0 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-primary focus:bg-white transition-all">
+                </label>
+                <div class="grid grid-cols-2 gap-3">
+                    <label class="block">
+                        <span class="block text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)] mb-1">Début (date & heure)</span>
+                        <input type="datetime-local" name="date_debut" required
+                               value="{{ (depart ~ 'T08:00') if depart else '' }}"
+                               class="w-full text-sm text-ink bg-[color:var(--color-neutral-soft)] border-0 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-primary focus:bg-white transition-all">
+                    </label>
+                    <label class="block">
+                        <span class="block text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)] mb-1">Fin (date & heure)</span>
+                        <input type="datetime-local" name="date_fin"
+                               value="{{ (retour ~ 'T14:00') if retour else '' }}"
+                               class="w-full text-sm text-ink bg-[color:var(--color-neutral-soft)] border-0 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-primary focus:bg-white transition-all">
+                    </label>
+                </div>
+            </div>
+
+            <button type="submit"
+                    class="block w-full bg-ink hover:bg-primary text-white font-bold text-sm py-3.5 rounded-2xl uppercase tracking-widest transition-all mt-2">
+                Confirmer la réservation
+            </button>
+        </form>
+
+        <p class="text-[10px] text-[color:var(--color-neutral)] mt-3 text-center font-medium">
+            Assistance 24/7 · Assurance incluse
+        </p>
+    </div>
+
+</section>
+
+<script>
+document.querySelectorAll('input[name="type_location_selected"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+        document.getElementById('hidden-type-location-id').value = radio.value;
+    });
+});
+
+try {
+    const token = document.getElementById('itinerary-token');
+    if (!token.value) {
+        const stored = localStorage.getItem(`itinerary_token_{{ voiture.id }}`);
+        if (stored) token.value = stored;
+    }
+} catch { /* localStorage indisponible */ }
+</script>
+{% endblock %}

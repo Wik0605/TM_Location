@@ -1,0 +1,74 @@
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.client.reservations.rules import valider_type_location
+from app.models.reservation import Location
+from app.client.reservations.forms import LocationForm
+from app.client.itineraire import service as routing_service
+
+
+class ReservationError(Exception):
+    pass
+
+
+async def creer_reservation(
+    db: AsyncSession,
+    voiture,
+    form: LocationForm,
+    itinerary_token: str | None,
+):
+    itinerary_source: str | None = None
+    depart_coords: str | None = None
+    arrivee_coords: str | None = None
+    if itinerary_token:
+        token_data = routing_service.lire_token(itinerary_token)
+        if token_data and str(token_data["voiture_id"]) == str(voiture.id):
+            form.itinerary_distance_km = token_data["distance_km"]
+            waypoints = token_data["waypoints"]
+            form.itinerary_waypoints = ";".join(
+                f"{lat},{lon}" for lat, lon in waypoints
+            )
+            if waypoints:
+                depart_coords = f"{waypoints[0][0]},{waypoints[0][1]}"
+                arrivee_coords = f"{waypoints[-1][0]},{waypoints[-1][1]}"
+            itinerary_source = token_data.get("source")
+
+    type_location = next(
+        (t for t in voiture.types_location if t.id == form.type_location_id), None
+    )
+    if type_location is None:
+        raise ReservationError("Formule de location invalide pour cette voiture.")
+
+    date_fin = form.date_fin or form.date_debut
+    try:
+        valider_type_location(type_location.nom, form.date_debut, date_fin)
+    except ValueError as exc:
+        raise ReservationError(str(exc)) from exc
+
+    prix_total = float(type_location.prix)
+    duree_minutes = int((date_fin - form.date_debut).total_seconds() / 60)
+
+    loc = Location(
+        voiture_id=voiture.id,
+        type_location_id=form.type_location_id,
+        client_nom=form.client_nom,
+        client_telephone=form.client_telephone,
+        client_email=form.client_email,
+        date_debut=form.date_debut,
+        date_fin=date_fin,
+        duree_minutes=duree_minutes,
+        prix_total=prix_total,
+        statut="confirmée",
+        notes=form.notes,
+        itineraire_distance_km=form.itinerary_distance_km,
+        itineraire_depart=form.itinerary_start_name,
+        itineraire_arrivee=form.itinerary_end_name,
+        itineraire_etapes=form.itinerary_waypoints,
+        itineraire_source=itinerary_source,
+        depart_coords=depart_coords,
+        arrivee_coords=arrivee_coords,
+    )
+    db.add(loc)
+    await db.commit()
+    await db.refresh(loc)
+
+    return loc, type_location

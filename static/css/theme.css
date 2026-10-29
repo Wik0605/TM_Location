@@ -1,6 +1,6 @@
 /* ================================================
    THÈME TM_LOCATION — Refonte UI/UX 2026
-   Palette ambre premium (voir docs/design/README.md)
+   Palette marron chaud premium (VTC)
    ================================================ */
 
 :root {
@@ -8,16 +8,17 @@
   --font-main: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-display: 'Outfit', 'Inter', system-ui, sans-serif;
 
-  /* PRIMAIRES — Ambre premium */
-  --color-primary: #D97706;
-  --color-primary-dark: #B45309;
-  --color-primary-light: #FFFBEB;
-  --color-primary-tint: #FEF3C7;
-  --color-primary-tint-strong: #FDE68A;
+  /* PRIMAIRES — Marron chaud premium */
+  --color-primary: #6B3410;
+  --color-primary-dark: #4A2309;
+  --color-primary-light: #FBF5EF;
+  --color-primary-tint: #F5EBE0;
+  --color-primary-tint-strong: #E8D5BF;
 
-  /* SECONDAIRES / ACCENT */
+  /* SECONDAIRES / ACCENT — Doré premium */
   --color-secondary: #0A0A0A;
-  --color-accent: #FCD34D;
+  --color-accent: #D4A574;
+  --color-accent-dark: #B8864F;
   --color-indigo-cta: #4F46E5;
 
   /* NEUTRES */
@@ -39,7 +40,7 @@
 
   /* ÉTATS */
   --color-success: #059669;
-  --color-warning: #D97706;
+  --color-warning: #B8864F;
   --color-error: #DC2626;
   --color-info: #4F46E5;
 

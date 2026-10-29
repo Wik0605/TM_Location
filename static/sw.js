@@ -1,11 +1,10 @@
-const CACHE = 'tm-location-v2';
+const CACHE = 'tm-location-v4-logo';
 const PRECACHE = [
   '/',
   '/static/css/theme.css',
   '/static/css/dist.css',
   '/static/js/vendor/htmx.min.js',
   '/static/manifest.webmanifest',
-  '/static/icons/icon.svg',
   '/static/icons/icon-192.png',
   '/static/icons/icon-512.png',
   '/static/icons/apple-touch-icon.png',

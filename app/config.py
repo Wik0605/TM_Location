@@ -4,6 +4,10 @@ INSECURE_DEFAULTS = {"changeme", "admin", ""}
 
 
 class Settings(BaseSettings):
+    app_name: str = "TM Location"
+    app_logo: str = "/static/icons/apple-touch-icon.png"
+    color_primary: str = "#6B3410"
+    color_accent: str = "#D4A574"
     secret_key: str = "changeme"
     admin_username: str = "admin"
     admin_password: str = "admin"
@@ -15,6 +19,8 @@ class Settings(BaseSettings):
     facebook_redirect_uri: str = "http://localhost:8000/auth/facebook/callback"
     environment: str = "development"
     allowed_origins: str = "http://localhost:8000,http://127.0.0.1:8000"
+    database_url: str = ""
+    maptiler_api_key: str = ""
 
     @property
     def is_production(self) -> bool:

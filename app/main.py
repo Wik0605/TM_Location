@@ -25,14 +25,16 @@ from slowapi.errors import RateLimitExceeded
 from app.config import settings
 from app.database import init_db, engine
 from app.limiter import limiter
-from app.routers.web import router as web_router
-from app.routers.admin_auth import router as admin_auth_router, login_rate_limit_handler
-from app.routers.admin_cars import router as admin_cars_router
-from app.routers.admin_rentals import router as admin_rentals_router
-from app.routers.auth import router as auth_router
-from app.routers.itineraire_api import router as itineraire_api_router
-from app.routers.analytics_api import router as analytics_api_router
-from app.routers.admin_stats import router as admin_stats_router
+from app.client.pages.routes import router as web_router
+from app.admin.auth.routes import router as admin_auth_router, login_rate_limit_handler
+from app.admin.voitures.routes import router as admin_cars_router
+from app.admin.reservations.routes import router as admin_rentals_router
+from app.client.voitures.routes import router as client_voitures_router
+from app.client.reservations.routes import router as client_reservations_router
+from app.client.auth.routes import router as auth_router
+from app.client.itineraire.routes import router as itineraire_api_router
+from app.client.analytics.routes import router as analytics_api_router
+from app.admin.stats.routes import router as admin_stats_router
 
 logging.basicConfig(
     level=logging.INFO,
@@ -48,9 +50,9 @@ STATIC_CACHE_MAX_AGE = 60 * 60 * 24 * 7  # 7 jours
 
 CSP_POLICY = (
     "default-src 'self'; "
-    "script-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com; "
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; "
-    "font-src 'self' https://fonts.gstatic.com; "
+    "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; "
+    "style-src 'self' 'unsafe-inline'; "
+    "font-src 'self'; "
     "img-src 'self' data: blob: https:; "
     "connect-src 'self' https://photon.komoot.io; "
     "frame-ancestors 'none'; "
@@ -159,6 +161,8 @@ if STATIC_DIR.exists():
 
 
 app.include_router(web_router)
+app.include_router(client_voitures_router)
+app.include_router(client_reservations_router)
 app.include_router(admin_auth_router)
 app.include_router(admin_cars_router)
 app.include_router(admin_rentals_router)

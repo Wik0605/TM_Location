@@ -1,7 +1,31 @@
-from fastapi.templating import Jinja2Templates
+import datetime
 
+from fastapi.templating import Jinja2Templates
+from jinja2 import Environment, FileSystemLoader, select_autoescape
+
+from app.config import settings
 from app.csrf import csrf_input, get_or_create_csrf_token
 
-templates = Jinja2Templates(directory="app/templates")
+
+def _to_webp(url: str) -> str:
+    if not url:
+        return url
+    for ext in (".png", ".jpg", ".jpeg", ".PNG", ".JPG", ".JPEG"):
+        if url.endswith(ext):
+            return url[: -len(ext)] + ".webp"
+    return url
+
+
+_loader = FileSystemLoader("app/templates")
+
+_env = Environment(loader=_loader, autoescape=select_autoescape(["html", "xml"]))
+
+templates = Jinja2Templates(env=_env)
+templates.env.globals["app_name"] = settings.app_name
+templates.env.globals["app_logo"] = settings.app_logo
+templates.env.globals["color_primary"] = settings.color_primary
+templates.env.globals["color_accent"] = settings.color_accent
 templates.env.globals["csrf_input"] = csrf_input
 templates.env.globals["csrf_token"] = get_or_create_csrf_token
+templates.env.filters["current_year"] = lambda: datetime.datetime.now().year
+templates.env.filters["to_webp"] = _to_webp

@@ -1,0 +1,120 @@
+{% extends "base_client.html" %}
+
+{% block title %}Nos véhicules{% endblock %}
+
+{% block content %}
+<section class="max-w-md mx-auto px-5 pt-6 pb-8">
+
+    <!-- Bouton retour + titre -->
+    <div class="flex items-center gap-3 mb-5">
+        <a href="/"
+           class="w-9 h-9 rounded-full bg-[color:var(--color-neutral-soft)] flex items-center justify-center text-ink hover:bg-[color:var(--color-border-strong)] transition-all"
+           aria-label="Retour accueil">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+            </svg>
+        </a>
+        <div>
+            <span class="block text-[10px] font-bold uppercase tracking-[0.2em] text-[color:var(--color-neutral)]">Catalogue</span>
+            <h1 class="font-display text-xl font-black text-ink tracking-tight leading-tight">Nos véhicules</h1>
+        </div>
+    </div>
+
+    <!-- Filtres pilule scrollables -->
+    <div class="flex gap-2 overflow-x-auto -mx-5 px-5 pb-3 mb-5 no-scrollbar">
+        {% set current_type = request.query_params.get('type', '') %}
+        {% for f in [('', 'Tous'), ('suv', 'SUV / 4x4'), ('citadine', 'Citadines'), ('pickup', 'Pick-up')] %}
+        <a href="/voitures{{ '?type=' + f[0] if f[0] else '' }}"
+           class="shrink-0 px-4 py-2 rounded-full text-[11px] font-bold uppercase tracking-widest transition-all
+                  {% if current_type == f[0] %}bg-ink text-white shadow-md
+                  {% else %}bg-[color:var(--color-neutral-soft)] text-[color:var(--color-neutral-strong)] hover:bg-[color:var(--color-border-strong)]{% endif %}">
+            {{ f[1] }}
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- Grille compacte cards -->
+    {% if voitures_dispo %}
+    {% set query_dates = ('?depart=' ~ depart ~ '&retour=' ~ retour) if depart else '' %}
+    <div class="grid grid-cols-2 gap-3">
+        {% for voiture, is_available in voitures_dispo %}
+        {% set first_photo = voiture.images[0].url if voiture.images else None %}
+        {% set prix_min = voiture.types_location | map(attribute='prix') | min if voiture.types_location else None %}
+        <a href="/voitures/{{ voiture.slug }}{{ query_dates }}"
+           class="block bg-white rounded-2xl overflow-hidden shadow-[0_2px_10px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_28px_rgba(0,0,0,0.10)] hover:-translate-y-1 transition-all border border-[color:var(--color-border)] {% if not is_available %}opacity-70{% endif %}">
+
+            <!-- Image 110px -->
+            <div class="relative h-[110px] bg-[color:var(--color-primary-tint)] overflow-hidden">
+                {% if first_photo %}
+                <picture>
+                    <source srcset="{{ first_photo | to_webp }}" type="image/webp">
+                    <img src="{{ first_photo }}" alt="{{ voiture.nom }}"
+                         loading="lazy" decoding="async"
+                         class="w-full h-full object-cover">
+                </picture>
+                {% else %}
+                <div class="w-full h-full flex items-center justify-center"
+                     style="background-image: repeating-linear-gradient(45deg, rgba(217,119,6,0.12) 0 2px, transparent 2px 12px);">
+                    <span class="font-display text-base font-black text-primary/60 tracking-tight px-2 text-center leading-tight">{{ voiture.nom }}</span>
+                </div>
+                {% endif %}
+
+                <span class="absolute top-2 left-2 bg-ink text-white text-[8.5px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full">
+                    {{ voiture.places }}pl
+                </span>
+                {% if is_available %}
+                <span class="absolute top-2 right-2 bg-success text-white text-[8.5px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full">
+                    Disponible
+                </span>
+                {% else %}
+                <span class="absolute top-2 right-2 bg-red-600 text-white text-[8.5px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full">
+                    Non disponible
+                </span>
+                {% endif %}
+            </div>
+
+            <!-- Infos compactes -->
+            <div class="p-3">
+                <h3 class="font-display text-sm font-black text-ink tracking-tight leading-tight truncate">
+                    {{ voiture.nom }}
+                </h3>
+
+                <!-- Ligne caractéristiques -->
+                <div class="flex items-center gap-1 mt-1.5 text-[9px] font-bold uppercase tracking-wider text-[color:var(--color-neutral-strong)]">
+                    <span>{{ voiture.consommation_carburant }}L</span>
+                    <span class="text-[color:var(--color-border-strong)]">·</span>
+                    <span>{{ voiture.places }} pl.</span>
+                    {% if voiture.types_location %}
+                    <span class="text-[color:var(--color-border-strong)]">·</span>
+                    <span>{{ voiture.types_location | length }} forf.</span>
+                    {% endif %}
+                </div>
+
+                <!-- Prix -->
+                {% if prix_min is not none %}
+                <div class="mt-2 pt-2 border-t border-[color:var(--color-border)]">
+                    <span class="block text-[8.5px] font-bold uppercase tracking-widest text-[color:var(--color-neutral)]">Dès</span>
+                    <span class="font-display text-sm font-black text-primary tracking-tight">
+                        {{ "{:,}".format(prix_min).replace(",", " ") }} Ar
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="text-center py-16 bg-[color:var(--color-neutral-soft)] rounded-3xl">
+        <span class="text-5xl block mb-3">🚗</span>
+        <p class="text-sm font-semibold text-[color:var(--color-neutral-strong)]">Aucun véhicule disponible pour le moment.</p>
+    </div>
+    {% endif %}
+
+</section>
+
+<style>
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { scrollbar-width: none; }
+</style>
+{% endblock %}

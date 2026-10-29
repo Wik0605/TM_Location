@@ -1,0 +1,39 @@
+{% extends "base_client.html" %}
+
+{% block title %}Page non trouvée{% endblock %}
+
+{% block content %}
+<!-- Page 404 - Erreur -->
+<div class="min-h-[60vh] flex items-center justify-center">
+    <div class="text-center px-4">
+        <!-- Illustration -->
+        <div class="mb-8">
+            <span class="text-8xl">🚗💨</span>
+        </div>
+
+        <!-- Titre -->
+        <h1 class="text-6xl font-bold text-gray-800 mb-4">404</h1>
+        <h2 class="text-2xl font-semibold text-gray-600 mb-4">
+            Oups ! Page non trouvée
+        </h2>
+
+        <!-- Message -->
+        <p class="text-gray-500 mb-8 max-w-md mx-auto">
+            La page que vous recherchez n'existe pas ou a été déplacée.
+            Peut-être que la voiture que vous cherchez est déjà partie en location !
+        </p>
+
+        <!-- Boutons -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="/"
+               class="bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors">
+                Retour à l'accueil
+            </a>
+            <a href="/cars"
+               class="bg-white border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+                Voir nos véhicules
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,154 @@
+from datetime import datetime, time
+from typing import Optional, TYPE_CHECKING
+from uuid import UUID
+from sqlalchemy import Column, DateTime, Text, Time
+from sqlmodel import SQLModel, Field, Relationship
+
+from app.models.base import utcnow
+from app.utils.ids import new_uuid7
+
+if TYPE_CHECKING:
+    from app.models.reservation import Location
+
+
+class VoitureBase(SQLModel):
+    nom: str = Field(max_length=100)
+    description: str = Field(sa_column=Column(Text, nullable=False))
+    consommation_carburant: float = Field(default=8.0)
+    places: int = Field(default=5)
+    heure_dispo_debut: Optional[time] = Field(
+        default=None, sa_column=Column(Time, nullable=True)
+    )
+    heure_dispo_fin: Optional[time] = Field(
+        default=None, sa_column=Column(Time, nullable=True)
+    )
+
+
+class Voiture(VoitureBase, table=True):
+    __tablename__ = "voitures"
+
+    id: UUID = Field(default_factory=new_uuid7, primary_key=True)
+    slug: str = Field(max_length=140, unique=True, index=True)
+    is_available: bool = Field(default=True)
+    created_at: datetime = Field(
+        default_factory=utcnow,
+        sa_column=Column(DateTime, default=utcnow, nullable=False),
+    )
+    updated_at: datetime = Field(
+        default_factory=utcnow,
+        sa_column=Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False),
+    )
+
+    images: list["VoitureImage"] = Relationship(
+        back_populates="voiture",
+        sa_relationship_kwargs={
+            "order_by": "VoitureImage.position",
+            "cascade": "all, delete-orphan",
+        },
+    )
+    types_location: list["TypeLocation"] = Relationship(
+        back_populates="voiture",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+    )
+    locations: list["Location"] = Relationship(back_populates="voiture")
+
+    @property
+    def brand(self) -> str:
+        return self.nom
+
+    @property
+    def model(self) -> str:
+        return ""
+
+    @property
+    def seats(self) -> int:
+        return self.places
+
+    @property
+    def fuel_consumption(self) -> float:
+        return self.consommation_carburant
+
+    @property
+    def daily_price(self) -> float:
+        return 0.0
+
+
+class VoitureImage(SQLModel, table=True):
+    __tablename__ = "voiture_images"
+
+    id: UUID = Field(default_factory=new_uuid7, primary_key=True)
+    voiture_id: UUID = Field(foreign_key="voitures.id")
+    url: str = Field(max_length=255)
+    position: int = Field(default=0)
+
+    voiture: Voiture = Relationship(back_populates="images")
+
+
+class TypeLocation(SQLModel, table=True):
+    __tablename__ = "types_location"
+
+    id: UUID = Field(default_factory=new_uuid7, primary_key=True)
+    voiture_id: UUID = Field(foreign_key="voitures.id")
+    nom: str = Field(max_length=100)
+    prix: int
+
+    voiture: Voiture = Relationship(back_populates="types_location")
+    locations: list["Location"] = Relationship(back_populates="type_location")
+
+    @property
+    def name(self) -> str:
+        return self.nom
+
+    @property
+    def prix_fixe(self) -> int:
+        return self.prix
+
+    @property
+    def price_multiplier(self) -> float:
+        return 1.0
+
+    @property
+    def discount_percent(self) -> float:
+        return 0.0
+
+    @property
+    def fuel_consumption(self):
+        return None
+
+    @property
+    def fuel_price(self):
+        return None
+
+
+class VoitureCreate(VoitureBase):
+    pass
+
+
+class VoitureUpdate(SQLModel):
+    nom: Optional[str] = Field(default=None, max_length=100)
+    description: Optional[str] = Field(default=None, max_length=2000)
+    consommation_carburant: Optional[float] = None
+    places: Optional[int] = None
+    is_available: Optional[bool] = None
+    heure_dispo_debut: Optional[time] = None
+    heure_dispo_fin: Optional[time] = None
+
+
+class VoitureRead(VoitureBase):
+    id: UUID
+    slug: str
+    is_available: bool
+    created_at: datetime
+    updated_at: datetime
+
+
+class TypeLocationCreate(SQLModel):
+    nom: str = Field(min_length=1, max_length=100)
+    prix: int = Field(gt=0, lt=100_000_000)
+
+
+class TypeLocationRead(SQLModel):
+    id: UUID
+    voiture_id: UUID
+    nom: str
+    prix: int

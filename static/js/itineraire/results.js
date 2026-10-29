@@ -22,11 +22,31 @@ export function scheduleCalculation() {
     calcTimer = setTimeout(runCalculation, 700);
 }
 
+function horsPlageHoraire() {
+    const mapEl = document.getElementById('map');
+    const heureDebut = mapEl?.dataset.heureDispoDebut;
+    const heureFin = mapEl?.dataset.heureDispoFin;
+    if (!heureDebut || !heureFin) return false;
+    const hS = dtStart?.value?.slice(11, 16);
+    const hE = dtEnd?.value?.slice(11, 16);
+    return (hS && (hS < heureDebut || hS > heureFin))
+        || (hE && (hE > heureFin || hE < heureDebut));
+}
+
 async function runCalculation() {
     const start = getCoord('start');
     const end = getCoord('end');
     const hasType = rentalSelect?.value;
     if (!start || !end || !hasType) return;
+
+    if (horsPlageHoraire()) {
+        const warning = document.getElementById('heure-dispo-warning');
+        if (warning) warning.style.display = 'block';
+        document.getElementById('results-card').style.display = 'none';
+        const stickyCta = document.getElementById('sticky-cta');
+        if (stickyCta) { stickyCta.style.display = 'none'; document.body.classList.remove('has-sticky-cta'); }
+        return;
+    }
 
     const key = currentCalcKey();
     if (calcInFlight || key === lastCalcKey) return;
