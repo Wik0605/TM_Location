@@ -49,8 +49,16 @@
             Tes informations
         </h2>
 
+        {% if errors %}
+        <div class="bg-red-50 border-l-4 border-danger text-danger px-3 py-2 text-xs rounded-lg mb-3 space-y-1">
+            {% for msg in errors %}
+            <p>⚠️ {{ msg }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
         {% if error %}
-        <div class="bg-[color:var(--color-primary-light)] border-l-4 border-danger text-danger px-3 py-2 text-xs rounded-lg mb-3">
+        <div class="bg-red-50 border-l-4 border-danger text-danger px-3 py-2 text-xs rounded-lg mb-3">
             ⚠️ {{ error }}
         </div>
         {% endif %}

@@ -15,8 +15,32 @@ from app.templating import templates
 router = APIRouter(prefix="", tags=["client-reservations"])
 
 
-def _traduire_erreur(exc: ValidationError) -> str:
-    return "Erreur de saisie, veuillez vérifier les informations du formulaire."
+def _traduire_erreur(exc: ValidationError) -> list[str]:
+    _MAP: dict[tuple[str, str], str] = {
+        ("client_nom", "string_pattern_mismatch"): "Le nom doit contenir uniquement des lettres (pas de chiffres ni de symboles).",
+        ("client_nom", "string_too_short"):         "Le nom est trop court (2 caractères minimum).",
+        ("client_telephone", "string_pattern_mismatch"): "Le numéro de téléphone doit contenir uniquement des chiffres.",
+        ("client_email", "string_pattern_mismatch"):    "L'adresse email n'est pas valide (ex : jean@email.mg).",
+        ("date_debut", "datetime_parsing"):             "La date de début est invalide.",
+        ("date_debut", "datetime_from_date_parsing"):   "La date de début est invalide.",
+    }
+    messages: list[str] = []
+    seen: set[str] = set()
+    for err in exc.errors():
+        field = err["loc"][0] if err["loc"] else ""
+        etype = err["type"]
+        msg = _MAP.get((str(field), etype))
+        if msg is None:
+            if str(field) == "date_debut" and etype == "value_error":
+                msg = "Vous ne pouvez pas réserver à une date déjà passée."
+            elif str(field) == "date_fin" and etype == "value_error":
+                msg = "La date de retour doit être après la date de départ."
+            else:
+                msg = "Vérifiez les informations du formulaire."
+        if msg not in seen:
+            seen.add(msg)
+            messages.append(msg)
+    return messages or ["Vérifiez les informations du formulaire."]
 
 
 @router.get("/voitures/{key}/reserver-form", response_class=HTMLResponse)
@@ -73,7 +97,7 @@ async def voiture_reserver(
         return templates.TemplateResponse("client/reservations/formulaire_reservation.html", {
             "request": request,
             "voiture": voiture,
-            "error": _traduire_erreur(e),
+            "errors": _traduire_erreur(e),
         }, status_code=400)
 
     disponible = await car_service.voiture_est_disponible(
