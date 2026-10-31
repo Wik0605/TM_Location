@@ -58,12 +58,12 @@
 <body class="bg-white min-h-screen flex flex-col font-sans">
    
     <header
-        class="sticky top-0 z-40 bg-white/75 backdrop-blur-xl border-b border-[color:var(--color-border)]">
+        class="sticky top-0 z-40 bg-white border-b border-[color:var(--color-border)]">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-14 sm:h-16">
                 <a href="/" class="flex items-center gap-2 font-display">
                     <img src="{{ app_logo }}" alt="{{ app_name }}" class="h-8 sm:h-10 w-auto">
-                    <span class="sr-only">{{ app_name }}</span>
+                    <span class="text-sm sm:text-base font-bold tracking-tight text-[color:var(--color-primary)] font-display">{{ app_name }}</span>
                 </a>
                 <a href="/booking"
                     class="bg-primary text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-[11px] sm:text-xs font-bold uppercase tracking-widest hover:bg-primary-dark transition-all shadow-md">
