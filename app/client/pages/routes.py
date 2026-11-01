@@ -3,6 +3,7 @@ import datetime
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, PlainTextResponse, Response
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 from sqlmodel import select
 
 from app.client.voitures import service as car_service
@@ -46,6 +47,7 @@ async def profile_page(request: Request, db: AsyncSession = Depends(get_db)):
         result = await db.execute(
             select(Location)
             .where(Location.user_id == user_id)
+            .options(selectinload(Location.voiture))
             .order_by(Location.created_at.desc())
             .limit(20)
         )

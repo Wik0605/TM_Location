@@ -30,6 +30,7 @@ class Location(SQLModel, table=True):
     statut: str = Field(default="confirmée", max_length=20)
     notes: Optional[str] = Field(default=None, sa_column=Column(Text, nullable=True))
 
+    prix_carburant_estime: Optional[float] = None
     itineraire_distance_km: Optional[float] = None
     itineraire_depart: Optional[str] = Field(default=None, max_length=255)
     itineraire_arrivee: Optional[str] = Field(default=None, max_length=255)

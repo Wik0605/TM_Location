@@ -48,6 +48,12 @@ async def creer_reservation(
     prix_total = float(type_location.prix)
     duree_minutes = int((date_fin - form.date_debut).total_seconds() / 60)
 
+    prix_carburant_estime = None
+    if form.itinerary_distance_km and voiture.consommation_carburant:
+        d = form.itinerary_distance_km
+        conso = voiture.consommation_carburant
+        prix_carburant_estime = round((d / 100) * conso * 4900 + 30000)
+
     loc = Location(
         voiture_id=voiture.id,
         type_location_id=form.type_location_id,
@@ -59,6 +65,7 @@ async def creer_reservation(
         date_fin=date_fin,
         duree_minutes=duree_minutes,
         prix_total=prix_total,
+        prix_carburant_estime=prix_carburant_estime,
         statut="confirmée",
         notes=form.notes,
         itineraire_distance_km=form.itinerary_distance_km,

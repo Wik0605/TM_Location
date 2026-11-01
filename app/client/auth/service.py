@@ -43,6 +43,6 @@ async def upsert_oauth_user(
 
 
 def set_user_session(request, user: User) -> None:
-    request.session["user_id"] = user.id
+    request.session["user_id"] = str(user.id)
     request.session["user_name"] = user.name
     request.session["user_picture"] = user.picture or ""

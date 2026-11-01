@@ -35,6 +35,14 @@ target_metadata = SQLModel.metadata
 
 config.set_main_option("sqlalchemy.url", DATABASE_URL)
 
+# Tables gérées par l'app (Alembic ne touche qu'à celles-ci)
+_APP_TABLES = {m.name for m in SQLModel.metadata.sorted_tables}
+
+def include_object(object, name, type_, reflected, compare_to):
+    if type_ == "table":
+        return name in _APP_TABLES
+    return True
+
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
@@ -59,6 +67,7 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        include_object=include_object,
     )
 
     with context.begin_transaction():
@@ -67,9 +76,10 @@ def run_migrations_offline() -> None:
 
 def do_run_migrations(connection: Connection) -> None:
     context.configure(
-        connection=connection, 
+        connection=connection,
         target_metadata=target_metadata,
-        render_as_batch=True
+        render_as_batch=True,
+        include_object=include_object,
     )
 
     with context.begin_transaction():
