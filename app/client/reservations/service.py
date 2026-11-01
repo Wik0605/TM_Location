@@ -15,6 +15,7 @@ async def creer_reservation(
     voiture,
     form: LocationForm,
     itinerary_token: str | None,
+    user_id: str | None = None,
 ):
     itinerary_source: str | None = None
     depart_coords: str | None = None
@@ -50,6 +51,7 @@ async def creer_reservation(
     loc = Location(
         voiture_id=voiture.id,
         type_location_id=form.type_location_id,
+        user_id=user_id,
         client_nom=form.client_nom,
         client_telephone=form.client_telephone,
         client_email=form.client_email,

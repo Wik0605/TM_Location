@@ -3,8 +3,10 @@ import datetime
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, PlainTextResponse, Response
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import select
 
 from app.client.voitures import service as car_service
+from app.models.reservation import Location
 from app.shared.deps import get_db
 from app.templating import templates
 
@@ -37,8 +39,21 @@ async def home(request: Request, db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/profile", response_class=HTMLResponse)
-async def profile_page(request: Request):
-    return templates.TemplateResponse("client/pages/profile.html", {"request": request})
+async def profile_page(request: Request, db: AsyncSession = Depends(get_db)):
+    reservations = []
+    user_id = request.session.get("user_id")
+    if user_id:
+        result = await db.execute(
+            select(Location)
+            .where(Location.user_id == user_id)
+            .order_by(Location.created_at.desc())
+            .limit(20)
+        )
+        reservations = result.scalars().all()
+    return templates.TemplateResponse("client/pages/profile.html", {
+        "request": request,
+        "reservations": reservations,
+    })
 
 
 @router.get("/robots.txt", response_class=PlainTextResponse)

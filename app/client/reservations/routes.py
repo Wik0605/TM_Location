@@ -1,13 +1,17 @@
-from fastapi import APIRouter, BackgroundTasks, Depends, Request
+from uuid import UUID
+
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import select
 
 from app.client.analytics import service as analytics_service
 from app.client.reservations import service as reservation_service
 from app.client.voitures import service as car_service
 from app.limiter import limiter
 from app.client.reservations.forms import LocationForm
+from app.models.reservation import Location
 from app.shared.deps import get_db, require_csrf
 from app.templating import templates
 
@@ -122,7 +126,8 @@ async def voiture_reserver(
 
     try:
         loc, type_location = await reservation_service.creer_reservation(
-            db, voiture, form, form_data.get("itinerary_token")
+            db, voiture, form, form_data.get("itinerary_token"),
+            user_id=request.session.get("user_id"),
         )
     except reservation_service.ReservationError as e:
         return templates.TemplateResponse("client/reservations/formulaire_reservation.html", {
@@ -145,4 +150,25 @@ async def voiture_reserver(
         "location": loc,
         "voiture": voiture,
         "type_location": type_location,
+    })
+
+
+@router.get("/reservations/{reservation_id}/recu", response_class=HTMLResponse)
+async def page_recu(
+    request: Request,
+    reservation_id: UUID,
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(Location).where(Location.id == reservation_id))
+    loc = result.scalar_one_or_none()
+    if not loc:
+        return templates.TemplateResponse("client/pages/404.html", {"request": request}, status_code=404)
+
+    await db.refresh(loc, ["voiture", "type_location"])
+
+    return templates.TemplateResponse("client/reservations/recu.html", {
+        "request": request,
+        "location": loc,
+        "voiture": loc.voiture,
+        "type_location": loc.type_location,
     })

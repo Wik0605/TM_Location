@@ -15,6 +15,7 @@ class Location(SQLModel, table=True):
     id: UUID = Field(default_factory=new_uuid7, primary_key=True)
     voiture_id: UUID = Field(foreign_key="voitures.id")
     type_location_id: Optional[UUID] = Field(default=None, foreign_key="types_location.id")
+    user_id: Optional[UUID] = Field(default=None, foreign_key="users.id", index=True)
 
     client_nom: str = Field(max_length=100)
     client_telephone: str = Field(max_length=20)
