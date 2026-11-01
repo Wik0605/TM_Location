@@ -29,10 +29,17 @@
             Connecte-toi pour continuer sans limite.
         </p>
         <a href="/auth/google?next={{ request.url }}"
-           class="inline-block w-full text-center mb-3">
+           class="inline-block w-full text-center mb-2">
             <img src="/static/image/auth/web_light_rd_SI.svg"
                  alt="Se connecter avec Google"
                  class="h-12 w-auto mx-auto">
+        </a>
+        <a href="/auth/facebook?next={{ request.url }}"
+           class="flex items-center justify-center gap-3 w-full bg-[#1877F2] hover:bg-[#1565d8] text-white font-bold text-sm py-3 rounded-2xl transition-all mb-3">
+            <img src="/static/image/auth/facebook-64px.png"
+                 alt="Facebook"
+                 class="w-5 h-5 object-contain">
+            Continuer avec Facebook
         </a>
         <button id="quota-close"
                 class="text-[11px] font-bold uppercase tracking-widest text-[color:var(--color-neutral)] hover:text-ink transition-all">
