@@ -143,5 +143,15 @@ try {
         if (stored) token.value = stored;
     }
 } catch { /* localStorage indisponible */ }
+
+try {
+    const params    = new URLSearchParams(location.search);
+    const dtStart   = params.get('dt_start');
+    const dtEnd     = params.get('dt_end');
+    const inputDebut = document.querySelector('input[name="date_debut"]');
+    const inputFin   = document.querySelector('input[name="date_fin"]');
+    if (dtStart && inputDebut && !inputDebut.value) inputDebut.value = dtStart;
+    if (dtEnd   && inputFin   && !inputFin.value)   inputFin.value   = dtEnd;
+} catch { /* params indisponibles */ }
 </script>
 {% endblock %}

@@ -61,9 +61,11 @@ async def voiture_itineraire(request: Request, key: str, db: AsyncSession = Depe
         return templates.TemplateResponse("client/pages/404.html", {"request": request}, status_code=404)
     if par_id:
         return RedirectResponse(f"/voitures/{voiture.slug}/itineraire", status_code=301)
+    quota_used = request.session.get("itinerary_count", 0) if not request.session.get("user_id") else 0
     return templates.TemplateResponse("client/voitures/itineraire.html", {
         "request": request,
         "car": voiture,
         "rental_types": voiture.types_location,
         "maptiler_key": settings.maptiler_api_key,
+        "quota_used": quota_used,
     })

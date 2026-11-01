@@ -68,6 +68,10 @@ async function runCalculation() {
         try {
             localStorage.setItem(`itinerary_token_${state.CAR_ID}`, result.token);
         } catch { /* localStorage indisponible */ }
+        if (result.quota_count !== undefined) {
+            const el = document.getElementById('quota-used');
+            if (el) el.textContent = result.quota_count;
+        }
         showResults(result.distanceKm, result.isFallback);
         lastCalcKey = key;
         const hint = document.getElementById('calc-hint');

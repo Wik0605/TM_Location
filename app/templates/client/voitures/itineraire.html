@@ -61,7 +61,7 @@
              class="shrink-0 bg-[color:var(--color-neutral-soft)] rounded-full px-3 py-1.5 text-center">
             <span class="block text-[8px] font-bold uppercase tracking-widest text-[color:var(--color-neutral)]">Calculs</span>
             <span class="block font-display text-xs font-black text-ink tracking-tight">
-                <span id="quota-used">0</span>/7
+                <span id="quota-used">{{ quota_used }}</span>/7
             </span>
         </div>
     </div>
@@ -388,14 +388,22 @@
 (function() {
     const link = document.getElementById('sticky-reserve-link');
     if (!link) return;
-    try {
-        const token = localStorage.getItem('itinerary_token_{{ car.id }}');
-        if (token) {
+
+    link.addEventListener('click', function() {
+        try {
             const url = new URL(link.href, location.origin);
-            url.searchParams.set('token', token);
+
+            const token = localStorage.getItem('itinerary_token_{{ car.id }}');
+            if (token) url.searchParams.set('token', token);
+
+            const s  = document.getElementById('datetime-start')?.value;
+            const en = document.getElementById('datetime-end')?.value;
+            if (s)  url.searchParams.set('dt_start', s);
+            if (en) url.searchParams.set('dt_end', en);
+
             link.href = url.toString();
-        }
-    } catch { /* localStorage indisponible */ }
+        } catch { /* localStorage indisponible */ }
+    });
 })();
 </script>
 <meta name="maptiler-key" content="{{ maptiler_key }}">

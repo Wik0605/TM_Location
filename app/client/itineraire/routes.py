@@ -112,6 +112,7 @@ async def calculer_itineraire(
         "polyline": result["polyline"],
         "source": result["source"],
         "token": token,
+        "quota_count": request.session.get("itinerary_count", 0),
     }
 
 
