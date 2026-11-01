@@ -55,6 +55,8 @@ async def voiture_reserver_form(
     depart: str = "",
     retour: str = "",
     token: str = "",
+    start_name: str = "",
+    end_name: str = "",
 ):
     voiture, _ = await car_service.resoudre_voiture(db, key)
     if not voiture:
@@ -66,6 +68,8 @@ async def voiture_reserver_form(
         "depart": depart,
         "retour": retour,
         "token": token,
+        "start_name": start_name,
+        "end_name": end_name,
     })
 
 

@@ -83,6 +83,8 @@
             <input type="hidden" name="type_location_id" id="hidden-type-location-id"
                    value="{{ voiture.types_location[0].id if voiture.types_location else '' }}">
             <input type="hidden" name="itinerary_token" id="itinerary-token" value="{{ token or '' }}">
+            <input type="hidden" name="itinerary_start_name" id="itinerary-start-name" value="{{ start_name or '' }}">
+            <input type="hidden" name="itinerary_end_name"   id="itinerary-end-name"   value="{{ end_name or '' }}">
 
             <div class="grid grid-cols-1 gap-3">
                 <label class="block">
@@ -152,6 +154,11 @@ try {
     const inputFin   = document.querySelector('input[name="date_fin"]');
     if (dtStart && inputDebut && !inputDebut.value) inputDebut.value = dtStart;
     if (dtEnd   && inputFin   && !inputFin.value)   inputFin.value   = dtEnd;
+
+    const startName = params.get('start_name');
+    const endName   = params.get('end_name');
+    if (startName) document.getElementById('itinerary-start-name').value = startName;
+    if (endName)   document.getElementById('itinerary-end-name').value   = endName;
 } catch { /* params indisponibles */ }
 </script>
 {% endblock %}

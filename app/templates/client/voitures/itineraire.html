@@ -408,6 +408,11 @@
             if (s)  url.searchParams.set('dt_start', s);
             if (en) url.searchParams.set('dt_end', en);
 
+            const startName = document.getElementById('devis-print-start')?.textContent?.trim();
+            const endName   = document.getElementById('devis-print-end')?.textContent?.trim();
+            if (startName && startName !== '—') url.searchParams.set('start_name', startName);
+            if (endName   && endName   !== '—') url.searchParams.set('end_name',   endName);
+
             link.href = url.toString();
         } catch { /* localStorage indisponible */ }
     });
