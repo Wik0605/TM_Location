@@ -1,7 +1,8 @@
 from datetime import datetime
 from typing import Optional
 from uuid import UUID
-from sqlalchemy import Column, DateTime
+from sqlalchemy import Column, DateTime, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlmodel import SQLModel, Field
 
 from app.models.base import utcnow
@@ -30,7 +31,10 @@ class AnalyticsEvent(SQLModel, table=True):
     referer_host: Optional[str] = Field(default=None, max_length=120)
     hour_local: Optional[int] = None
 
-    location_id: Optional[UUID] = Field(default=None, foreign_key="locations.id")
+    location_id: Optional[UUID] = Field(
+        default=None,
+        sa_column=Column(PG_UUID(as_uuid=True), ForeignKey("locations.id", ondelete="SET NULL"), nullable=True),
+    )
 
     created_at: datetime = Field(
         default_factory=utcnow,
