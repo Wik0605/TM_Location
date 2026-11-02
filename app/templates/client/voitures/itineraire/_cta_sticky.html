@@ -64,10 +64,10 @@
             if (s)  document.getElementById('hidden-date-debut').value = s;
             if (en) document.getElementById('hidden-date-fin').value   = en;
 
-            const startName = document.getElementById('devis-print-start')?.textContent?.trim();
-            const endName   = document.getElementById('devis-print-end')?.textContent?.trim();
-            if (startName && startName !== '—') document.getElementById('hidden-start-name').value = startName;
-            if (endName   && endName   !== '—') document.getElementById('hidden-end-name').value   = endName;
+            const startName = document.getElementById('start-badge-name')?.textContent?.replace(/[✕\s]+$/g, '').trim();
+            const endName   = document.getElementById('end-badge-name')?.textContent?.replace(/[✕\s]+$/g, '').trim();
+            if (startName) document.getElementById('hidden-start-name').value = startName;
+            if (endName)   document.getElementById('hidden-end-name').value   = endName;
 
             const typeId = document.getElementById('rental-type')?.value;
             if (typeId) document.getElementById('hidden-type-location-id').value = typeId;
