@@ -140,7 +140,7 @@ async def page_recu(
 
     await db.refresh(loc, ["voiture", "type_location"])
 
-    return templates.TemplateResponse("client/reservations/recu.html", {
+    return templates.TemplateResponse("client/reservations/recu/recu_page.html", {
         "request": request,
         "location": loc,
         "voiture": loc.voiture,
