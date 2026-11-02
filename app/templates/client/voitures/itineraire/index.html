@@ -1,0 +1,62 @@
+{% extends "base_client.html" %}
+
+{% block title %}Calculateur d'itinéraire - {{ car.nom }}{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="/static/css/vendor/leaflet.css" />
+<link rel="stylesheet" href="/static/css/itineraire.css" />
+<link rel="stylesheet" href="/static/css/print-devis.css" />
+
+{% include "client/voitures/itineraire/_modals.html" %}
+
+{% if request.query_params.get('erreur') %}
+<div class="max-w-md mx-auto px-5 pt-4">
+    <div class="bg-red-50 border-l-4 border-red-500 text-red-700 px-4 py-3 text-sm rounded-2xl font-semibold">
+        {{ request.query_params.get('erreur') }}
+    </div>
+</div>
+{% endif %}
+
+<section class="max-w-md mx-auto px-5 pt-6 pb-8">
+
+    <!-- Header : retour + titre + quota -->
+    <div class="flex items-center gap-3 mb-4">
+        <a href="/voitures/{{ car.slug }}"
+           class="w-9 h-9 rounded-full bg-[color:var(--color-neutral-soft)] flex items-center justify-center text-ink hover:bg-[color:var(--color-border-strong)] transition-all shrink-0"
+           aria-label="Retour véhicule">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+            </svg>
+        </a>
+        <div class="min-w-0 flex-1">
+            <span class="block text-[10px] font-bold uppercase tracking-[0.2em] text-[color:var(--color-neutral)]">Itinéraire</span>
+            <h1 class="font-display text-lg font-black text-ink tracking-tight leading-tight truncate">{{ car.nom }}</h1>
+        </div>
+        <div id="quota-counter" class="shrink-0 bg-[color:var(--color-neutral-soft)] rounded-full px-3 py-1.5 text-center">
+            <span class="block text-[8px] font-bold uppercase tracking-widest text-[color:var(--color-neutral)]">Calculs</span>
+            <span class="block font-display text-xs font-black text-ink tracking-tight">
+                <span id="quota-used">{{ quota_used }}</span>/7
+            </span>
+        </div>
+    </div>
+
+    {% include "client/voitures/itineraire/_carte.html" %}
+
+    {% include "client/voitures/itineraire/_formulaire.html" %}
+
+    {% include "client/voitures/itineraire/_resultats.html" %}
+
+</section>
+
+{% include "client/voitures/itineraire/_devis_print.html" %}
+
+{% include "client/voitures/itineraire/_cta_sticky.html" %}
+
+<meta name="maptiler-key" content="{{ maptiler_key }}">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+<script src="/static/js/vendor/leaflet.js"></script>
+<link rel="stylesheet" href="/static/css/vendor/leaflet-gesture-handling.min.css" />
+<script src="/static/js/vendor/leaflet-gesture-handling.min.js"></script>
+<script type="module" src="/static/js/itineraire/main.js"></script>
+{% endblock %}

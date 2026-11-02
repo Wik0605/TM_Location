@@ -1,0 +1,77 @@
+<div id="sticky-cta" class="sticky-cta" style="display:none;">
+    <form method="post" action="/voitures/{{ car.slug }}/reserver" id="reservation-form">
+        {{ csrf_input(request) }}
+        <input type="hidden" name="type_location_id"      id="hidden-type-location-id">
+        <input type="hidden" name="date_debut"             id="hidden-date-debut">
+        <input type="hidden" name="date_fin"               id="hidden-date-fin">
+        <input type="hidden" name="itinerary_token"        id="hidden-itinerary-token">
+        <input type="hidden" name="itinerary_start_name"   id="hidden-start-name">
+        <input type="hidden" name="itinerary_end_name"     id="hidden-end-name">
+
+        <div class="sticky-cta-inner">
+            <div class="sticky-cta-info">
+                <span class="sticky-cta-label">Total estimé</span>
+                <span class="sticky-cta-amount"><span id="sticky-total">0</span> Ar</span>
+            </div>
+        </div>
+
+        <div class="px-4 pb-4">
+            <button type="submit" class="sticky-cta-btn w-full" id="sticky-reserve-btn">
+                Réserver
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+(function() {
+    const mapEl = document.getElementById('map');
+    const heureDebut = mapEl?.dataset.heureDispoDebut;
+    const heureFin = mapEl?.dataset.heureDispoFin;
+    if (!heureDebut || !heureFin) return;
+
+    const warning = document.getElementById('heure-dispo-warning');
+    const dtStart = document.getElementById('datetime-start');
+    const dtEnd = document.getElementById('datetime-end');
+
+    function verifier() {
+        const s = dtStart?.value;
+        const e = dtEnd?.value;
+        if (!s && !e) { warning.style.display = 'none'; return; }
+        const hS = s ? s.slice(11, 16) : null;
+        const hE = e ? e.slice(11, 16) : null;
+        const horsPlage = (hS && (hS < heureDebut || hS > heureFin))
+                       || (hE && (hE > heureFin || hE < heureDebut));
+        warning.style.display = horsPlage ? 'block' : 'none';
+    }
+
+    dtStart?.addEventListener('change', verifier);
+    dtEnd?.addEventListener('change', verifier);
+})();
+
+(function() {
+    const form = document.getElementById('reservation-form');
+    if (!form) return;
+
+    form.addEventListener('submit', function() {
+        try {
+            const token = localStorage.getItem('itinerary_token_{{ car.id }}');
+            if (token) document.getElementById('hidden-itinerary-token').value = token;
+
+            const s  = document.getElementById('datetime-start')?.value;
+            const en = document.getElementById('datetime-end')?.value;
+            if (s)  document.getElementById('hidden-date-debut').value = s;
+            if (en) document.getElementById('hidden-date-fin').value   = en;
+
+            const startName = document.getElementById('devis-print-start')?.textContent?.trim();
+            const endName   = document.getElementById('devis-print-end')?.textContent?.trim();
+            if (startName && startName !== '—') document.getElementById('hidden-start-name').value = startName;
+            if (endName   && endName   !== '—') document.getElementById('hidden-end-name').value   = endName;
+
+            const typeId = document.getElementById('rental-type')?.value;
+            if (typeId) document.getElementById('hidden-type-location-id').value = typeId;
+        } catch { /* localStorage indisponible */ }
+    });
+})();
+</script>

@@ -62,7 +62,7 @@ async def voiture_itineraire(request: Request, key: str, db: AsyncSession = Depe
     if par_id:
         return RedirectResponse(f"/voitures/{voiture.slug}/itineraire", status_code=301)
     quota_used = request.session.get("itinerary_count", 0) if not request.session.get("user_id") else 0
-    return templates.TemplateResponse("client/voitures/itineraire.html", {
+    return templates.TemplateResponse("client/voitures/itineraire/index.html", {
         "request": request,
         "car": voiture,
         "rental_types": voiture.types_location,

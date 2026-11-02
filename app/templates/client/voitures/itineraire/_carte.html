@@ -1,0 +1,15 @@
+<!-- Carte Leaflet (edge-to-edge sur mobile) -->
+<div class="-mx-5 lg:mx-0 mb-5 map-edge" id="map-col">
+    <div id="map-wrapper" class="relative bg-white overflow-hidden map-wrapper">
+        <div id="map"
+             data-daily-price="{{ car.daily_price }}"
+             data-car-id="{{ car.id }}"
+             data-heure-dispo-debut="{{ car.heure_dispo_debut.strftime('%H:%M') if car.heure_dispo_debut else '' }}"
+             data-heure-dispo-fin="{{ car.heure_dispo_fin.strftime('%H:%M') if car.heure_dispo_fin else '' }}"></div>
+        <div id="map-loader" style="display:none;"
+             class="absolute inset-0 bg-white/85 backdrop-blur-sm z-50 flex flex-col items-center justify-center">
+            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mb-3"></div>
+            <p class="text-[11px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)]">Calcul de l'itinéraire...</p>
+        </div>
+    </div>
+</div>

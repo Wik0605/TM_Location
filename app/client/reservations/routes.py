@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
@@ -47,31 +47,6 @@ def _traduire_erreur(exc: ValidationError) -> list[str]:
     return messages or ["Vérifiez les informations du formulaire."]
 
 
-@router.get("/voitures/{key}/reserver-form", response_class=HTMLResponse)
-async def voiture_reserver_form(
-    request: Request,
-    key: str,
-    db: AsyncSession = Depends(get_db),
-    depart: str = "",
-    retour: str = "",
-    token: str = "",
-    start_name: str = "",
-    end_name: str = "",
-):
-    voiture, _ = await car_service.resoudre_voiture(db, key)
-    if not voiture:
-        return templates.TemplateResponse("client/pages/404.html", {"request": request}, status_code=404)
-
-    return templates.TemplateResponse("client/reservations/formulaire_reservation.html", {
-        "request": request,
-        "voiture": voiture,
-        "depart": depart,
-        "retour": retour,
-        "token": token,
-        "start_name": start_name,
-        "end_name": end_name,
-    })
-
 
 @router.post("/voitures/{key}/reserver", response_class=HTMLResponse)
 @limiter.limit("10/hour")
@@ -102,31 +77,27 @@ async def voiture_reserver(
             itinerary_waypoints=None,
         )
     except ValidationError as e:
-        return templates.TemplateResponse("client/reservations/formulaire_reservation.html", {
-            "request": request,
-            "voiture": voiture,
-            "errors": _traduire_erreur(e),
-        }, status_code=400)
+        msgs = _traduire_erreur(e)
+        return RedirectResponse(
+            f"/voitures/{voiture.slug}/itineraire?erreur={msgs[0]}",
+            status_code=303,
+        )
 
     disponible = await car_service.voiture_est_disponible(
         db, voiture.id, form.date_debut, form.date_fin
     )
     if not disponible:
-        return templates.TemplateResponse("client/reservations/formulaire_reservation.html", {
-            "request": request,
-            "voiture": voiture,
-            "depart": form.date_debut.date().isoformat(),
-            "retour": form.date_fin.date().isoformat() if form.date_fin else "",
-            "erreur_disponibilite": True,
-        }, status_code=409)
+        return RedirectResponse(
+            f"/voitures/{voiture.slug}/itineraire?erreur=Véhicule non disponible aux dates choisies.",
+            status_code=303,
+        )
 
     date_fin_effective = form.date_fin or form.date_debut
     if not car_service.verifier_heures_disponibilite(voiture, form.date_debut, date_fin_effective):
-        return templates.TemplateResponse("client/reservations/formulaire_reservation.html", {
-            "request": request,
-            "voiture": voiture,
-            "erreur_heures": True,
-        }, status_code=409)
+        return RedirectResponse(
+            f"/voitures/{voiture.slug}/itineraire?erreur=Véhicule non disponible à ces heures.",
+            status_code=303,
+        )
 
     try:
         loc, type_location = await reservation_service.creer_reservation(
@@ -134,11 +105,10 @@ async def voiture_reserver(
             user_id=request.session.get("user_id"),
         )
     except reservation_service.ReservationError as e:
-        return templates.TemplateResponse("client/reservations/formulaire_reservation.html", {
-            "request": request,
-            "voiture": voiture,
-            "error": str(e),
-        }, status_code=400)
+        return RedirectResponse(
+            f"/voitures/{voiture.slug}/itineraire?erreur={e}",
+            status_code=303,
+        )
 
     ctx = analytics_service.extraire_contexte(request)
     background.add_task(

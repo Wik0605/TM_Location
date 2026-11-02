@@ -1,0 +1,40 @@
+<!-- Bannière flottante mode pointage -->
+<div id="pick-banner" style="display:none;">
+    <span class="pick-pulse" id="pick-banner-icon"></span>
+    <span class="font-bold text-ink text-sm" id="pick-banner-text">Touche la carte</span>
+    <button id="pick-cancel-btn" class="text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral)] hover:text-ink mt-1">
+        Annuler
+    </button>
+</div>
+
+<!-- Modal quota itinéraire -->
+<div id="quota-modal" style="display:none;" class="fixed inset-0 z-50 flex items-center justify-center px-5">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" id="quota-backdrop"></div>
+    <div class="relative bg-white rounded-3xl shadow-2xl p-7 max-w-sm w-full text-center">
+        <div class="w-16 h-16 rounded-full bg-[color:var(--color-primary-tint)] flex items-center justify-center mx-auto mb-4">
+            <span class="font-display text-xl font-black text-primary tracking-tight">7/7</span>
+        </div>
+        <h2 class="font-display text-xl font-black text-ink tracking-tight mb-2">Limite atteinte</h2>
+        <p class="text-sm text-[color:var(--color-neutral-strong)] mb-6 leading-relaxed">
+            Tu as utilisé tes 7 calculs gratuits du jour.<br>
+            Connecte-toi pour continuer sans limite.
+        </p>
+        <a href="/auth/google?next={{ request.url }}"
+           class="inline-block w-full text-center mb-2">
+            <img src="/static/image/auth/web_light_rd_SI.svg"
+                 alt="Se connecter avec Google"
+                 class="h-12 w-auto mx-auto">
+        </a>
+        <a href="/auth/facebook?next={{ request.url }}"
+           class="flex items-center justify-center gap-3 w-full bg-[#1877F2] hover:bg-[#1565d8] text-white font-bold text-sm py-3 rounded-2xl transition-all mb-3">
+            <img src="/static/image/auth/facebook-64px.png"
+                 alt="Facebook"
+                 class="w-5 h-5 object-contain">
+            Continuer avec Facebook
+        </a>
+        <button id="quota-close"
+                class="text-[11px] font-bold uppercase tracking-widest text-[color:var(--color-neutral)] hover:text-ink transition-all">
+            Continuer plus tard
+        </button>
+    </div>
+</div>

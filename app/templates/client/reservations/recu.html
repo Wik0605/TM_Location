@@ -152,7 +152,16 @@
 
 </section>
 
-<!-- x
+<!-- Bloc imprimable / PDF -->
+<div class="devis-print" id="devis-print" aria-hidden="true">
+    <div class="devis-header">
+        <div class="devis-brand">{{ app_name }}</div>
+        <div class="devis-meta">
+            <div><strong>Réservation #{{ "%06d"|format(location.id if location.id else 0) }}</strong></div>
+            <div>{{ location.created_at.strftime('%d/%m/%Y') }}</div>
+        </div>
+    </div>
+
     <h2>Véhicule</h2>
     <table>
         <tr><td class="label">Modèle</td><td class="value">{{ voiture.nom }}</td></tr>
@@ -165,47 +174,48 @@
     <table>
         <tr><td class="label">Nom</td><td class="value">{{ location.client_nom }}</td></tr>
         <tr><td class="label">Téléphone</td><td class="value">{{ location.client_telephone }}</td></tr>
-    </table>
-
-    <h2>Réservation</h2>
-    <table>
-        <tr><td class="label">Date début</td><td class="value">{{ location.date_debut.strftime('%d/%m/%Y %H:%M') }}</td></tr>
-        {% if location.date_fin %}
-        <tr><td class="label">Date fin</td><td class="value">{{ location.date_fin.strftime('%d/%m/%Y %H:%M') }}</td></tr>
+        {% if location.client_email %}
+        <tr><td class="label">Email</td><td class="value">{{ location.client_email }}</td></tr>
         {% endif %}
-        <tr><td class="label">Statut</td><td class="value">{{ location.statut }}</td></tr>
     </table>
 
     {% if location.itineraire_depart %}
     <h2>Itinéraire</h2>
     <table>
-        <tr>
-            <td class="label">Départ</td>
-            <td class="value">{{ location.itineraire_depart }}<br><small>{{ location.date_debut.strftime('%d/%m/%Y %H:%M') }}</small></td>
-        </tr>
+        <tr><td class="label">Départ</td><td class="value">{{ location.itineraire_depart }}</td></tr>
         {% if location.itineraire_etapes %}
             {% set etapes = location.itineraire_etapes.split(';') %}
             {% set nb_escales = etapes|length - 2 %}
             {% if nb_escales > 0 %}
-        <tr>
-            <td class="label">Escale(s)</td>
-            <td class="value">{{ nb_escales }} escale{{ 's' if nb_escales > 1 else '' }}</td>
-        </tr>
+        <tr><td class="label">Escale(s)</td><td class="value">{{ nb_escales }} escale{{ 's' if nb_escales > 1 else '' }}</td></tr>
             {% endif %}
         {% endif %}
-        <tr>
-            <td class="label">Arrivée</td>
-            <td class="value">{{ location.itineraire_arrivee or '—' }}{% if location.date_fin %}<br><small>{{ location.date_fin.strftime('%d/%m/%Y %H:%M') }}</small>{% endif %}</td>
-        </tr>
-        {% if location.itineraire_distance_km %}
-        <tr><td class="label">Distance</td><td class="value">{{ "%.1f"|format(location.itineraire_distance_km) }} km</td></tr>
-        {% endif %}
+        <tr><td class="label">Arrivée</td><td class="value">{{ location.itineraire_arrivee or '—' }}</td></tr>
     </table>
     {% endif %}
 
-    {% if type_location %}
+    <h2>Période</h2>
     <table>
-        <tr><td class="label">Forfait</td><td class="value">{{ "{:,}".format(type_location.prix).replace(",", " ") }} Ar</td></tr>
+        <tr><td class="label">Début</td><td class="value">{{ location.date_debut.strftime('%d/%m/%Y %H:%M') }}</td></tr>
+        {% if location.date_fin %}
+        <tr><td class="label">Fin</td><td class="value">{{ location.date_fin.strftime('%d/%m/%Y %H:%M') }}</td></tr>
+        {% endif %}
+        {% if location.duree_minutes %}
+            {% set jours = (location.duree_minutes // 60) // 24 %}
+            {% set heures = (location.duree_minutes // 60) % 24 %}
+            {% set minutes = location.duree_minutes % 60 %}
+        <tr><td class="label">Durée</td><td class="value">
+            {% if jours %}{{ jours }} j {% endif %}
+            {% if heures %}{{ heures }} h {% endif %}
+            {% if minutes and not jours %}{{ minutes }} min{% endif %}
+        </td></tr>
+        {% endif %}
+    </table>
+
+    {% if type_location %}
+    <h2>Détail du coût</h2>
+    <table>
+        <tr><td class="label">{{ type_location.nom }}</td><td class="value">{{ "{:,}".format(type_location.prix).replace(",", " ") }} Ar</td></tr>
         {% if location.prix_carburant_estime %}
         <tr><td class="label">Carburant estimé</td><td class="value">{{ "{:,}".format(location.prix_carburant_estime|int).replace(",", " ") }} Ar</td></tr>
         {% endif %}
