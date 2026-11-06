@@ -1,4 +1,4 @@
-const CACHE = 'tm-location-v4-logo';
+const CACHE = 'tm-location-v6-black';
 const PRECACHE = [
   '/',
   '/static/css/theme.css',
