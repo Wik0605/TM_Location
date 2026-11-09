@@ -3,22 +3,198 @@
 {% block title %}Accueil - {{ app_name }}{% endblock %}
 
 {% block content %}
+<style>
+    @keyframes heroReveal {
+        from { opacity: 0; transform: translateY(14px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes cardReveal {
+        0%   { opacity: 0; transform: translateY(32px); }
+        60%  { opacity: 1; transform: translateY(-4px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+    .hero-reveal { opacity: 0; animation: heroReveal .7s cubic-bezier(.22,.9,.3,1) forwards; }
+    .hero-reveal-1 { animation-delay: .05s; }
+    .hero-reveal-2 { animation-delay: .20s; }
+    .hero-reveal-3 { animation-delay: .35s; }
+    .hero-reveal-4 { animation-delay: .50s; }
+    .card-reveal {
+        opacity: 0;
+        animation: cardReveal .9s cubic-bezier(.22,.9,.3,1) forwards;
+        animation-delay: .65s;
+    }
+    @keyframes roadScroll {
+        from { background-position-x: 0; }
+        to   { background-position-x: -160px; }
+    }
+    .road-perspective {
+        position: absolute; left: 0; right: 0; bottom: 0;
+        height: 60%;
+        pointer-events: none;
+        overflow: hidden;
+        mask-image: linear-gradient(to right, transparent 0%, #000 15%, #000 85%, transparent 100%);
+        -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 15%, #000 85%, transparent 100%);
+    }
+    .road-plane {
+        position: absolute;
+        left: 0; right: 0; top: 50%;
+        height: 2px;
+        background-image: repeating-linear-gradient(
+            to right,
+            rgba(255,255,255,.35) 0 40px,
+            transparent 40px 80px
+        );
+        animation: roadScroll 3.2s linear infinite;
+    }
+    @keyframes carBounce {
+        0%, 100% { transform: translateY(-100%); }
+        50%      { transform: translateY(calc(-100% - 1.5px)); }
+    }
+    @keyframes carDrive {
+        0%   { transform: translateX(-80px); }
+        32%  { transform: translateX(calc(50% - 25px)); }
+        58%  { transform: translateX(calc(50% - 25px)); }
+        88%  { transform: translateX(120%); }
+        100% { transform: translateX(120%); }
+    }
+    .car-wrapper {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        animation: carDrive 9s ease-in-out infinite;
+    }
+    .road-car {
+        display: block;
+        width: 50px;
+        height: auto;
+        transform: translateY(-100%);
+        animation: carBounce .4s ease-in-out infinite;
+        filter: drop-shadow(0 4px 6px rgba(0,0,0,.4));
+    }
+    .road-client {
+        position: absolute;
+        top: 50%;
+        right: 14%;
+        height: 32px;
+        transform: translateY(-100%);
+    }
+    .road-client svg { height: 100%; width: auto; }
+    @keyframes armUpShow {
+        0%, 30%  { opacity: 1; }
+        34%, 88% { opacity: 0; }
+        92%, 100% { opacity: 1; }
+    }
+    @keyframes armDownShow {
+        0%, 30%  { opacity: 0; }
+        34%, 88% { opacity: 1; }
+        92%, 100% { opacity: 0; }
+    }
+    @keyframes armWave {
+        0%, 100% { transform: rotate(-10deg); }
+        50%      { transform: rotate(10deg); }
+    }
+    .arm-up   { animation: armUpShow 9s linear infinite; }
+    .arm-down { animation: armDownShow 9s linear infinite; }
+    .arm-up-g {
+        transform-box: fill-box;
+        transform-origin: 0% 100%;
+        animation: armWave .5s ease-in-out infinite;
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .hero-reveal, .card-reveal { animation: none; opacity: 1; transform: none; }
+        .road-plane, .road-car, .car-wrapper, .arm-up, .arm-down, .arm-up-g { animation: none; }
+        .arm-up { opacity: 0; }
+        .arm-down { opacity: 1; }
+    }
+</style>
 <!-- HERO — fond noir, card verre trempé flottante -->
 <section class="relative">
     <div class="relative overflow-hidden px-5 pt-8"
          style="background:#000000; padding-bottom:130px;">
 
+        <!-- Route en perspective qui défile -->
+        <div class="road-perspective" aria-hidden="true">
+            <div class="road-plane"></div>
+            <!-- Client qui attend au bord de la route -->
+            <div class="road-client">
+                <svg viewBox="0 0 24 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="6" r="3.5" fill="#ffffff"/>
+                    <line x1="12" y1="10" x2="12" y2="28" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+                    <line x1="12" y1="28" x2="8"  y2="44" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+                    <line x1="12" y1="28" x2="16" y2="44" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+                    <line x1="12" y1="14" x2="7" y2="24" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+                    <g class="arm-up">
+                        <g class="arm-up-g">
+                            <line x1="12" y1="14" x2="18" y2="2" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+                        </g>
+                    </g>
+                    <line class="arm-down" x1="12" y1="14" x2="17" y2="24" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+            </div>
+
+            <!-- Voiture qui arrive, s'arrête à côté du client, repart -->
+            <div class="car-wrapper">
+            <!-- Citroën 2CV — stylisée, quelques détails -->
+            <svg class="road-car" viewBox="0 0 100 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Ombre au sol -->
+                <ellipse cx="50" cy="48" rx="34" ry="1.6" fill="#000000" opacity=".4"/>
+
+                <!-- Carrosserie + toit arrondi (silhouette blanche) -->
+                <path d="M8 40
+                         Q6 36 8 32
+                         Q10 24 16 24
+                         Q18 14 28 14
+                         Q50 4 72 14
+                         Q82 14 84 24
+                         Q90 24 92 32
+                         Q94 36 92 40
+                         Z"
+                      fill="#ffffff"/>
+
+                <!-- Vitres (pare-brise + lunette arrière) -->
+                <path d="M30 16 Q34 14 40 14 L46 14 L46 23 L28 23 Q28 19 30 16 Z" fill="#1a1a1a"/>
+                <path d="M54 14 L62 14 Q68 14 70 16 Q72 19 72 23 L54 23 Z" fill="#1a1a1a"/>
+                <!-- Montant central -->
+                <rect x="48" y="14" width="4" height="9" fill="#ffffff"/>
+
+                <!-- Ligne horizontale de porte -->
+                <line x1="14" y1="32" x2="88" y2="32" stroke="#bdbdbd" stroke-width=".6"/>
+
+                <!-- Séparations portes -->
+                <line x1="50" y1="23" x2="50" y2="38" stroke="#bdbdbd" stroke-width=".5"/>
+
+                <!-- Poignées -->
+                <rect x="36" y="28" width="4" height="1" rx=".5" fill="#8a8a8a"/>
+                <rect x="60" y="28" width="4" height="1" rx=".5" fill="#8a8a8a"/>
+
+                <!-- Phare rond -->
+                <circle cx="13" cy="30" r="2.5" fill="#f0f0f0" stroke="#2a2a2a" stroke-width=".4"/>
+
+                <!-- Feu arrière -->
+                <rect x="85" y="29" width="2.5" height="2.5" rx=".4" fill="#2a2a2a"/>
+
+                <!-- Roues -->
+                <circle cx="24" cy="40" r="7"   fill="#0A0A0A"/>
+                <circle cx="24" cy="40" r="3"   fill="#d0d0d0"/>
+                <circle cx="24" cy="40" r="1"   fill="#2a2a2a"/>
+                <circle cx="76" cy="40" r="7"   fill="#0A0A0A"/>
+                <circle cx="76" cy="40" r="3"   fill="#d0d0d0"/>
+                <circle cx="76" cy="40" r="1"   fill="#2a2a2a"/>
+            </svg>
+            </div>
+        </div>
+
         <!-- Texte hero -->
         <div class="relative max-w-md mx-auto"
              style="font-family:'SF Pro Display',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">
-            <span class="inline-block text-[10px] font-semibold uppercase tracking-[0.2em] mb-4 text-white">
+            <span class="hero-reveal hero-reveal-1 inline-block text-[10px] font-semibold uppercase tracking-[0.2em] mb-4 text-white">
                 Location premium · Madagascar
             </span>
             <h1 class="text-3xl sm:text-4xl font-semibold text-white leading-[1.05] tracking-tight">
-                Prenez la Route <br>
-                à ton rythme.
+                <span class="hero-reveal hero-reveal-2 inline-block">Prenez la Route</span><br>
+                <span class="hero-reveal hero-reveal-3 inline-block">à ton rythme.</span>
             </h1>
-            <p class="mt-4 text-sm font-semibold leading-relaxed max-w-xs text-white">
+            <p class="hero-reveal hero-reveal-4 mt-4 text-sm font-semibold leading-relaxed max-w-xs text-white">
                 Une flotte pensée pour Madagascar. Réserve ton véhicule en quelques secondes.
             </p>
         </div>
@@ -28,7 +204,7 @@
     <!-- CARD RECHERCHE flottante -->
     <div class="relative -mt-14 px-5 max-w-md mx-auto z-10">
         <form action="/voitures" method="get"
-              class="backdrop-blur-xl rounded-3xl p-5 space-y-3"
+              class="card-reveal backdrop-blur-xl rounded-3xl p-5 space-y-3"
               style="background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.25); box-shadow:0 20px 40px rgba(0,0,0,.25);">
 
             <div class="grid grid-cols-2 gap-3">
