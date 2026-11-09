@@ -1,33 +1,33 @@
 /* ================================================
    THÈME TM_LOCATION — Refonte UI/UX 2026
-   Palette marron chaud premium (VTC)
+   Palette noir/blanc/gris neutre — style Vercel
    ================================================ */
 
 :root {
   /* POLICES */
-  --font-main: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  --font-display: 'Outfit', 'Inter', system-ui, sans-serif;
+  --font-main: 'Geist', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-display: 'Geist', 'Outfit', system-ui, sans-serif;
 
-  /* PRIMAIRES — Marron chaud premium */
+  /* PRIMAIRES */
   --color-primary: #0A0A0A;
   --color-primary-dark: #171717;
-  --color-primary-light: #FBF5EF;
-  --color-primary-tint: #F5EBE0;
-  --color-primary-tint-strong: #E8D5BF;
+  --color-primary-light: #fafafa;
+  --color-primary-tint: #f5f5f5;
+  --color-primary-tint-strong: #e5e5e5;
 
-  /* SECONDAIRES / ACCENT — Doré premium */
+  /* SECONDAIRES / ACCENT */
   --color-secondary: #0A0A0A;
-  --color-accent: #D4A574;
-  --color-accent-dark: #B8864F;
+  --color-accent: #000000;
+  --color-accent-dark: #171717;
   --color-indigo-cta: #4F46E5;
 
   /* NEUTRES */
   --color-ink: #0A0A0A;
-  --color-neutral-strong: #78716C;
-  --color-neutral: #A8A29E;
-  --color-neutral-soft: #F5F5F4;
-  --color-border: #F0EFED;
-  --color-border-strong: #E7E5E4;
+  --color-neutral-strong: #525252;
+  --color-neutral: #737373;
+  --color-neutral-soft: #f5f5f5;
+  --color-border: #e5e5e5;
+  --color-border-strong: #d4d4d4;
 
   /* FONDS */
   --color-bg: #FFFFFF;
@@ -35,8 +35,8 @@
 
   /* TEXTE */
   --color-text: #0A0A0A;
-  --color-text-muted: #78716C;
-  --color-text-soft: #A8A29E;
+  --color-text-muted: #525252;
+  --color-text-soft: #737373;
 
   /* ÉTATS */
   --color-success: #059669;
