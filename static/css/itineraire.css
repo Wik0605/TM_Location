@@ -650,6 +650,13 @@ body.has-sticky-cta { padding-bottom: 88px; }
 }
 .wizard-btn-prev:active { transform: scale(0.97); }
 
+.wizard-btn-reset {
+    background: transparent;
+    color: var(--color-neutral);
+    border: 1.5px solid var(--color-border);
+}
+.wizard-btn-reset:active { transform: scale(0.97); }
+
 /* Shake on validation error */
 @keyframes wizard-shake {
     0%,100% { transform: translateX(0); }
