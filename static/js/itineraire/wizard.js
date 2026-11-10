@@ -76,6 +76,10 @@ export function initWizard() {
     if (!wizard) return;
     showPanel(1);
 
+    window.addEventListener('pageshow', (e) => {
+        if (e.persisted) showPanel(_currentStep);
+    });
+
     document.getElementById('wizard-next-1')?.addEventListener('click', () => {
         if (validateStep1()) goToStep(2);
     });

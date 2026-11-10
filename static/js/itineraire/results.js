@@ -15,6 +15,8 @@ function currentCalcKey() {
         state.pickedCoords.end,
         getWaypointCoords().join('|'),
         rentalSelect?.value,
+        dtStart?.value,
+        dtEnd?.value,
     ].join('#');
 }
 
