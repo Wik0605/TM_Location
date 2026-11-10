@@ -239,8 +239,6 @@ function updateDuration() {
 function saveDraft() {
     try {
         const draft = {
-            dtStart: dtStart?.value || '',
-            dtEnd: dtEnd?.value || '',
             rentalType: rentalSelect?.value || '',
             start: state.pickedCoords.start,
             end: state.pickedCoords.end,
@@ -256,6 +254,11 @@ function restoreDraft() {
         const raw = localStorage.getItem(state.DRAFT_KEY);
         if (!raw) return;
         const d = JSON.parse(raw);
+        if (d.dtStart || d.dtEnd) {
+            delete d.dtStart;
+            delete d.dtEnd;
+            localStorage.setItem(state.DRAFT_KEY, JSON.stringify(d));
+        }
         if (d.rentalType && rentalSelect) {
             rentalSelect.value = d.rentalType;
             const chip = chipsContainer?.querySelector(
