@@ -141,7 +141,7 @@
             </div>
 
             <p id="calc-hint" class="text-[11px] text-[color:var(--color-neutral)] text-center mt-3 mb-1">
-                Le devis s'affiche automatiquement dès que tout est renseigné.
+                Continuez à l'étape suivante pour obtenir votre devis.
             </p>
         </div>
 
@@ -154,8 +154,6 @@
             <span class="block mt-1 font-normal">Disponible de {{ car.heure_dispo_debut.strftime('%Hh%M') }} à {{ car.heure_dispo_fin.strftime('%Hh%M') }}.</span>
             {% endif %}
         </div>
-
-        {% include "client/voitures/itineraire/_resultats.html" %}
 
         <!-- Navigation étape 2 -->
         <div class="wizard-nav justify-between">
@@ -180,21 +178,23 @@
             </h2>
 
             <div class="space-y-2">
-                <input type="text"  name="client_nom"       form="reservation-form"
+                <input type="text"  id="client-nom"       name="client_nom"       form="reservation-form"
                        placeholder="Nom *" required autocomplete="name"
                        class="w-full text-sm font-semibold text-ink bg-[color:var(--color-neutral-soft)] border-0 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-primary placeholder:text-[color:var(--color-neutral)]">
-                <input type="tel"   name="client_telephone" form="reservation-form"
+                <input type="tel"   id="client-tel"       name="client_telephone" form="reservation-form"
                        placeholder="Mobile *" required autocomplete="tel"
                        class="w-full text-sm font-semibold text-ink bg-[color:var(--color-neutral-soft)] border-0 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-primary placeholder:text-[color:var(--color-neutral)]">
-                <input type="email" name="client_email"     form="reservation-form"
+                <input type="email" id="client-email"     name="client_email"     form="reservation-form"
                        placeholder="Email (optionnel)" autocomplete="email"
                        class="w-full text-sm font-semibold text-ink bg-[color:var(--color-neutral-soft)] border-0 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-primary placeholder:text-[color:var(--color-neutral)]">
             </div>
 
-            <p class="text-[11px] text-[color:var(--color-neutral)] text-center mt-4">
-                En réservant, vous acceptez d'être contacté par le propriétaire du véhicule.
+            <p id="devis-hint" class="text-[11px] text-[color:var(--color-neutral)] text-center mt-4">
+                Renseignez nom et mobile pour afficher votre devis.
             </p>
         </div>
+
+        {% include "client/voitures/itineraire/_resultats.html" %}
 
         <!-- Navigation étape 3 -->
         <div class="wizard-nav justify-between">

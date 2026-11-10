@@ -5,6 +5,7 @@ import { telechargerDevisPDF } from '../devis-pdf.js';
 import { currentStep } from './wizard.js';
 
 let dtStart, dtEnd, durationDisplay, rentalSelect, chipsContainer, quotaModal;
+let clientNom, clientTel;
 let calcTimer = null;
 let calcInFlight = false;
 let lastCalcKey = null;
@@ -37,11 +38,13 @@ function horsPlageHoraire() {
 }
 
 async function runCalculation() {
+    if (currentStep() !== 3) return;
     const start = getCoord('start');
     const end = getCoord('end');
     const hasType = rentalSelect?.value;
     const hasDates = dtStart?.value && dtEnd?.value;
-    if (!start || !end || !hasType || !hasDates) return;
+    const hasClient = clientNom?.value?.trim() && clientTel?.value?.trim();
+    if (!start || !end || !hasType || !hasDates || !hasClient) return;
 
     if (horsPlageHoraire()) {
         const warning = document.getElementById('heure-dispo-warning');
@@ -123,6 +126,8 @@ function showResults(distanceKm, isFallback) {
     if (fallbackNote) fallbackNote.style.display = isFallback ? 'block' : 'none';
 
     document.getElementById('results-card').style.display = 'block';
+    const devisHint = document.getElementById('devis-hint');
+    if (devisHint) devisHint.style.display = 'none';
 
     const stickyTotal = document.getElementById('sticky-total');
     const stickyCta = document.getElementById('sticky-cta');
@@ -289,6 +294,15 @@ export function initResults() {
     dtStart = document.getElementById('datetime-start');
     dtEnd = document.getElementById('datetime-end');
     durationDisplay = document.getElementById('duration-display');
+    clientNom = document.getElementById('client-nom');
+    clientTel = document.getElementById('client-tel');
+
+    clientNom?.addEventListener('input', scheduleCalculation);
+    clientTel?.addEventListener('input', scheduleCalculation);
+
+    events.on('stepChange', (n) => {
+        if (n === 3) scheduleCalculation();
+    });
 
     if (chipsContainer) {
         chipsContainer.querySelectorAll('.rental-chip').forEach((chip) => {

@@ -1,4 +1,4 @@
-import { state } from './state.js';
+import { state, events } from './state.js';
 
 const wizard = document.getElementById('wizard');
 let _currentStep = 1;
@@ -22,18 +22,12 @@ function goToStep(n) {
     wizard.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
     const stickyCta = document.getElementById('sticky-cta');
-    if (stickyCta) {
-        if (n === 3) {
-            const resultsCard = document.getElementById('results-card');
-            if (resultsCard && resultsCard.style.display !== 'none') {
-                stickyCta.style.display = 'block';
-                document.body.classList.add('has-sticky-cta');
-            }
-        } else {
-            stickyCta.style.display = 'none';
-            document.body.classList.remove('has-sticky-cta');
-        }
+    if (stickyCta && n !== 3) {
+        stickyCta.style.display = 'none';
+        document.body.classList.remove('has-sticky-cta');
     }
+
+    events.emit('stepChange', n);
 }
 
 function updateDots(activeStep) {
