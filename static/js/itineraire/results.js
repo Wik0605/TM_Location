@@ -2,6 +2,7 @@ import { state, events } from './state.js';
 import { getCoord, getWaypointCoords } from './pick.js';
 import { calcBackend } from './routing.js';
 import { telechargerDevisPDF } from '../devis-pdf.js';
+import { currentStep } from './wizard.js';
 
 let dtStart, dtEnd, durationDisplay, rentalSelect, chipsContainer, quotaModal;
 let calcTimer = null;
@@ -123,7 +124,7 @@ function showResults(distanceKm, isFallback) {
     const stickyTotal = document.getElementById('sticky-total');
     const stickyCta = document.getElementById('sticky-cta');
     if (stickyTotal) stickyTotal.textContent = Math.round(total).toLocaleString('fr-FR');
-    if (stickyCta) {
+    if (stickyCta && currentStep() === 3) {
         stickyCta.style.display = 'block';
         document.body.classList.add('has-sticky-cta');
     }
@@ -255,8 +256,6 @@ function restoreDraft() {
         const raw = localStorage.getItem(state.DRAFT_KEY);
         if (!raw) return;
         const d = JSON.parse(raw);
-        if (d.dtStart && dtStart) dtStart.value = d.dtStart;
-        if (d.dtEnd && dtEnd) dtEnd.value = d.dtEnd;
         if (d.rentalType && rentalSelect) {
             rentalSelect.value = d.rentalType;
             const chip = chipsContainer?.querySelector(

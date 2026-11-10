@@ -1,163 +1,238 @@
-<div class="space-y-4 order-1 lg:order-none" id="form-panel">
-    <div class="bg-white p-5 rounded-3xl shadow-[0_4px_16px_rgba(0,0,0,0.06)] border border-[color:var(--color-border)]">
+<div id="wizard" data-step="1" class="flex flex-col gap-4">
 
-        <h2 class="font-display text-sm font-black text-ink tracking-tight mb-4 uppercase">
-            Définir l'itinéraire
-        </h2>
+    <!-- Indicateur de progression -->
+    <div class="wizard-progress" aria-label="Étapes">
+        <div class="wizard-step-dot active" data-step="1">
+            <span class="wizard-step-num">1</span>
+            <span class="wizard-step-label">Itinéraire</span>
+        </div>
+        <div class="wizard-step-line"></div>
+        <div class="wizard-step-dot" data-step="2">
+            <span class="wizard-step-num">2</span>
+            <span class="wizard-step-label">Période</span>
+        </div>
+        <div class="wizard-step-line"></div>
+        <div class="wizard-step-dot" data-step="3">
+            <span class="wizard-step-num">3</span>
+            <span class="wizard-step-label">Coordonnées</span>
+        </div>
+    </div>
 
-        <!-- DÉPART -->
-        <div class="mb-3">
-            <label class="block text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)] mb-1.5">Départ</label>
-            <div id="start-badge" class="location-badge start" style="display:none;">
-                <span class="w-2.5 h-2.5 rounded-full bg-success shrink-0"></span>
-                <span class="badge-name" id="start-badge-name"></span>
-                <button class="badge-clear" id="start-clear">✕</button>
+    <!-- ───── ÉTAPE 1 : Itinéraire ───── -->
+    <div class="step-panel" data-step="1">
+        <div class="bg-white p-5 rounded-3xl shadow-[0_4px_16px_rgba(0,0,0,0.06)] border border-[color:var(--color-border)]">
+
+            <h2 class="font-display text-sm font-black text-ink tracking-tight mb-4 uppercase">
+                Définir l'itinéraire
+            </h2>
+
+            <!-- DÉPART -->
+            <div class="mb-3">
+                <label class="block text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)] mb-1.5">Départ</label>
+                <div id="start-badge" class="location-badge start" style="display:none;">
+                    <span class="w-2.5 h-2.5 rounded-full bg-success shrink-0"></span>
+                    <span class="badge-name" id="start-badge-name"></span>
+                    <button class="badge-clear" id="start-clear">✕</button>
+                </div>
+                <div class="place-search" data-target="start">
+                    <input type="text" class="place-search-input" id="start-search"
+                           placeholder="Rechercher un lieu (ex. Analakely)"
+                           autocomplete="off" inputmode="search" aria-label="Rechercher le lieu de départ" />
+                    <button type="button" class="place-search-clear" aria-label="Effacer">✕</button>
+                    <ul class="place-suggestions" role="listbox" hidden></ul>
+                </div>
+                <button type="button" id="pick-start-btn" class="pick-cta mt-1">
+                    <span class="w-2.5 h-2.5 rounded-full bg-success shrink-0"></span>
+                    <span>ou pointer directement</span>
+                </button>
             </div>
-            <div class="place-search" data-target="start">
-                <input type="text" class="place-search-input" id="start-search"
-                       placeholder="Rechercher un lieu (ex. Analakely)"
-                       autocomplete="off" inputmode="search" aria-label="Rechercher le lieu de départ" />
-                <button type="button" class="place-search-clear" aria-label="Effacer">✕</button>
-                <ul class="place-suggestions" role="listbox" hidden></ul>
+
+            <!-- Escales -->
+            <div id="waypoints-container" class="space-y-3 mb-2"></div>
+            <button type="button" id="add-waypoint-btn"
+                    class="w-full mt-1 mb-4 py-2.5 rounded-2xl border-2 border-dashed border-[color:var(--color-primary-tint-strong)] text-primary font-bold text-xs uppercase tracking-widest hover:bg-[color:var(--color-primary-light)] transition-all flex items-center justify-center gap-2">
+                <span>+</span> Ajouter une escale
+            </button>
+
+            <!-- ARRIVÉE -->
+            <div>
+                <label class="block text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)] mb-1.5">Arrivée</label>
+                <div id="end-badge" class="location-badge end" style="display:none;">
+                    <span class="w-2.5 h-2.5 rounded-full bg-danger shrink-0"></span>
+                    <span class="badge-name" id="end-badge-name"></span>
+                    <button class="badge-clear" id="end-clear">✕</button>
+                </div>
+                <div class="place-search" data-target="end">
+                    <input type="text" class="place-search-input" id="end-search"
+                           placeholder="Rechercher un lieu (ex. Ivato)"
+                           autocomplete="off" inputmode="search" aria-label="Rechercher le lieu d'arrivée" />
+                    <button type="button" class="place-search-clear" aria-label="Effacer">✕</button>
+                    <ul class="place-suggestions" role="listbox" hidden></ul>
+                </div>
+                <button type="button" id="pick-end-btn" class="pick-cta end-cta mt-1">
+                    <span class="w-2.5 h-2.5 rounded-full bg-danger shrink-0"></span>
+                    <span>ou pointer directement</span>
+                </button>
             </div>
-            <button type="button" id="pick-start-btn" class="pick-cta mt-1">
-                <span class="w-2.5 h-2.5 rounded-full bg-success shrink-0"></span>
-                <span>ou pointer directement</span>
+        </div>
+
+        <!-- Navigation étape 1 -->
+        <div class="wizard-nav justify-end">
+            <button type="button" id="wizard-next-1" class="wizard-btn-next">
+                Suivant
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
             </button>
         </div>
+    </div>
 
-        <!-- Escales -->
-        <div id="waypoints-container" class="space-y-3 mb-2"></div>
-        <button type="button" id="add-waypoint-btn"
-                class="w-full mt-1 mb-4 py-2.5 rounded-2xl border-2 border-dashed border-[color:var(--color-primary-tint-strong)] text-primary font-bold text-xs uppercase tracking-widest hover:bg-[color:var(--color-primary-light)] transition-all flex items-center justify-center gap-2">
-            <span>+</span> Ajouter une escale
-        </button>
+    <!-- ───── ÉTAPE 2 : Période & Tarif ───── -->
+    <div class="step-panel" data-step="2">
 
-        <!-- ARRIVÉE -->
-        <div class="mb-5">
-            <label class="block text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)] mb-1.5">Arrivée</label>
-            <div id="end-badge" class="location-badge end" style="display:none;">
-                <span class="w-2.5 h-2.5 rounded-full bg-danger shrink-0"></span>
-                <span class="badge-name" id="end-badge-name"></span>
-                <button class="badge-clear" id="end-clear">✕</button>
+        <div class="bg-white p-5 rounded-3xl shadow-[0_4px_16px_rgba(0,0,0,0.06)] border border-[color:var(--color-border)]">
+
+            <h2 class="font-display text-sm font-black text-ink tracking-tight mb-4 uppercase">
+                Période & tarif
+            </h2>
+
+            <!-- Période de location -->
+            <div class="bg-[color:var(--color-neutral-soft)] rounded-2xl p-4 mb-4">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)]">Période de location</h3>
+                    <span id="duration-display" class="text-[10px] font-bold uppercase tracking-widest text-primary" style="display:none;"></span>
+                </div>
+                <div class="space-y-2">
+                    <label class="block">
+                        <span class="block text-[9px] font-bold uppercase tracking-wider text-[color:var(--color-neutral)] mb-1">Début</span>
+                        <input type="datetime-local" id="datetime-start"
+                               class="w-full text-sm font-semibold text-ink bg-white border-0 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-primary">
+                    </label>
+                    <label class="block">
+                        <span class="block text-[9px] font-bold uppercase tracking-wider text-[color:var(--color-neutral)] mb-1">Fin</span>
+                        <input type="datetime-local" id="datetime-end"
+                               class="w-full text-sm font-semibold text-ink bg-white border-0 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-primary">
+                    </label>
+                </div>
             </div>
-            <div class="place-search" data-target="end">
-                <input type="text" class="place-search-input" id="end-search"
-                       placeholder="Rechercher un lieu (ex. Ivato)"
-                       autocomplete="off" inputmode="search" aria-label="Rechercher le lieu d'arrivée" />
-                <button type="button" class="place-search-clear" aria-label="Effacer">✕</button>
-                <ul class="place-suggestions" role="listbox" hidden></ul>
+
+            <!-- Type de location (chips) -->
+            <div class="mb-2">
+                <label class="block text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)] mb-2">Type de location</label>
+                <div id="rental-type-chips" class="rental-chips">
+                    {% for rt in rental_types %}
+                    <button type="button" class="rental-chip"
+                            data-value="{{ rt.id }}"
+                            data-prix="{{ rt.prix }}"
+                            data-conso="{{ car.consommation_carburant }}">
+                        <span class="rental-chip-name">{{ rt.nom }}</span>
+                        <span class="rental-chip-price">{{ "{:,.0f}".format(rt.prix).replace(",", " ") }} Ar</span>
+                    </button>
+                    {% else %}
+                    <p class="text-xs text-[color:var(--color-neutral)] italic">Aucun type configuré</p>
+                    {% endfor %}
+                </div>
+                <select id="rental-type" name="rental-type" hidden aria-hidden="true">
+                    <option value="" disabled selected></option>
+                    {% for rt in rental_types %}
+                    <option value="{{ rt.id }}" data-prix="{{ rt.prix }}" data-conso="{{ car.consommation_carburant }}">
+                        {{ rt.nom }} — {{ "{:,.0f}".format(rt.prix).replace(",", " ") }} Ar
+                    </option>
+                    {% endfor %}
+                </select>
             </div>
-            <button type="button" id="pick-end-btn" class="pick-cta end-cta mt-1">
-                <span class="w-2.5 h-2.5 rounded-full bg-danger shrink-0"></span>
-                <span>ou pointer directement</span>
+
+            <p id="calc-hint" class="text-[11px] text-[color:var(--color-neutral)] text-center mt-3 mb-1">
+                Le devis s'affiche automatiquement dès que tout est renseigné.
+            </p>
+        </div>
+
+        <!-- Avertissement hors plage horaire -->
+        <div id="heure-dispo-warning"
+             class="bg-red-50 border-l-4 border-red-600 text-red-700 px-4 py-3 text-xs rounded-2xl font-semibold"
+             style="display:none;">
+            🚫 Devis impossible — Voiture non disponible à ces heures.
+            {% if car.heure_dispo_debut and car.heure_dispo_fin %}
+            <span class="block mt-1 font-normal">Disponible de {{ car.heure_dispo_debut.strftime('%Hh%M') }} à {{ car.heure_dispo_fin.strftime('%Hh%M') }}.</span>
+            {% endif %}
+        </div>
+
+        {% include "client/voitures/itineraire/_resultats.html" %}
+
+        <!-- Navigation étape 2 -->
+        <div class="wizard-nav justify-between">
+            <button type="button" id="wizard-prev-2" class="wizard-btn-prev">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+                Retour
+            </button>
+            <button type="button" id="wizard-next-2" class="wizard-btn-next">
+                Suivant
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
             </button>
         </div>
+    </div>
 
-        <!-- Période de location -->
-        <div class="bg-[color:var(--color-neutral-soft)] rounded-2xl p-4 mb-4">
-            <div class="flex items-center justify-between mb-3">
-                <h3 class="text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)]">Période de location</h3>
-                <span id="duration-display" class="text-[10px] font-bold uppercase tracking-widest text-primary" style="display:none;"></span>
-            </div>
-            <div class="space-y-2">
-                <label class="block">
-                    <span class="block text-[9px] font-bold uppercase tracking-wider text-[color:var(--color-neutral)] mb-1">Début</span>
-                    <input type="datetime-local" id="datetime-start"
-                           class="w-full text-sm font-semibold text-ink bg-white border-0 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-primary">
-                </label>
-                <label class="block">
-                    <span class="block text-[9px] font-bold uppercase tracking-wider text-[color:var(--color-neutral)] mb-1">Fin</span>
-                    <input type="datetime-local" id="datetime-end"
-                           class="w-full text-sm font-semibold text-ink bg-white border-0 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-primary">
-                </label>
-            </div>
-        </div>
+    <!-- ───── ÉTAPE 3 : Coordonnées ───── -->
+    <div class="step-panel" data-step="3">
 
-        <!-- Coordonnées client -->
-        <div class="bg-[color:var(--color-neutral-soft)] rounded-2xl p-4 mb-4">
-            <h3 class="text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)] mb-3">Vos coordonnées</h3>
+        <div class="bg-white p-5 rounded-3xl shadow-[0_4px_16px_rgba(0,0,0,0.06)] border border-[color:var(--color-border)]">
+
+            <h2 class="font-display text-sm font-black text-ink tracking-tight mb-4 uppercase">
+                Vos coordonnées
+            </h2>
+
             <div class="space-y-2">
                 <input type="text"  name="client_nom"       form="reservation-form"
                        placeholder="Nom *" required autocomplete="name"
-                       class="w-full text-sm font-semibold text-ink bg-white border-0 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-primary placeholder:text-[color:var(--color-neutral)]">
+                       class="w-full text-sm font-semibold text-ink bg-[color:var(--color-neutral-soft)] border-0 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-primary placeholder:text-[color:var(--color-neutral)]">
                 <input type="tel"   name="client_telephone" form="reservation-form"
                        placeholder="Mobile *" required autocomplete="tel"
-                       class="w-full text-sm font-semibold text-ink bg-white border-0 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-primary placeholder:text-[color:var(--color-neutral)]">
+                       class="w-full text-sm font-semibold text-ink bg-[color:var(--color-neutral-soft)] border-0 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-primary placeholder:text-[color:var(--color-neutral)]">
                 <input type="email" name="client_email"     form="reservation-form"
                        placeholder="Email (optionnel)" autocomplete="email"
-                       class="w-full text-sm font-semibold text-ink bg-white border-0 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-primary placeholder:text-[color:var(--color-neutral)]">
+                       class="w-full text-sm font-semibold text-ink bg-[color:var(--color-neutral-soft)] border-0 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-primary placeholder:text-[color:var(--color-neutral)]">
             </div>
+
+            <p class="text-[11px] text-[color:var(--color-neutral)] text-center mt-4">
+                En réservant, vous acceptez d'être contacté par le propriétaire du véhicule.
+            </p>
         </div>
 
-        <!-- Type de location (chips) -->
-        <div class="mb-2">
-            <label class="block text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)] mb-2">Type de location</label>
-            <div id="rental-type-chips" class="rental-chips">
-                {% for rt in rental_types %}
-                <button type="button" class="rental-chip"
-                        data-value="{{ rt.id }}"
-                        data-prix="{{ rt.prix }}"
-                        data-conso="{{ car.consommation_carburant }}">
-                    <span class="rental-chip-name">{{ rt.nom }}</span>
-                    <span class="rental-chip-price">{{ "{:,.0f}".format(rt.prix).replace(",", " ") }} Ar</span>
-                </button>
-                {% else %}
-                <p class="text-xs text-[color:var(--color-neutral)] italic">Aucun type configuré</p>
-                {% endfor %}
-            </div>
-            <select id="rental-type" name="rental-type" hidden aria-hidden="true">
-                <option value="" disabled selected></option>
-                {% for rt in rental_types %}
-                <option value="{{ rt.id }}" data-prix="{{ rt.prix }}" data-conso="{{ car.consommation_carburant }}">
-                    {{ rt.nom }} — {{ "{:,.0f}".format(rt.prix).replace(",", " ") }} Ar
-                </option>
-                {% endfor %}
-            </select>
+        <!-- Navigation étape 3 -->
+        <div class="wizard-nav justify-start">
+            <button type="button" id="wizard-prev-3" class="wizard-btn-prev">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+                Retour
+            </button>
         </div>
-
-        <p id="calc-hint" class="text-[11px] text-[color:var(--color-neutral)] text-center mt-3 mb-1">
-            Le devis s'affiche automatiquement dès que tout est renseigné.
-        </p>
     </div>
 
-    <!-- Avertissement hors plage horaire -->
-    <div id="heure-dispo-warning"
-         class="bg-red-50 border-l-4 border-red-600 text-red-700 px-4 py-3 text-xs rounded-2xl font-semibold"
-         style="display:none;">
-        🚫 Devis impossible — Voiture non disponible à ces heures.
-        {% if car.heure_dispo_debut and car.heure_dispo_fin %}
-        <span class="block mt-1 font-normal">Disponible de {{ car.heure_dispo_debut.strftime('%Hh%M') }} à {{ car.heure_dispo_fin.strftime('%Hh%M') }}.</span>
-        {% endif %}
-    </div>
-
-    <!-- Template escale (utilisé par le JS) -->
-    <template id="waypoint-template">
-        <div class="waypoint-item space-y-1">
-            <label class="block text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)]">Escale</label>
-            <div class="place-search waypoint-search" data-target="waypoint">
-                <input type="text" class="place-search-input"
-                       placeholder="Rechercher une escale"
-                       autocomplete="off" inputmode="search" aria-label="Rechercher une escale" />
-                <button type="button" class="place-search-clear" aria-label="Effacer">✕</button>
-                <ul class="place-suggestions" role="listbox" hidden></ul>
-            </div>
-            <div class="flex gap-2">
-                <button type="button"
-                        class="pick-waypoint-btn flex-grow border-2 border-dashed border-[color:var(--color-primary-tint-strong)] bg-[color:var(--color-primary-light)] text-primary-dark rounded-2xl px-3 py-2.5 text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-primary"></span>
-                    ou pointer directement
-                </button>
-                <button type="button"
-                        class="remove-waypoint-btn text-danger hover:bg-[color:var(--color-primary-light)] p-2.5 bg-[color:var(--color-neutral-soft)] rounded-2xl text-sm leading-none">
-                    ✕
-                </button>
-            </div>
-            <div class="waypoint-badge location-badge" style="display:none; background:#F5F5F4; color:#0A0A0A; border:1.5px solid #E5E5E5;">
-                <span class="w-2.5 h-2.5 rounded-full bg-primary shrink-0"></span>
-                <span class="badge-name waypoint-badge-name"></span>
-                <button type="button" class="badge-clear waypoint-badge-clear">✕</button>
-            </div>
-        </div>
-    </template>
 </div>
+
+<!-- Template escale (utilisé par le JS) -->
+<template id="waypoint-template">
+    <div class="waypoint-item space-y-1">
+        <label class="block text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-neutral-strong)]">Escale</label>
+        <div class="place-search waypoint-search" data-target="waypoint">
+            <input type="text" class="place-search-input"
+                   placeholder="Rechercher une escale"
+                   autocomplete="off" inputmode="search" aria-label="Rechercher une escale" />
+            <button type="button" class="place-search-clear" aria-label="Effacer">✕</button>
+            <ul class="place-suggestions" role="listbox" hidden></ul>
+        </div>
+        <div class="flex gap-2">
+            <button type="button"
+                    class="pick-waypoint-btn flex-grow border-2 border-dashed border-[color:var(--color-primary-tint-strong)] bg-[color:var(--color-primary-light)] text-primary-dark rounded-2xl px-3 py-2.5 text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-primary"></span>
+                ou pointer directement
+            </button>
+            <button type="button"
+                    class="remove-waypoint-btn text-danger hover:bg-[color:var(--color-primary-light)] p-2.5 bg-[color:var(--color-neutral-soft)] rounded-2xl text-sm leading-none">
+                ✕
+            </button>
+        </div>
+        <div class="waypoint-badge location-badge" style="display:none; background:#F5F5F4; color:#0A0A0A; border:1.5px solid #E5E5E5;">
+            <span class="w-2.5 h-2.5 rounded-full bg-primary shrink-0"></span>
+            <span class="badge-name waypoint-badge-name"></span>
+            <button type="button" class="badge-clear waypoint-badge-clear">✕</button>
+        </div>
+    </div>
+</template>
