@@ -38,7 +38,8 @@ async function runCalculation() {
     const start = getCoord('start');
     const end = getCoord('end');
     const hasType = rentalSelect?.value;
-    if (!start || !end || !hasType) return;
+    const hasDates = dtStart?.value && dtEnd?.value;
+    if (!start || !end || !hasType || !hasDates) return;
 
     if (horsPlageHoraire()) {
         const warning = document.getElementById('heure-dispo-warning');
