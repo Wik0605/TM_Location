@@ -1,4 +1,5 @@
-import { state } from './state.js';
+import { state, events, makePickIcon } from './state.js';
+import { reverseGeocode } from './pick.js';
 
 export function initMap() {
     const map = L.map('map', {
@@ -28,7 +29,55 @@ export function initMap() {
                 '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2a7 7 0 0 1 7 7c0 5-7 13-7 13S5 14 5 9a7 7 0 0 1 7-7zm0 4.5A2.5 2.5 0 1 0 12 11.5 2.5 2.5 0 0 0 12 6.5z"/></svg>';
             L.DomEvent.on(btn, 'click', (e) => {
                 L.DomEvent.stopPropagation(e);
-                map.locate({ setView: true, maxZoom: 15 });
+                if (!navigator.geolocation) {
+                    alert('Géolocalisation non supportée par votre navigateur');
+                    return;
+                }
+                if (btn.classList.contains('is-loading')) return;
+                btn.classList.add('is-loading');
+                btn.disabled = true;
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        btn.classList.remove('is-loading');
+                        btn.disabled = false;
+                        const lat = pos.coords.latitude;
+                        const lng = pos.coords.longitude;
+                        map.setView([lat, lng], 16);
+                        if (state.pickedCoords.start && state.pickedCoords.end) return;
+                        const target = state.pickedCoords.start ? 'end' : 'start';
+                        const color = target === 'start' ? '#22c55e' : '#ef4444';
+                        if (state.pickMarkers[target]) map.removeLayer(state.pickMarkers[target]);
+                        state.pickMarkers[target] = L.marker([lat, lng], { icon: makePickIcon(color) })
+                            .bindTooltip(target === 'start' ? 'Départ' : 'Arrivée', {
+                                permanent: true,
+                                direction: 'top',
+                                offset: [0, -14],
+                            })
+                            .addTo(map);
+                        state.pickedCoords[target] = `${lng.toFixed(6)},${lat.toFixed(6)}`;
+                        const badgeEl = document.getElementById(`${target}-badge`);
+                        const badgeNameEl = document.getElementById(`${target}-badge-name`);
+                        badgeNameEl.textContent = 'Localisation...';
+                        badgeEl.style.display = 'flex';
+                        reverseGeocode(lat, lng, badgeNameEl);
+                        if (navigator.vibrate) navigator.vibrate(40);
+                        events.emit('coordChange');
+                    },
+                    (err) => {
+                        btn.classList.remove('is-loading');
+                        btn.disabled = false;
+                        const msg =
+                            err.code === err.PERMISSION_DENIED
+                                ? 'Autorisez la géolocalisation dans votre navigateur'
+                                : err.code === err.POSITION_UNAVAILABLE
+                                ? 'Position GPS indisponible'
+                                : err.code === err.TIMEOUT
+                                ? 'La localisation a pris trop de temps, réessayez'
+                                : 'Impossible de récupérer votre position';
+                        alert(msg);
+                    },
+                    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
+                );
             });
             return btn;
         },
