@@ -84,9 +84,6 @@ export function initWizard() {
 
     document.getElementById('wizard-prev-2')?.addEventListener('click', () => goToStep(1));
     document.getElementById('wizard-prev-3')?.addEventListener('click', () => goToStep(2));
-    document.getElementById('wizard-reset-btn')?.addEventListener('click', () => {
-        window.location.reload();
-    });
 }
 
 export function currentStep() {
