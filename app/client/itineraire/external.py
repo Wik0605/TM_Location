@@ -37,12 +37,24 @@ async def appeler_brouter(waypoints, client: httpx.AsyncClient) -> Optional[dict
         return None
 
 
-OSRM_URL = "http://localhost:5001"
+OSRM_PORTS = {
+    "zone1": 5001,
+    "zone2": 5002,
+    "zone3": 5003,
+}
+DEFAULT_ZONE = "zone3"
 
 
-async def appeler_osrm(waypoints, client: httpx.AsyncClient) -> Optional[dict]:
+def _osrm_url(zone: str) -> str:
+    port = OSRM_PORTS.get(zone, OSRM_PORTS[DEFAULT_ZONE])
+    return f"http://localhost:{port}"
+
+
+async def appeler_osrm(
+    waypoints, client: httpx.AsyncClient, zone: str = DEFAULT_ZONE
+) -> Optional[dict]:
     coords = ";".join(f"{lon},{lat}" for lat, lon in waypoints)
-    url = f"{OSRM_URL}/route/v1/driving/{coords}"
+    url = f"{_osrm_url(zone)}/route/v1/driving/{coords}"
     params = {"overview": "full", "geometries": "geojson"}
     try:
         resp = await client.get(url, params=params, timeout=HTTP_TIMEOUT)
@@ -58,10 +70,21 @@ async def appeler_osrm(waypoints, client: httpx.AsyncClient) -> Optional[dict]:
                 {"type": "Feature", "geometry": route["geometry"], "properties": {}}
             ],
         }
+        snapped = []
+        for wp in data.get("waypoints", []):
+            loc = wp.get("location") or [None, None]
+            snapped.append({
+                "lat": loc[1],
+                "lon": loc[0],
+                "walk_m": round(float(wp.get("distance") or 0.0), 1),
+                "name": wp.get("name") or None,
+            })
         return {
             "distance_km": route["distance"] / 1000,
             "polyline": geojson,
             "source": "osrm",
+            "snapped_waypoints": snapped,
+            "zone_routiere": zone,
         }
     except (httpx.HTTPError, ValueError, KeyError):
         return None

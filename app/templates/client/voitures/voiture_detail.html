@@ -88,8 +88,25 @@
     </div>
     {% endif %}
 
-
-    
+    {% set zone = voiture.zone_routiere or 'zone3' %}
+    <div class="mb-5">
+        {% if zone == 'zone1' %}
+        <div class="flex items-start gap-3 bg-emerald-50 border-l-4 border-emerald-600 rounded-2xl px-4 py-3">
+            <span class="font-display text-xs font-black text-emerald-700 uppercase tracking-widest shrink-0">Zone 1</span>
+            <p class="text-xs text-emerald-900 leading-snug">Ce véhicule circule <strong>uniquement sur routes goudronnées</strong>. Les trajets hors asphalte seront ajustés automatiquement.</p>
+        </div>
+        {% elif zone == 'zone2' %}
+        <div class="flex items-start gap-3 bg-sky-50 border-l-4 border-sky-600 rounded-2xl px-4 py-3">
+            <span class="font-display text-xs font-black text-sky-700 uppercase tracking-widest shrink-0">Zone 2</span>
+            <p class="text-xs text-sky-900 leading-snug">Ce véhicule circule sur <strong>goudron et pavé</strong>. Les pistes et latérite seront évitées.</p>
+        </div>
+        {% else %}
+        <div class="flex items-start gap-3 bg-amber-50 border-l-4 border-amber-600 rounded-2xl px-4 py-3">
+            <span class="font-display text-xs font-black text-amber-700 uppercase tracking-widest shrink-0">Zone 3</span>
+            <p class="text-xs text-amber-900 leading-snug">Véhicule <strong>tout-terrain</strong> : accepte tous types de routes (goudron, pavé, latérite, piste).</p>
+        </div>
+        {% endif %}
+    </div>
 
     <!-- Tarifs disponibles (radio selection) -->
     {% if voiture.types_location %}

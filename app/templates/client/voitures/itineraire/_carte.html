@@ -4,6 +4,7 @@
         <div id="map"
              data-daily-price="{{ car.daily_price }}"
              data-car-id="{{ car.id }}"
+             data-zone-routiere="{{ car.zone_routiere or 'zone3' }}"
              data-heure-dispo-debut="{{ car.heure_dispo_debut.strftime('%H:%M') if car.heure_dispo_debut else '' }}"
              data-heure-dispo-fin="{{ car.heure_dispo_fin.strftime('%H:%M') if car.heure_dispo_fin else '' }}"></div>
         <div id="map-loader" style="display:none;"

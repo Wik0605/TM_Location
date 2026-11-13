@@ -62,6 +62,14 @@
                 <span class="absolute top-2 left-2 bg-ink text-white text-[8.5px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full">
                     {{ voiture.places }}pl
                 </span>
+                {% set zone = voiture.zone_routiere or 'zone3' %}
+                {% if zone == 'zone1' %}
+                <span class="absolute bottom-2 left-2 bg-emerald-600 text-white text-[8.5px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full" title="Zone 1 — Goudron uniquement">Z1 · Goudron</span>
+                {% elif zone == 'zone2' %}
+                <span class="absolute bottom-2 left-2 bg-sky-600 text-white text-[8.5px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full" title="Zone 2 — Goudron + pavé">Z2 · Pavé</span>
+                {% else %}
+                <span class="absolute bottom-2 left-2 bg-amber-600 text-white text-[8.5px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full" title="Zone 3 — Toutes routes">Z3 · Tout-terrain</span>
+                {% endif %}
                 {% if is_available %}
                 <span class="absolute top-2 right-2 bg-success text-white text-[8.5px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full">
                     Disponible

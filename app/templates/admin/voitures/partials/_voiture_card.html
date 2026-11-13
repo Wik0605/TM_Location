@@ -6,7 +6,15 @@
             <p class="font-bold text-gray-900">{{ voiture.nom }}</p>
             <p class="text-xs text-gray-400 mt-0.5">{{ voiture.places }} places · {{ voiture.consommation_carburant }} L/100km</p>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 flex-wrap justify-end">
+            {% set zone = voiture.zone_routiere or 'zone3' %}
+            {% if zone == 'zone1' %}
+            <span class="text-xs font-medium bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full" title="Routes goudronnées uniquement">Zone 1 · Goudron</span>
+            {% elif zone == 'zone2' %}
+            <span class="text-xs font-medium bg-sky-100 text-sky-700 px-2.5 py-1 rounded-full" title="Goudron et pavé">Zone 2 · Goudron + pavé</span>
+            {% else %}
+            <span class="text-xs font-medium bg-amber-100 text-amber-700 px-2.5 py-1 rounded-full" title="Toutes routes (tout-terrain)">Zone 3 · Tout-terrain</span>
+            {% endif %}
             {% if voiture.is_available %}
             <span class="text-xs font-medium bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full">Disponible</span>
             {% else %}
@@ -59,6 +67,16 @@
                     <label class="block text-xs text-gray-500 mb-1">Conso. (L/100km)</label>
                     <input type="number" name="consommation_carburant" value="{{ voiture.consommation_carburant }}" step="0.1"
                         class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+                </div>
+                <div class="col-span-2">
+                    <label class="block text-xs text-gray-500 mb-1">Zone routière autorisée</label>
+                    {% set zone = voiture.zone_routiere or 'zone3' %}
+                    <select name="zone_routiere"
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+                        <option value="zone1" {% if zone == 'zone1' %}selected{% endif %}>Zone 1 — Goudron uniquement</option>
+                        <option value="zone2" {% if zone == 'zone2' %}selected{% endif %}>Zone 2 — Goudron et pavé</option>
+                        <option value="zone3" {% if zone == 'zone3' %}selected{% endif %}>Zone 3 — Toutes routes (tout-terrain)</option>
+                    </select>
                 </div>
                 <div>
                     <label class="block text-xs text-gray-500 mb-1">Disponible à partir de</label>

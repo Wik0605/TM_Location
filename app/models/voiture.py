@@ -1,7 +1,8 @@
 from datetime import datetime, time
+from enum import Enum
 from typing import Optional, TYPE_CHECKING
 from uuid import UUID
-from sqlalchemy import Column, DateTime, Text, Time
+from sqlalchemy import Column, DateTime, String, Text, Time
 from sqlmodel import SQLModel, Field, Relationship
 
 from app.models.base import utcnow
@@ -11,11 +12,28 @@ if TYPE_CHECKING:
     from app.models.reservation import Location
 
 
+class ZoneRoutiere(str, Enum):
+    ZONE1 = "zone1"
+    ZONE2 = "zone2"
+    ZONE3 = "zone3"
+
+
+ZONE_LABELS = {
+    ZoneRoutiere.ZONE1: "Zone 1 — Goudron uniquement",
+    ZoneRoutiere.ZONE2: "Zone 2 — Goudron et pavé",
+    ZoneRoutiere.ZONE3: "Zone 3 — Toutes routes (tout-terrain)",
+}
+
+
 class VoitureBase(SQLModel):
     nom: str = Field(max_length=100)
     description: str = Field(sa_column=Column(Text, nullable=False))
     consommation_carburant: float = Field(default=8.0)
     places: int = Field(default=5)
+    zone_routiere: str = Field(
+        default=ZoneRoutiere.ZONE3.value,
+        sa_column=Column(String(10), nullable=False, server_default=ZoneRoutiere.ZONE3.value, index=True),
+    )
     heure_dispo_debut: Optional[time] = Field(
         default=None, sa_column=Column(Time, nullable=True)
     )
@@ -129,6 +147,7 @@ class VoitureUpdate(SQLModel):
     description: Optional[str] = Field(default=None, max_length=2000)
     consommation_carburant: Optional[float] = None
     places: Optional[int] = None
+    zone_routiere: Optional[str] = None
     is_available: Optional[bool] = None
     heure_dispo_debut: Optional[time] = None
     heure_dispo_fin: Optional[time] = None

@@ -28,8 +28,9 @@ node_modules/
 # Environnement virtuel Python
 venv/
 
-# Données OSM et OSRM (fichiers lourds)
-osrm-data/
+# Données OSM et OSRM (fichiers lourds) — mais on garde les profils Lua (code source)
+osrm-data/*
+!osrm-data/profiles/
 
 # Backups PostgreSQL
 *.dump

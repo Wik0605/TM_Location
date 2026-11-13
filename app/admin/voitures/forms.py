@@ -5,11 +5,21 @@ from fastapi import Form
 from pydantic import BaseModel, Field
 
 
+ZONE_CHOICES = {"zone1", "zone2", "zone3"}
+
+
+def _normalize_zone(value: Optional[str], default: str = "zone3") -> str:
+    if value and value in ZONE_CHOICES:
+        return value
+    return default
+
+
 class VoitureCreateForm(BaseModel):
     nom: str = Field(..., min_length=1, max_length=100)
     description: str = Field(..., min_length=1, max_length=2000)
     places: int = Field(5, ge=1, le=20)
     consommation_carburant: float = Field(8.0, ge=0, le=100)
+    zone_routiere: str = Field("zone3")
     heure_dispo_debut: Optional[time] = None
     heure_dispo_fin: Optional[time] = None
 
@@ -20,6 +30,7 @@ class VoitureCreateForm(BaseModel):
         description: str = Form(...),
         places: int = Form(5),
         consommation_carburant: float = Form(8.0),
+        zone_routiere: str = Form("zone3"),
         heure_dispo_debut: Optional[str] = Form(None),
         heure_dispo_fin: Optional[str] = Form(None),
     ) -> "VoitureCreateForm":
@@ -28,6 +39,7 @@ class VoitureCreateForm(BaseModel):
             description=description,
             places=places,
             consommation_carburant=consommation_carburant,
+            zone_routiere=_normalize_zone(zone_routiere),
             heure_dispo_debut=time.fromisoformat(heure_dispo_debut) if heure_dispo_debut else None,
             heure_dispo_fin=time.fromisoformat(heure_dispo_fin) if heure_dispo_fin else None,
         )
@@ -38,6 +50,7 @@ class VoitureUpdateForm(BaseModel):
     description: Optional[str] = Field(None, max_length=2000)
     places: Optional[int] = Field(None, ge=1, le=20)
     consommation_carburant: Optional[float] = Field(None, ge=0, le=100)
+    zone_routiere: Optional[str] = None
     is_available: Optional[str] = Field(None, max_length=10)
     heure_dispo_debut: Optional[time] = None
     heure_dispo_fin: Optional[time] = None
@@ -49,15 +62,18 @@ class VoitureUpdateForm(BaseModel):
         description: Optional[str] = Form(None),
         places: Optional[int] = Form(None),
         consommation_carburant: Optional[float] = Form(None),
+        zone_routiere: Optional[str] = Form(None),
         is_available: Optional[str] = Form(None),
         heure_dispo_debut: Optional[str] = Form(None),
         heure_dispo_fin: Optional[str] = Form(None),
     ) -> "VoitureUpdateForm":
+        zone = _normalize_zone(zone_routiere, default=None) if zone_routiere else None
         return cls(
             nom=nom,
             description=description,
             places=places,
             consommation_carburant=consommation_carburant,
+            zone_routiere=zone,
             is_available=is_available,
             heure_dispo_debut=time.fromisoformat(heure_dispo_debut) if heure_dispo_debut else None,
             heure_dispo_fin=time.fromisoformat(heure_dispo_fin) if heure_dispo_fin else None,

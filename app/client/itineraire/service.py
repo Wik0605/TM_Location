@@ -8,7 +8,7 @@ import httpx
 import jwt
 from fastapi import Request
 
-from app.client.itineraire.external import appeler_osrm
+from app.client.itineraire.external import DEFAULT_ZONE, OSRM_PORTS, appeler_osrm
 from app.config import settings
 
 logger = logging.getLogger(__name__)
@@ -73,7 +73,13 @@ def _valider_waypoints(waypoints: List[Tuple[float, float]]) -> None:
             )
 
 
-def _fallback_haversine(waypoints) -> dict:
+def _normaliser_zone(zone: Optional[str]) -> str:
+    if zone in OSRM_PORTS:
+        return zone
+    return DEFAULT_ZONE
+
+
+def _fallback_haversine(waypoints, zone: str) -> dict:
     total = 0.0
     for i in range(len(waypoints) - 1):
         total += _haversine_km(waypoints[i], waypoints[i + 1])
@@ -88,33 +94,53 @@ def _fallback_haversine(waypoints) -> dict:
             }
         ],
     }
+    snapped = [
+        {"lat": lat, "lon": lon, "walk_m": 0.0, "name": None}
+        for lat, lon in waypoints
+    ]
     return {
         "distance_km": total * 1.8,
         "polyline": geojson,
         "source": "haversine",
+        "snapped_waypoints": snapped,
+        "zone_routiere": zone,
     }
 
 
-async def calculer_itineraire(waypoints: List[Tuple[float, float]]) -> dict:
+async def calculer_itineraire(
+    waypoints: List[Tuple[float, float]], zone: Optional[str] = None
+) -> dict:
     _valider_waypoints(waypoints)
+    zone = _normaliser_zone(zone)
     async with httpx.AsyncClient() as client:
-        result = await appeler_osrm(waypoints, client)
+        result = await appeler_osrm(waypoints, client, zone=zone)
         if result:
-            logger.info("itineraire_calcul source=osrm_local points=%d distance_km=%.2f",
-                        len(waypoints), result["distance_km"])
+            logger.info(
+                "itineraire_calcul source=osrm_local zone=%s points=%d distance_km=%.2f",
+                zone, len(waypoints), result["distance_km"],
+            )
             return result
-    result = _fallback_haversine(waypoints)
-    logger.warning("itineraire_calcul source=haversine points=%d distance_km=%.2f fallback_from=osrm_local",
-                   len(waypoints), result["distance_km"])
+    result = _fallback_haversine(waypoints, zone)
+    logger.warning(
+        "itineraire_calcul source=haversine zone=%s points=%d distance_km=%.2f fallback_from=osrm_local",
+        zone, len(waypoints), result["distance_km"],
+    )
     return result
 
 
-def emettre_token(distance_km: float, waypoints, voiture_id: UUID, source: str) -> str:
+def emettre_token(
+    distance_km: float,
+    waypoints,
+    voiture_id: UUID,
+    source: str,
+    zone_routiere: str,
+) -> str:
     payload = {
         "distance_km": distance_km,
         "waypoints": [[lat, lon] for lat, lon in waypoints],
         "voiture_id": str(voiture_id),
         "source": source,
+        "zone_routiere": zone_routiere,
         "exp": datetime.now(timezone.utc) + timedelta(seconds=TOKEN_TTL_SECONDS),
     }
     return jwt.encode(payload, settings.secret_key, algorithm=JWT_ALGORITHM)

@@ -11,6 +11,36 @@ services:
       - pgdata:/var/lib/postgresql/data
     restart: unless-stopped
 
+  osrm-zone1:
+    image: osrm/osrm-backend:latest
+    container_name: tml-osrm-zone1
+    command: osrm-routed --algorithm mld /data/madagascar-latest.osrm
+    volumes:
+      - ./osrm-data/zone1:/data
+    ports:
+      - "5001:5000"
+    restart: unless-stopped
+
+  osrm-zone2:
+    image: osrm/osrm-backend:latest
+    container_name: tml-osrm-zone2
+    command: osrm-routed --algorithm mld /data/madagascar-latest.osrm
+    volumes:
+      - ./osrm-data/zone2:/data
+    ports:
+      - "5002:5000"
+    restart: unless-stopped
+
+  osrm-zone3:
+    image: osrm/osrm-backend:latest
+    container_name: tml-osrm-zone3
+    command: osrm-routed --algorithm mld /data/madagascar-latest.osrm
+    volumes:
+      - ./osrm-data/zone3:/data
+    ports:
+      - "5003:5000"
+    restart: unless-stopped
+
 volumes:
   pgdata:
 #  ! docker compose up -d

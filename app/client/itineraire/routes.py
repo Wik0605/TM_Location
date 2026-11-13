@@ -11,6 +11,7 @@ from app.client.itineraire import service as routing_service
 from app.client.itineraire.external import reverse_geocode_nominatim
 from app.client.itineraire.geocoding import search_places
 from app.client.itineraire.service import RoutingError
+from app.client.voitures import service as voitures_service
 from app.database import get_db
 from app.limiter import limiter
 
@@ -74,14 +75,20 @@ async def calculer_itineraire(
     payload: WaypointsPayload,
     response: Response,
     background: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
 ):
     if not routing_service.verifier_quota(request):
         raise HTTPException(status_code=429, detail="Quota journalier atteint.")
 
+    voiture = await voitures_service.get_voiture_by_id(db, voiture_id)
+    if voiture is None:
+        raise HTTPException(status_code=404, detail="Voiture introuvable.")
+    zone = voiture.zone_routiere or "zone3"
+
     waypoints = [(lat, lon) for lat, lon in payload.waypoints]
 
     try:
-        result = await routing_service.calculer_itineraire(waypoints)
+        result = await routing_service.calculer_itineraire(waypoints, zone=zone)
     except RoutingError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -90,6 +97,7 @@ async def calculer_itineraire(
         waypoints=waypoints,
         voiture_id=voiture_id,
         source=result["source"],
+        zone_routiere=result["zone_routiere"],
     )
 
     session_id = analytics_service.get_or_create_session_id(request, response)
@@ -111,6 +119,8 @@ async def calculer_itineraire(
         "distance_km": round(result["distance_km"], 2),
         "polyline": result["polyline"],
         "source": result["source"],
+        "zone_routiere": result["zone_routiere"],
+        "snapped_waypoints": result.get("snapped_waypoints", []),
         "token": token,
         "quota_count": request.session.get("itinerary_count", 0),
     }
